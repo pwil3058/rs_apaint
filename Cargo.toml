@@ -2,4 +2,5 @@
 
 members = [
     "apaint",
+    "apaint_derive"
 ]

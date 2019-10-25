@@ -1,5 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+pub mod characteristics;
+
 pub use colour_math::{ColourComponent, ColourInterface};
 
 pub trait ColouredItem<F, CI>
@@ -39,6 +41,7 @@ mod tests {
     fn rgb_wrapper() {
         let wrapper = RGBWrapper { rgb: RGB::YELLOW };
         assert_eq!(wrapper.colour().chroma(), 1.0);
+        assert_eq!(wrapper.colour().rgb(), RGB::YELLOW);
     }
 
     #[test]
@@ -47,5 +50,6 @@ mod tests {
             colour: Colour::<f64>::from(RGB::CYAN),
         };
         assert_eq!(wrapper.colour().chroma(), 1.0);
+        assert_eq!(wrapper.colour().rgb(), RGB::CYAN);
     }
 }
