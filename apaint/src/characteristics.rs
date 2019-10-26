@@ -4,6 +4,8 @@
 
 use std::str::FromStr;
 
+use apaint_boilerplate::Characteristic;
+
 pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd {
     const NAME: &'static str;
     const PROMPT: &'static str;
@@ -13,7 +15,7 @@ pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd {
 }
 
 /// Finish.
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
 pub enum Finish {
     Gloss,
     SemiGloss,
@@ -21,39 +23,27 @@ pub enum Finish {
     Flat,
 }
 
-impl CharacteristicIfce for Finish {
-    const NAME: &'static str = "Finish";
-    const PROMPT: &'static str = "Finish:";
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    fn abbrev(&self) -> &'static str {
-        match *self {
-            Finish::Gloss => "G",
-            Finish::SemiGloss => "SG",
-            Finish::SemiFlat => "SF",
-            Finish::Flat => "F",
+    #[test]
+    fn paint_finish() {
+        assert_eq!(Finish::NAME, "Finish");
+        assert_eq!(Finish::PROMPT, "Finish:");
+        assert_eq!(Finish::Gloss.abbrev(), "G");
+        assert_eq!(Finish::SemiGloss.abbrev(), "SG");
+        assert_eq!(Finish::SemiFlat.abbrev(), "SF");
+        assert_eq!(Finish::Flat.abbrev(), "F");
+        assert_eq!(Finish::Gloss.full(), "gloss");
+        assert_eq!(Finish::SemiGloss.full(), "semi-gloss");
+        assert_eq!(Finish::SemiFlat.full(), "semi-flat");
+        assert_eq!(Finish::Flat.full(), "flat");
+        for a in ["G", "SG", "SF", "F"].iter() {
+            assert_eq!(Finish::from_str(a).unwrap().abbrev(), *a);
         }
-    }
-
-    fn full(&self) -> &'static str {
-        match *self {
-            Finish::Gloss => "Gloss",
-            Finish::SemiGloss => "Semi-gloss",
-            Finish::SemiFlat => "Semi-flat",
-            Finish::Flat => "Flat",
-        }
-    }
-}
-
-impl FromStr for Finish {
-    type Err = String;
-
-    fn from_str(string: &str) -> Result<Finish, String> {
-        match string {
-            "G" | "Gloss" => Ok(Finish::Gloss),
-            "SG" | "Semi-gloss" => Ok(Finish::SemiGloss),
-            "SF" | "Semi-flat" => Ok(Finish::SemiFlat),
-            "F" | "Flat" => Ok(Finish::Flat),
-            _ => Err(format!("\"{}\": Malformed 'Finish' value string", string)),
+        for a in ["gloss", "semi-gloss", "semi-flat", "flat"].iter() {
+            assert_eq!(Finish::from_str(a).unwrap().full(), *a);
         }
     }
 }

@@ -2,5 +2,5 @@
 
 members = [
     "apaint",
-    "apaint_derive"
+    "apaint_boilerplate",
 ]

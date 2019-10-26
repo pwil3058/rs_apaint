@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-apaint_derive = { path = "../apaint_derive"}
+apaint_boilerplate = { path = "../apaint_boilerplate"}
 # TODO: change colour_math dependency when it goes public
 #colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 colour_math = { path = "../../../CRATES/rs_colour_math.git" }
