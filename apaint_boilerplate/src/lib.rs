@@ -26,6 +26,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let mut abbrev_tokens = vec![];
     let mut full_tokens = vec![];
     let mut from_tokens = vec![];
+    let fmt_str = format!("\"{{}}\": Malformed '{}' value string", name);
     match parsed_input.data {
         Data::Enum(e) => {
             for v in e.variants {
@@ -72,7 +73,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
             fn from_str(string: &str) -> Result<#enum_name, String> {
                 match string {
                     #(#from_tokens)*
-                    _ => Err(format!("\"{}\": Malformed 'Finish' value string", string)),
+                    _ => Err(format!(#fmt_str, string)),
                 }
             }
         }
