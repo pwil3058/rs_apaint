@@ -3,4 +3,7 @@
 members = [
     "apaint",
     "apaint_boilerplate",
+    "apaint_gtk",
+    "apaint_gtk_boilerplate",
+    "gtk_test_gui",
 ]
