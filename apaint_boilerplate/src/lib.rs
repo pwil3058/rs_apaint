@@ -7,7 +7,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Data, DeriveInput};
 
-fn anagram(input: &str) -> String {
+fn acronym(input: &str) -> String {
     let mut output = String::new();
     for char in input.chars() {
         if char.is_uppercase() {
@@ -31,7 +31,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
         Data::Enum(e) => {
             for v in e.variants {
                 let v_name = v.ident.clone();
-                let v_abbrev = anagram(&v.ident.to_string());
+                let v_abbrev = acronym(&v.ident.to_string());
                 let v_full = v.ident.to_string().to_kebab_case();
                 let abbrev_token = quote! {
                     #enum_name::#v_name => #v_abbrev,
@@ -47,7 +47,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
                 from_tokens.push(from_token);
             }
         }
-        _ => panic!("Characteristic can only be derived for enums."),
+        _ => panic!("'Characteristic' can only be derived for enums."),
     }
     let tokens = quote! {
         impl CharacteristicIfce for #enum_name {
