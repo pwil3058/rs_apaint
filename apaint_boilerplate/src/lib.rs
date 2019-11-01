@@ -26,6 +26,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let mut abbrev_tokens = vec![];
     let mut full_tokens = vec![];
     let mut from_tokens = vec![];
+    let mut value_tokens = vec![];
     let fmt_str = format!("\"{{}}\": Malformed '{}' value string", name);
     match parsed_input.data {
         Data::Enum(e) => {
@@ -33,6 +34,10 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
                 let v_name = v.ident.clone();
                 let v_abbrev = acronym(&v.ident.to_string());
                 let v_full = v.ident.to_string().to_kebab_case();
+                let token = quote! {
+                    #v_full,
+                };
+                value_tokens.push(token);
                 let abbrev_token = quote! {
                     #enum_name::#v_name => #v_abbrev,
                 };
@@ -53,6 +58,10 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
         impl CharacteristicIfce for #enum_name {
             const NAME: &'static str = #name;
             const PROMPT: &'static str = #prompt;
+
+            fn str_values() -> Vec<&'static str> {
+                vec![#(#value_tokens)*]
+            }
 
             fn abbrev(&self) -> &'static str {
                 match *self {

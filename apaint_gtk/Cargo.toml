@@ -7,3 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+gtk = "0.7.0"
+
+apaint = { path = "../apaint" }
+
+# TODO: change pw_gix dependency when it goes public
+#pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+pw_gix = { path = "../../../CRATES/rs_pw_gix.git" }

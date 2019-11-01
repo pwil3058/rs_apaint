@@ -10,6 +10,8 @@ pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd {
     const NAME: &'static str;
     const PROMPT: &'static str;
 
+    fn str_values() -> Vec<&'static str>;
+
     fn abbrev(&self) -> &'static str;
     fn full(&self) -> &'static str;
 }
