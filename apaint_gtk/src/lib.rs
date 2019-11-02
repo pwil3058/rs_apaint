@@ -1,25 +1,19 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-#[macro_use]
-extern crate pw_gix;
-
 pub mod characteristics {
     use std::rc::Rc;
 
+    use apaint_gtk_boilerplate::PWO;
     use pw_gix::wrapper::*;
 
     use apaint::characteristics::CharacteristicIfce;
-    use gtk::{ComboBoxExt, ComboBoxExtManual, ComboBoxTextExt, WidgetExt};
+    use gtk::{ComboBoxExt, ComboBoxTextExt};
 
+    #[derive(PWO)]
     pub struct CharacteristicEntry<C: CharacteristicIfce> {
         combo_box_text: gtk::ComboBoxText,
         marker: std::marker::PhantomData<C>,
     }
-
-    impl_widget_wrapper!(
-        combo_box_text: gtk::ComboBoxText,
-        CharacteristicEntry<C> where C: CharacteristicIfce
-    );
 
     impl<C: CharacteristicIfce> CharacteristicEntry<C> {
         pub fn new() -> Rc<Self> {
