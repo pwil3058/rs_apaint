@@ -7,8 +7,7 @@ use pw_gix::wrapper::*;
 
 use apaint::characteristics::CharacteristicIfce;
 
-type FinishEntry =
-    apaint_gtk::characteristics::CharacteristicEntry<apaint::characteristics::Finish>;
+use apaint_gtk::characteristics::FinishEntry;
 
 fn main() {
     if gtk::init().is_err() {

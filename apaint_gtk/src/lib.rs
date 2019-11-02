@@ -7,7 +7,7 @@ pub mod characteristics {
     use apaint_gtk_boilerplate::PWO;
     use pw_gix::wrapper::*;
 
-    use apaint::characteristics::CharacteristicIfce;
+    use apaint::characteristics::{CharacteristicIfce, Finish};
     use gtk::{ComboBoxExt, ComboBoxTextExt};
 
     #[derive(PWO)]
@@ -69,4 +69,6 @@ pub mod characteristics {
             self.callbacks.borrow_mut().push(Box::new(f))
         }
     }
+
+    pub type FinishEntry = CharacteristicEntry<Finish>;
 }
