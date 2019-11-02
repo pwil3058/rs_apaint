@@ -37,6 +37,14 @@ pub mod characteristics {
             ce
         }
 
+        pub fn label() -> gtk::Label {
+            gtk::Label::new(Some(C::NAME))
+        }
+
+        pub fn prompt() -> gtk::Label {
+            gtk::Label::new(Some(C::PROMPT))
+        }
+
         pub fn value(&self) -> Option<C> {
             if let Some(text) = self.combo_box_text.get_active_text() {
                 match C::from_str(&text) {
