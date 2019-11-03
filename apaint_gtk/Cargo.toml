@@ -7,6 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cairo-rs = "0.7.1"
+gdk = "0.11.0"
+gdk-pixbuf = "0.7.0"
 gtk = "0.7.0"
 
 apaint = { path = "../apaint" }
@@ -15,3 +18,11 @@ apaint_gtk_boilerplate = { path = "../apaint_gtk_boilerplate" }
 # TODO: change pw_gix dependency when it goes public
 #pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
 pw_gix = { path = "../../../CRATES/rs_pw_gix.git" }
+
+# TODO: change normalised_angles dependency when it goes public
+#normalised_angles = { git = "https://github.com/pwil3058/rs_normalised_angles.git" }
+normalised_angles = { path = "../../../CRATES/rs_normalised_angles.git" }
+
+# TODO: change colour_math dependency when it goes public
+#colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+colour_math = { path = "../../../CRATES/rs_colour_math.git" }

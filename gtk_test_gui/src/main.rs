@@ -8,6 +8,7 @@ use pw_gix::wrapper::*;
 use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::characteristics::FinishEntry;
+use apaint_gtk::colour_edit::ColourEditor;
 
 fn main() {
     if gtk::init().is_err() {
@@ -28,7 +29,11 @@ fn main() {
     hbox.pack_start(&FinishEntry::prompt(), false, false, 0);
     hbox.pack_start(&entry.pwo(), false, false, 0);
     hbox.show_all();
-    win.add(&hbox);
+    let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    vbox.pack_start(&hbox, false, false, 0);
+    vbox.pack_start(&ColourEditor::new().pwo(), true, true, 0);
+    vbox.show_all();
+    win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());
     win.show();
     gtk::main()

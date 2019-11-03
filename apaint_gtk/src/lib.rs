@@ -1,5 +1,13 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+pub mod angles {
+    pub use normalised_angles;
+
+    pub type Angle = normalised_angles::Angle<f64>;
+    pub type Degrees = normalised_angles::Degrees<f64>;
+    pub type Radians = normalised_angles::Radians<f64>;
+}
+
 pub mod characteristics {
     use std::cell::RefCell;
     use std::rc::Rc;
@@ -72,3 +80,28 @@ pub mod characteristics {
 
     pub type FinishEntry = CharacteristicEntry<Finish>;
 }
+
+pub mod colour {
+    pub use colour_math::{
+        rgb::{RGBError, RGB16, RGB8},
+        ColourInterface, ScalarAttribute,
+    };
+    use gdk;
+
+    pub type Colour = colour_math::Colour<f64>;
+    pub type Hue = colour_math::hue::Hue<f64>;
+    pub type RGB = colour_math::rgb::RGB<f64>;
+    pub type RGBManipulator = colour_math::manipulator::RGBManipulator<f64>;
+
+    pub trait GdkConvert {
+        fn into_gdk_rgba(&self) -> gdk::RGBA;
+    }
+
+    impl GdkConvert for RGB {
+        fn into_gdk_rgba(&self) -> gdk::RGBA {
+            pw_gix::colour::rgba_from_rgb(*self)
+        }
+    }
+}
+
+pub mod colour_edit;
