@@ -14,16 +14,19 @@ use apaint_gtk_boilerplate::PWO;
 
 use crate::angles::Degrees;
 use crate::colour::*;
+use pw_gix::gtkx::coloured::Colourable;
 
 macro_rules! connect_button {
     ( $ed:ident, $btn:ident, $delta:ident, $apply:ident ) => {
         let ced_c = Rc::clone(&$ed);
-        $ed.$btn.connect_clicked(move |_| {
+        $ed.$btn.connect_clicked(move |btn| {
             let delta = ced_c.delta_size.get().$delta();
             let changed = ced_c.rgb_manipulator.borrow_mut().$apply(delta);
             if changed {
                 let new_rgb = ced_c.rgb_manipulator.borrow().rgb();
                 ced_c.set_rgb_and_inform(new_rgb);
+            } else {
+                btn.error_bell();
             }
         });
     };
@@ -176,6 +179,10 @@ impl ColourEditor {
             gtk::Inhibit(true)
         });
 
+        let ced_c = Rc::clone(&ced);
+        ced.rgb_entry
+            .connect_value_changed(move |rgb| ced_c.set_rgb_and_inform(rgb));
+
         ced
     }
 }
@@ -184,6 +191,30 @@ impl ColourEditor {
     fn set_rgb(&self, rgb: RGB) {
         self.rgb_entry.set_rgb(rgb);
         self.rgb_manipulator.borrow_mut().set_rgb(rgb);
+        self.incr_value_btn
+            .set_widget_colour_rgb(rgb * 0.8 + RGB::WHITE * 0.2);
+        self.decr_value_btn.set_widget_colour_rgb(rgb * 0.8);
+        if rgb.is_grey() {
+            self.incr_greyness_btn.set_widget_colour_rgb(rgb);
+            self.decr_greyness_btn.set_widget_colour_rgb(rgb);
+            self.incr_chroma_btn.set_widget_colour_rgb(rgb);
+            self.decr_chroma_btn.set_widget_colour_rgb(rgb);
+            self.hue_left_btn.set_widget_colour_rgb(rgb);
+            self.hue_right_btn.set_widget_colour_rgb(rgb);
+        } else {
+            let low_chroma_rgb = rgb * 0.8 + rgb.monotone_rgb() * 0.2;
+            let high_chroma_rgb = rgb * 0.8 + rgb.max_chroma_rgb() * 0.2;
+            self.incr_greyness_btn.set_widget_colour_rgb(low_chroma_rgb);
+            self.decr_greyness_btn
+                .set_widget_colour_rgb(high_chroma_rgb);
+            self.incr_chroma_btn.set_widget_colour_rgb(high_chroma_rgb);
+            self.decr_chroma_btn.set_widget_colour_rgb(low_chroma_rgb);
+
+            self.hue_left_btn
+                .set_widget_colour_rgb(rgb.components_rotated(Degrees::DEG_30));
+            self.hue_right_btn
+                .set_widget_colour_rgb(rgb.components_rotated(-Degrees::DEG_30));
+        }
         self.drawing_area.queue_draw();
     }
 
