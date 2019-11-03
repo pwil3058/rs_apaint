@@ -149,9 +149,9 @@ impl ColourEditor {
         let ced_c = ced.clone();
         ced.vbox.connect_key_press_event(move |_, event| {
             let key = event.get_keyval();
-            if key == gdk::enums::key::Shift_L || key == gdk::enums::key::Shift_R {
+            if key == gdk::enums::key::Shift_L {
                 ced_c.delta_size.set(DeltaSize::Large);
-            } else if key == gdk::enums::key::Alt_L || key == gdk::enums::key::Alt_R {
+            } else if key == gdk::enums::key::Shift_R {
                 ced_c.delta_size.set(DeltaSize::Small);
             };
             gtk::Inhibit(false)
@@ -159,11 +159,7 @@ impl ColourEditor {
         let ced_c = ced.clone();
         ced.vbox.connect_key_release_event(move |_, event| {
             let key = event.get_keyval();
-            if key == gdk::enums::key::Shift_L
-                || key == gdk::enums::key::Shift_R
-                || key == gdk::enums::key::Alt_L
-                || key == gdk::enums::key::Alt_R
-            {
+            if key == gdk::enums::key::Shift_L || key == gdk::enums::key::Shift_R {
                 ced_c.delta_size.set(DeltaSize::Normal);
             };
             gtk::Inhibit(false)
