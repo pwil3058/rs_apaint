@@ -3,18 +3,19 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use gtk::{BoxExt, ButtonExt, WidgetExt, WidgetExtManual};
+use gtk::{prelude::*, BoxExt, ButtonExt, WidgetExt, WidgetExtManual};
 
 use pw_gix::cairox::Draw;
 use pw_gix::geometry::Point;
+use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
+use pw_gix::gtkx::menu::WrappedMenu;
 use pw_gix::wrapper::*;
 
 use apaint_gtk_boilerplate::PWO;
 
 use crate::angles::Degrees;
 use crate::colour::*;
-use pw_gix::gtkx::coloured::Colourable;
 
 macro_rules! connect_button {
     ( $ed:ident, $btn:ident, $delta:ident, $apply:ident ) => {
@@ -70,7 +71,7 @@ impl DeltaSize {
 }
 
 struct Sample {
-    pix_buf: gdk_pixbuf::Pixbuf,
+    pixbuf: gdk_pixbuf::Pixbuf,
     position: Point,
 }
 
@@ -89,10 +90,14 @@ pub struct ColourEditor {
     decr_chroma_btn: gtk::Button,
     incr_chroma_btn: gtk::Button,
     delta_size: Cell<DeltaSize>,
+    samples: RefCell<Vec<Sample>>,
+    auto_match_btn: gtk::Button,
+    popup_menu: WrappedMenu,
+    popup_menu_posn: Cell<Point>,
 }
 
 impl ColourEditor {
-    pub fn new() -> Rc<Self> {
+    pub fn new(extra_buttons: &[gtk::Button]) -> Rc<Self> {
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator: RefCell::new(RGBManipulator::new()),
@@ -107,6 +112,10 @@ impl ColourEditor {
             decr_chroma_btn: gtk::Button::new_with_label("Chroma--"),
             incr_chroma_btn: gtk::Button::new_with_label("Chroma++"),
             delta_size: Cell::new(DeltaSize::Normal),
+            samples: RefCell::new(vec![]),
+            auto_match_btn: gtk::Button::new_with_label("Auto Match"),
+            popup_menu: WrappedMenu::new(&vec![]),
+            popup_menu_posn: Cell::new(Point::default()),
         });
 
         let events = gdk::EventMask::BUTTON_PRESS_MASK;
@@ -134,6 +143,13 @@ impl ColourEditor {
         hbox.pack_start(&ced.incr_greyness_btn, true, true, 0);
         ced.vbox.pack_start(&hbox, false, false, 0);
 
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        for button in extra_buttons.iter() {
+            hbox.pack_start(button, true, true, 0);
+        }
+        hbox.pack_start(&ced.auto_match_btn, true, true, 0);
+        ced.vbox.pack_start(&hbox, false, false, 0);
+
         ced.vbox.show_all();
 
         connect_button!(ced, incr_value_btn, for_value, incr_value);
@@ -149,7 +165,7 @@ impl ColourEditor {
             | gdk::EventMask::ENTER_NOTIFY_MASK;
         ced.vbox.add_events(events);
         ced.vbox.set_receives_default(true);
-        let ced_c = ced.clone();
+        let ced_c = Rc::clone(&ced);
         ced.vbox.connect_key_press_event(move |_, event| {
             let key = event.get_keyval();
             if key == gdk::enums::key::Shift_L {
@@ -159,7 +175,7 @@ impl ColourEditor {
             };
             gtk::Inhibit(false)
         });
-        let ced_c = ced.clone();
+        let ced_c = Rc::clone(&ced);
         ced.vbox.connect_key_release_event(move |_, event| {
             let key = event.get_keyval();
             if key == gdk::enums::key::Shift_L || key == gdk::enums::key::Shift_R {
@@ -167,7 +183,7 @@ impl ColourEditor {
             };
             gtk::Inhibit(false)
         });
-        let ced_c = ced.clone();
+        let ced_c = Rc::clone(&ced);
         ced.vbox.connect_enter_notify_event(move |_, _| {
             ced_c.delta_size.set(DeltaSize::Normal);
             gtk::Inhibit(false)
@@ -182,6 +198,71 @@ impl ColourEditor {
         let ced_c = Rc::clone(&ced);
         ced.rgb_entry
             .connect_value_changed(move |rgb| ced_c.set_rgb_and_inform(rgb));
+
+        let ced_c = Rc::clone(&ced);
+        ced.auto_match_btn
+            .connect_clicked(move |_| ced_c.auto_match_samples());
+
+        // POPUP
+        let ced_c = Rc::clone(&ced);
+        ced.popup_menu
+            .append_item(
+                "paste",
+                "Paste Sample",
+                "Paste image sample from the clipboard at this position",
+            )
+            .connect_activate(move |_| {
+                let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+                if let Some(pixbuf) = cbd.wait_for_image() {
+                    let sample = Sample {
+                        pixbuf,
+                        position: ced_c.popup_menu_posn.get(),
+                    };
+                    ced_c.samples.borrow_mut().push(sample);
+                    //if ced_c.auto_match_on_paste_btn.get_active() {
+                    //    ced_c.auto_match_samples();
+                    //} else {
+                    ced_c.drawing_area.queue_draw();
+                    //};
+                    ced_c.auto_match_btn.set_sensitive(true);
+                } else {
+                    // TDOD: upgrade to inform_user()
+                    println!("no image available")
+                }
+            });
+        let ced_c = Rc::clone(&ced);
+        ced.popup_menu
+            .append_item(
+                "remove",
+                "Remove Sample(s)",
+                "Remove all image samples from the sample area",
+            )
+            .connect_activate(move |_| {
+                ced_c.samples.borrow_mut().clear();
+                ced_c.drawing_area.queue_draw();
+                ced_c.auto_match_btn.set_sensitive(false);
+            });
+        let ced_c = Rc::clone(&ced);
+        ced.drawing_area
+            .connect_button_press_event(move |_, event| {
+                if event.get_event_type() == gdk::EventType::ButtonPress {
+                    if event.get_button() == 3 {
+                        let position = Point::from(event.get_position());
+                        let n_samples = ced_c.samples.borrow().len();
+                        let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+                        ced_c
+                            .popup_menu
+                            .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
+                        ced_c
+                            .popup_menu
+                            .set_sensitivities(n_samples > 0, &["remove"]);
+                        ced_c.popup_menu_posn.set(position);
+                        ced_c.popup_menu.popup_at_event(event);
+                        return Inhibit(true);
+                    }
+                }
+                Inhibit(false)
+            });
 
         ced
     }
@@ -227,5 +308,51 @@ impl ColourEditor {
         let rgb = self.rgb_manipulator.borrow().rgb();
         cairo_context.set_source_colour_rgb(rgb);
         cairo_context.paint();
+        for sample in self.samples.borrow().iter() {
+            cairo_context.set_source_pixbuf_at(&sample.pixbuf, sample.position, false);
+            cairo_context.set_line_width(0.0);
+            cairo_context.paint();
+        }
+    }
+
+    fn auto_match_samples(&self) {
+        let mut red: u64 = 0;
+        let mut green: u64 = 0;
+        let mut blue: u64 = 0;
+        let mut npixels: u32 = 0;
+        for sample in self.samples.borrow().iter() {
+            assert_eq!(sample.pixbuf.get_bits_per_sample(), 8);
+            let nc = sample.pixbuf.get_n_channels();
+            let rs = sample.pixbuf.get_rowstride();
+            let width = sample.pixbuf.get_width();
+            let n_rows = sample.pixbuf.get_height();
+            unsafe {
+                let data = sample.pixbuf.get_pixels();
+                for row_num in 0..n_rows {
+                    let row_start = row_num * rs;
+                    for j in 0..width {
+                        let offset = (row_start + j * nc) as usize;
+                        red += data[offset] as u64;
+                        green += data[offset + 1] as u64;
+                        blue += data[offset + 2] as u64;
+                    }
+                }
+            }
+            npixels += (width * n_rows) as u32;
+        }
+        if npixels > 0 {
+            let divisor = (npixels * 255) as f64;
+            let array: [f64; 3] = [
+                red as f64 / divisor,
+                green as f64 / divisor,
+                blue as f64 / divisor,
+            ];
+            self.set_rgb_and_inform(array.into());
+        }
+    }
+
+    pub fn reset(&self) {
+        self.samples.borrow_mut().clear();
+        self.set_rgb_and_inform(RGB::WHITE * 0.5);
     }
 }
