@@ -12,7 +12,7 @@ use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
 use pw_gix::gtkx::menu::WrappedMenu;
 use pw_gix::wrapper::*;
 
-use apaint_gtk_boilerplate::PWO;
+use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::angles::Degrees;
 use crate::colour::*;
@@ -75,7 +75,7 @@ struct Sample {
     position: Point,
 }
 
-#[derive(PWO)]
+#[derive(PWO, Wrapper)]
 pub struct ColourEditor {
     vbox: gtk::Box,
     rgb_manipulator: RefCell<RGBManipulator>,
@@ -92,6 +92,7 @@ pub struct ColourEditor {
     delta_size: Cell<DeltaSize>,
     samples: RefCell<Vec<Sample>>,
     auto_match_btn: gtk::Button,
+    auto_match_on_paste_btn: gtk::CheckButton,
     popup_menu: WrappedMenu,
     popup_menu_posn: Cell<Point>,
 }
@@ -114,6 +115,7 @@ impl ColourEditor {
             delta_size: Cell::new(DeltaSize::Normal),
             samples: RefCell::new(vec![]),
             auto_match_btn: gtk::Button::new_with_label("Auto Match"),
+            auto_match_on_paste_btn: gtk::CheckButton::new_with_label("On Paste?"),
             popup_menu: WrappedMenu::new(&vec![]),
             popup_menu_posn: Cell::new(Point::default()),
         });
@@ -148,6 +150,7 @@ impl ColourEditor {
             hbox.pack_start(button, true, true, 0);
         }
         hbox.pack_start(&ced.auto_match_btn, true, true, 0);
+        hbox.pack_start(&ced.auto_match_on_paste_btn, false, false, 0);
         ced.vbox.pack_start(&hbox, false, false, 0);
 
         ced.vbox.show_all();
@@ -219,15 +222,14 @@ impl ColourEditor {
                         position: ced_c.popup_menu_posn.get(),
                     };
                     ced_c.samples.borrow_mut().push(sample);
-                    //if ced_c.auto_match_on_paste_btn.get_active() {
-                    //    ced_c.auto_match_samples();
-                    //} else {
-                    ced_c.drawing_area.queue_draw();
-                    //};
+                    if ced_c.auto_match_on_paste_btn.get_active() {
+                        ced_c.auto_match_samples();
+                    } else {
+                        ced_c.drawing_area.queue_draw();
+                    };
                     ced_c.auto_match_btn.set_sensitive(true);
                 } else {
-                    // TDOD: upgrade to inform_user()
-                    println!("no image available")
+                    ced_c.inform_user("No image data on clipboard.", None);
                 }
             });
         let ced_c = Rc::clone(&ced);

@@ -7,7 +7,7 @@ use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 
 #[proc_macro_derive(PWO)]
-pub fn wrapper_derive(input: TokenStream) -> TokenStream {
+pub fn pwo_derive(input: TokenStream) -> TokenStream {
     let parsed_input: syn::DeriveInput = syn::parse_macro_input!(input);
     let struct_name = parsed_input.ident;
     match parsed_input.data {
@@ -47,6 +47,32 @@ pub fn wrapper_derive(input: TokenStream) -> TokenStream {
     }
     let tokens = quote_spanned! {
         struct_name.span()=> compile_error!("'Wrapper' requires at least one named field")
+    };
+    proc_macro::TokenStream::from(tokens)
+}
+
+#[proc_macro_derive(Wrapper)]
+pub fn wrapper_derive(input: TokenStream) -> TokenStream {
+    let parsed_input: syn::DeriveInput = syn::parse_macro_input!(input);
+    let struct_name = parsed_input.ident;
+
+    let tokens = quote! {
+        impl TopGtkWindow for #struct_name {
+            fn get_toplevel_gtk_window(&self) -> Option<gtk::Window> {
+                if let Some(widget) = self.pwo().get_toplevel() {
+                    if widget.is_toplevel() {
+                        if let Ok(window) = widget.dynamic_cast::<gtk::Window>() {
+                            return Some(window)
+                        }
+                    }
+                };
+                None
+            }
+        }
+
+        impl DialogUser for #struct_name {}
+
+        impl WidgetWrapper for #struct_name {}
     };
     proc_macro::TokenStream::from(tokens)
 }
