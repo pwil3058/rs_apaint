@@ -1,10 +1,9 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-
 use colour_math::{ColourComponent, RGB};
 use float_plus::FloatPlus;
 use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point<F: FloatPlus> {
     pub x: F,
     pub y: F,
@@ -22,6 +21,15 @@ impl<F: FloatPlus + DegreesConst + RadiansConst> Point<F> {
             degrees.into()
         } else {
             Degrees::DEG_0.into()
+        }
+    }
+}
+
+impl<F: FloatPlus> std::default::Default for Point<F> {
+    fn default() -> Point<F> {
+        Point {
+            x: F::ZERO,
+            y: F::ZERO,
         }
     }
 }
@@ -59,12 +67,26 @@ pub struct Size<F: FloatPlus> {
     pub height: F,
 }
 
+impl<F: FloatPlus> Size<F> {
+    pub fn centre(&self) -> Point<F> {
+        (self.width / F::TWO, self.height / F::TWO).into()
+    }
+}
+
 /// Direction in which to draw isosceles triangle
 pub enum Dirn {
     Down,
     Up,
     Right,
     Left,
+}
+
+pub enum TextPosn<F: FloatPlus> {
+    TopLeftCorner(Point<F>),
+    TopRightCorner(Point<F>),
+    BottomLeftCorner(Point<F>),
+    BottomRightCorner(Point<F>),
+    Centre(Point<F>),
 }
 
 pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
@@ -75,10 +97,13 @@ pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
     fn draw_polygon(&self, polygon: &[Point<F>], filled: bool);
     fn draw_square(&self, centre: Point<F>, side_length: F, filled: bool);
     fn draw_isosceles(&self, position: Point<F>, dirn: Dirn, size: F, filled: bool);
+    fn draw_text(&self, text: &str, position: TextPosn<F>, font_size: F, colour: RGB<F>);
     fn move_to_point(&self, point: Point<F>);
     fn line_to_point(&self, point: Point<F>);
+    fn set_line_width(&self, width: F);
     fn set_line_colour(&self, rgb: RGB<F>);
     fn set_fill_colour(&self, rgb: RGB<F>);
+    fn paint_linear_gradient(&self, posn: Point<F>, size: Size<F>, colour_stops: &[(RGB<F>, F)]);
 }
 
 #[cfg(test)]
