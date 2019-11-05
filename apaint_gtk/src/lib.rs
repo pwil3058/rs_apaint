@@ -105,3 +105,4 @@ pub mod colour {
 }
 
 pub mod colour_edit;
+pub mod drawing;
