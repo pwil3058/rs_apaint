@@ -1,7 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use crate::drawing::{Dirn, Draw, Point, TextPosn};
-use colour_math::{ColourComponent, ScalarAttribute, RGB};
+use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 use normalised_angles::{DegreesConst, RadiansConst};
 
 pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + RadiansConst> {
@@ -10,11 +10,11 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
 
     fn new() -> Self;
 
-    fn set_colour(&mut self, rgb: Option<RGB<F>>);
+    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>);
     fn attr_value(&self) -> Option<F>;
     fn attr_value_fg_rgb(&self) -> RGB<F>;
 
-    fn set_target_colour(&mut self, rgb: Option<RGB<F>>);
+    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>);
     fn attr_target_value(&self) -> Option<F>;
     fn attr_target_value_fg_rgb(&self) -> RGB<F>;
 
@@ -82,5 +82,132 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
         self.draw_target_attr_value_indicator(drawer);
         self.draw_attr_value_indicator(drawer);
         self.draw_label(drawer);
+    }
+}
+
+// VALUE
+pub struct ValueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+    value: Option<F>,
+    target_value: Option<F>,
+    value_fg_rgb: RGB<F>,
+    target_value_fg_rgb: RGB<F>,
+}
+
+impl<F> ColourAttributeDisplayIfce<F> for ValueCAD<F>
+where
+    F: ColourComponent + DegreesConst + RadiansConst,
+{
+    const LABEL: &'static str = "Value";
+    const ATTRIBUTE: ScalarAttribute = ScalarAttribute::Value;
+
+    fn new() -> Self {
+        Self {
+            value: None,
+            target_value: None,
+            value_fg_rgb: RGB::BLACK,
+            target_value_fg_rgb: RGB::BLACK,
+        }
+    }
+
+    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.value = Some(colour.value());
+            self.value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+        } else {
+            self.value = None;
+            self.value_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_value(&self) -> Option<F> {
+        self.value
+    }
+
+    fn attr_value_fg_rgb(&self) -> RGB<F> {
+        self.value_fg_rgb
+    }
+
+    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.target_value = Some(colour.value());
+            self.target_value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+        } else {
+            self.target_value = None;
+            self.target_value_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_target_value(&self) -> Option<F> {
+        self.target_value
+    }
+
+    fn attr_target_value_fg_rgb(&self) -> RGB<F> {
+        self.target_value_fg_rgb
+    }
+}
+
+// Warmth
+pub struct WarmthCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+    warmth: Option<F>,
+    target_warmth: Option<F>,
+    warmth_fg_rgb: RGB<F>,
+    target_warmth_fg_rgb: RGB<F>,
+}
+
+impl<F> ColourAttributeDisplayIfce<F> for WarmthCAD<F>
+where
+    F: ColourComponent + DegreesConst + RadiansConst,
+{
+    const LABEL: &'static str = "Warmth";
+    const ATTRIBUTE: ScalarAttribute = ScalarAttribute::Warmth;
+
+    fn new() -> Self {
+        Self {
+            warmth: None,
+            target_warmth: None,
+            warmth_fg_rgb: RGB::BLACK,
+            target_warmth_fg_rgb: RGB::BLACK,
+        }
+    }
+
+    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.warmth = Some(colour.warmth());
+            self.warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+        } else {
+            self.warmth = None;
+            self.warmth_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_value(&self) -> Option<F> {
+        self.warmth
+    }
+
+    fn attr_value_fg_rgb(&self) -> RGB<F> {
+        self.warmth_fg_rgb
+    }
+
+    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.target_warmth = Some(colour.warmth());
+            self.target_warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+        } else {
+            self.target_warmth = None;
+            self.target_warmth_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_target_value(&self) -> Option<F> {
+        self.target_warmth
+    }
+
+    fn attr_target_value_fg_rgb(&self) -> RGB<F> {
+        self.target_warmth_fg_rgb
+    }
+
+    fn colour_stops(&self) -> Vec<(RGB<F>, F)> {
+        let grey = RGB::WHITE * F::HALF;
+        vec![(RGB::CYAN, F::ZERO), (grey, F::HALF), (RGB::RED, F::ONE)]
     }
 }
