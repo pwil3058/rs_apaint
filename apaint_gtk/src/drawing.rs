@@ -6,16 +6,16 @@ pub use apaint::drawing::*;
 
 use crate::colour::RGB;
 
-pub struct Drawer<'a> {
-    pub cairo_context: &'a cairo::Context,
+pub struct Drawer {
+    pub cairo_context: &'static cairo::Context,
     size: Size<f64>,
     fill_colour: Cell<RGB>,
     line_colour: Cell<RGB>,
     text_colour: Cell<RGB>,
 }
 
-impl<'a> Drawer<'a> {
-    pub fn new(cairo_context: &'a cairo::Context, size: Size<f64>) -> Self {
+impl Drawer {
+    pub fn new(cairo_context: &'static cairo::Context, size: Size<f64>) -> Self {
         Self {
             cairo_context,
             size,
@@ -40,7 +40,7 @@ impl<'a> Drawer<'a> {
     }
 }
 
-impl<'a> Draw<f64> for Drawer<'a> {
+impl Draw<f64> for Drawer {
     fn size(&self) -> Size<f64> {
         self.size
     }

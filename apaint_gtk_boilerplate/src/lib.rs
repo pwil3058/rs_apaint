@@ -55,9 +55,10 @@ pub fn pwo_derive(input: TokenStream) -> TokenStream {
 pub fn wrapper_derive(input: TokenStream) -> TokenStream {
     let parsed_input: syn::DeriveInput = syn::parse_macro_input!(input);
     let struct_name = parsed_input.ident;
+    let (impl_generics, ty_generics, where_clause) = parsed_input.generics.split_for_impl();
 
     let tokens = quote! {
-        impl TopGtkWindow for #struct_name {
+        impl #impl_generics TopGtkWindow for #struct_name #ty_generics #where_clause {
             fn get_toplevel_gtk_window(&self) -> Option<gtk::Window> {
                 if let Some(widget) = self.pwo().get_toplevel() {
                     if widget.is_toplevel() {
@@ -70,9 +71,9 @@ pub fn wrapper_derive(input: TokenStream) -> TokenStream {
             }
         }
 
-        impl DialogUser for #struct_name {}
+        impl #impl_generics DialogUser for #struct_name #ty_generics #where_clause {}
 
-        impl WidgetWrapper for #struct_name {}
+        impl #impl_generics WidgetWrapper for #struct_name #ty_generics #where_clause {}
     };
     proc_macro::TokenStream::from(tokens)
 }
