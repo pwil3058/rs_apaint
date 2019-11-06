@@ -117,7 +117,7 @@ impl ColourEditor {
             auto_match_btn: gtk::Button::new_with_label("Auto Match"),
             auto_match_on_paste_btn: gtk::CheckButton::new_with_label("On Paste?"),
             popup_menu: WrappedMenu::new(&vec![]),
-            popup_menu_posn: Cell::new(Point::default()),
+            popup_menu_posn: Cell::new((0.0, 0.0).into()),
         });
 
         let events = gdk::EventMask::BUTTON_PRESS_MASK;
