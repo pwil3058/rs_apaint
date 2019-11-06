@@ -91,19 +91,125 @@ pub enum TextPosn<F: FloatPlus> {
 
 pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
     fn size(&self) -> Size<F>;
-    fn draw_circle(&self, centre: Point<F>, radius: F, filled: bool);
-    fn draw_diamond(&self, centre: Point<F>, side_length: F, filled: bool);
+    fn draw_circle(&self, centre: Point<F>, radius: F, fill: bool);
     fn draw_line(&self, line: &[Point<F>]);
-    fn draw_polygon(&self, polygon: &[Point<F>], filled: bool);
-    fn draw_square(&self, centre: Point<F>, side_length: F, filled: bool);
-    fn draw_isosceles(&self, position: Point<F>, dirn: Dirn, size: F, filled: bool);
-    fn draw_text(&self, text: &str, position: TextPosn<F>, font_size: F, colour: RGB<F>);
-    fn move_to_point(&self, point: Point<F>);
-    fn line_to_point(&self, point: Point<F>);
+    fn draw_polygon(&self, polygon: &[Point<F>], fill: bool);
+    fn draw_text(&self, text: &str, posn: TextPosn<F>, font_size: F);
     fn set_line_width(&self, width: F);
     fn set_line_colour(&self, rgb: RGB<F>);
     fn set_fill_colour(&self, rgb: RGB<F>);
+    fn set_text_colour(&self, rgb: RGB<F>);
     fn paint_linear_gradient(&self, posn: Point<F>, size: Size<F>, colour_stops: &[(RGB<F>, F)]);
+
+    fn draw_diamond(&self, centre: Point<F>, side_length: F, fill: bool) {
+        let dist = side_length / F::SQRT_2;
+        let points = vec![
+            Point {
+                x: centre.x,
+                y: centre.y + dist,
+            },
+            Point {
+                x: centre.x + dist,
+                y: centre.y,
+            },
+            Point {
+                x: centre.x,
+                y: centre.y - dist,
+            },
+            Point {
+                x: centre.x - dist,
+                y: centre.y,
+            },
+        ];
+        self.draw_polygon(&points, fill);
+    }
+
+    fn draw_square(&self, centre: Point<F>, side_length: F, fill: bool) {
+        let half_side = side_length * F::HALF;
+        let points = vec![
+            Point {
+                x: centre.x - half_side,
+                y: centre.y - half_side,
+            },
+            Point {
+                x: centre.x - half_side,
+                y: centre.y + half_side,
+            },
+            Point {
+                x: centre.x + half_side,
+                y: centre.y + half_side,
+            },
+            Point {
+                x: centre.x + half_side,
+                y: centre.y - half_side,
+            },
+        ];
+        self.draw_polygon(&points, fill);
+    }
+
+    fn draw_isosceles(&self, centre: Point<F>, dirn: Dirn, side_length: F, fill: bool) {
+        let half_base = side_length * F::HALF;
+        let half_height = side_length * F::SQRT_3 / F::FOUR;
+        let points = match dirn {
+            Dirn::Up => vec![
+                Point {
+                    x: centre.x - half_base,
+                    y: centre.y - half_height,
+                },
+                Point {
+                    x: centre.x,
+                    y: centre.y + half_height,
+                },
+                Point {
+                    x: centre.x + half_base,
+                    y: centre.y - half_height,
+                },
+            ],
+            Dirn::Down => vec![
+                Point {
+                    x: centre.x - half_base,
+                    y: centre.y + half_height,
+                },
+                Point {
+                    x: centre.x,
+                    y: centre.y - half_height,
+                },
+                Point {
+                    x: centre.x - half_base,
+                    y: centre.y + half_height,
+                },
+            ],
+            Dirn::Right => vec![
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y - half_base,
+                },
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y + half_base,
+                },
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y,
+                },
+            ],
+            Dirn::Left => vec![
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y - half_base,
+                },
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y + half_base,
+                },
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y,
+                },
+            ],
+        };
+        self.draw_polygon(&points, fill);
+    }
 }
 
 #[cfg(test)]

@@ -65,9 +65,9 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
     fn draw_label(&self, drawer: &impl Draw<F>) {
         if Self::LABEL.len() > 0 {
             let posn = TextPosn::Centre(drawer.size().centre());
-            let rgb = self.label_colour();
             let font_size = F::from(15.0).unwrap();
-            drawer.draw_text(Self::LABEL, posn, font_size, rgb);
+            drawer.set_text_colour(self.label_colour());
+            drawer.draw_text(Self::LABEL, posn, font_size);
         }
     }
 
