@@ -420,7 +420,13 @@ where
         if let Some(colour) = colour {
             self.chroma = Some(colour.chroma());
             self.chroma_fg_rgb = colour.best_foreground_rgb();
-            self.set_colour_stops(Some(colour));
+            if let Some(target_chroma) = self.target_chroma {
+                if target_chroma == F::ZERO {
+                    self.set_colour_stops(Some(colour));
+                }
+            } else {
+                self.set_colour_stops(Some(colour));
+            }
         } else {
             self.chroma = None;
             self.chroma_fg_rgb = RGB::BLACK;
@@ -442,6 +448,17 @@ where
         if let Some(colour) = colour {
             self.target_chroma = Some(colour.chroma());
             self.target_chroma_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            if colour.is_grey() {
+                if let Some(chroma) = self.chroma {
+                    if chroma == F::ZERO {
+                        self.set_colour_stops(Some(colour));
+                    }
+                } else {
+                    self.set_colour_stops(Some(colour));
+                }
+            } else {
+                self.set_colour_stops(Some(colour));
+            }
         } else {
             self.target_chroma = None;
             self.target_chroma_fg_rgb = RGB::BLACK;

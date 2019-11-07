@@ -8,11 +8,51 @@ use std::rc::Rc;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use pw_gix::wrapper::*;
 
-use crate::colour::ColourInterface;
+use crate::colour::{ColourInterface, RGB};
 use crate::drawing::Drawer;
 use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD, WarmthCAD};
 use apaint::drawing::Size;
-use colour_math::ScalarAttribute;
+
+pub trait DynColourAttributeDisplay: PackableWidgetObject<PWT = gtk::DrawingArea> {
+    fn set_rgb(&self, rgb: Option<RGB>);
+    fn set_target_rgb(&self, rgb: Option<RGB>);
+}
+
+#[derive(PWO, Wrapper)]
+pub struct ColourAttributeDisplayStack {
+    vbox: gtk::Box,
+    cads: Vec<Rc<dyn DynColourAttributeDisplay>>,
+}
+
+impl ColourAttributeDisplayStack {
+    pub fn new(cads: Vec<Rc<dyn DynColourAttributeDisplay>>) -> Self {
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        for cad in cads.iter() {
+            vbox.pack_start(&cad.pwo(), true, true, 0);
+        }
+        Self { vbox, cads }
+    }
+
+    pub fn set_colour(&self, colour: Option<impl ColourInterface<f64>>) {
+        for cad in self.cads.iter() {
+            if let Some(colour) = colour {
+                cad.set_rgb(Some(colour.rgb()));
+            } else {
+                cad.set_rgb(None);
+            }
+        }
+    }
+
+    pub fn set_target_colour(&self, colour: Option<impl ColourInterface<f64>>) {
+        for cad in self.cads.iter() {
+            if let Some(colour) = colour {
+                cad.set_target_rgb(Some(colour.rgb()));
+            } else {
+                cad.set_target_rgb(None);
+            }
+        }
+    }
+}
 
 #[derive(PWO, Wrapper)]
 pub struct ColourAttributeDisplay<A: ColourAttributeDisplayIfce<f64> + 'static> {
@@ -39,72 +79,28 @@ impl<A: ColourAttributeDisplayIfce<f64> + 'static> ColourAttributeDisplay<A> {
         });
         cad
     }
+}
 
-    pub fn set_colour(&self, colour: Option<impl ColourInterface<f64>>) {
-        self.attribute.borrow_mut().set_colour(colour);
+impl<A> DynColourAttributeDisplay for ColourAttributeDisplay<A>
+where
+    A: ColourAttributeDisplayIfce<f64> + 'static,
+{
+    fn set_rgb(&self, rgb: Option<RGB>) {
+        self.attribute.borrow_mut().set_colour(rgb);
         self.drawing_area.queue_draw();
     }
 
-    pub fn set_target_colour(&self, colour: Option<impl ColourInterface<f64>>) {
-        self.attribute.borrow_mut().set_target_colour(colour);
+    fn set_target_rgb(&self, rgb: Option<RGB>) {
+        self.attribute.borrow_mut().set_colour(rgb);
         self.drawing_area.queue_draw();
     }
 }
 
-pub trait CADStackIfce: PackableWidgetObject {
-    fn attributes() -> Vec<ScalarAttribute>;
-
-    fn set_colour(&self, colour: Option<impl ColourInterface<f64>>);
-    fn set_target_colour(&self, colour: Option<impl ColourInterface<f64>>);
-}
-
-#[derive(PWO, Wrapper)]
-pub struct ArtistCADS {
-    vbox: gtk::Box,
-    hue_cad: Rc<ColourAttributeDisplay<HueCAD<f64>>>,
-    chroma_cad: Rc<ColourAttributeDisplay<ChromaCAD<f64>>>,
-    value_cad: Rc<ColourAttributeDisplay<ValueCAD<f64>>>,
-    warmth_cad: Rc<ColourAttributeDisplay<WarmthCAD<f64>>>,
-}
-
-impl ArtistCADS {
-    pub fn new() -> Self {
-        let acads = Self {
-            vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
-            hue_cad: ColourAttributeDisplay::<HueCAD<f64>>::new(),
-            chroma_cad: ColourAttributeDisplay::<ChromaCAD<f64>>::new(),
-            value_cad: ColourAttributeDisplay::<ValueCAD<f64>>::new(),
-            warmth_cad: ColourAttributeDisplay::<WarmthCAD<f64>>::new(),
-        };
-        acads.vbox.pack_start(&acads.hue_cad.pwo(), true, true, 0);
-        acads
-            .vbox
-            .pack_start(&acads.chroma_cad.pwo(), true, true, 0);
-        acads.vbox.pack_start(&acads.value_cad.pwo(), true, true, 0);
-        acads
-            .vbox
-            .pack_start(&acads.warmth_cad.pwo(), true, true, 0);
-        acads.vbox.show_all();
-        acads
-    }
-}
-
-impl CADStackIfce for ArtistCADS {
-    fn attributes() -> Vec<ScalarAttribute> {
-        vec![]
-    }
-
-    fn set_colour(&self, colour: Option<impl ColourInterface<f64>>) {
-        self.hue_cad.set_colour(colour);
-        self.chroma_cad.set_colour(colour);
-        self.value_cad.set_colour(colour);
-        self.warmth_cad.set_colour(colour);
-    }
-
-    fn set_target_colour(&self, colour: Option<impl ColourInterface<f64>>) {
-        self.hue_cad.set_target_colour(colour);
-        self.chroma_cad.set_target_colour(colour);
-        self.value_cad.set_target_colour(colour);
-        self.warmth_cad.set_target_colour(colour);
-    }
+pub fn artist_cads() -> Vec<Rc<dyn DynColourAttributeDisplay>> {
+    vec![
+        ColourAttributeDisplay::<HueCAD<f64>>::new(),
+        ColourAttributeDisplay::<ChromaCAD<f64>>::new(),
+        ColourAttributeDisplay::<ValueCAD<f64>>::new(),
+        ColourAttributeDisplay::<WarmthCAD<f64>>::new(),
+    ]
 }
