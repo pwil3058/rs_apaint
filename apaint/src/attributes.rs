@@ -1,12 +1,11 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use crate::drawing::{Dirn, Draw, Point, TextPosn};
-use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
-use normalised_angles::{DegreesConst, RadiansConst};
+use colour_math::{ColourComponent, ColourInterface, Hue, RGB};
+use normalised_angles::{Degrees, DegreesConst, RadiansConst};
 
 pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + RadiansConst> {
     const LABEL: &'static str;
-    const ATTRIBUTE: ScalarAttribute;
 
     fn new() -> Self;
 
@@ -106,7 +105,6 @@ where
     F: ColourComponent + DegreesConst + RadiansConst,
 {
     const LABEL: &'static str = "Value";
-    const ATTRIBUTE: ScalarAttribute = ScalarAttribute::Value;
 
     fn new() -> Self {
         Self {
@@ -135,10 +133,6 @@ where
         self.value_fg_rgb
     }
 
-    fn label_colour(&self) -> RGB<F> {
-        RGB::WHITE
-    }
-
     fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_value = Some(colour.value());
@@ -156,6 +150,10 @@ where
     fn attr_target_value_fg_rgb(&self) -> RGB<F> {
         self.target_value_fg_rgb
     }
+
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
+    }
 }
 
 // Warmth
@@ -171,7 +169,6 @@ where
     F: ColourComponent + DegreesConst + RadiansConst,
 {
     const LABEL: &'static str = "Warmth";
-    const ATTRIBUTE: ScalarAttribute = ScalarAttribute::Warmth;
 
     fn new() -> Self {
         Self {
@@ -200,10 +197,6 @@ where
         self.warmth_fg_rgb
     }
 
-    fn label_colour(&self) -> RGB<F> {
-        RGB::WHITE
-    }
-
     fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_warmth = Some(colour.warmth());
@@ -222,8 +215,155 @@ where
         self.target_warmth_fg_rgb
     }
 
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
+    }
+
     fn colour_stops(&self) -> Vec<(RGB<F>, F)> {
         let grey = RGB::WHITE * F::HALF;
         vec![(RGB::CYAN, F::ZERO), (grey, F::HALF), (RGB::RED, F::ONE)]
+    }
+}
+
+// HUE
+pub struct HueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+    hue: Option<Hue<F>>,
+    target_hue: Option<Hue<F>>,
+    hue_value: Option<F>,
+    hue_fg_rgb: RGB<F>,
+    target_hue_fg_rgb: RGB<F>,
+    colour_stops: Vec<(RGB<F>, F)>,
+}
+
+impl<F: ColourComponent + DegreesConst + RadiansConst> HueCAD<F> {
+    fn set_colour_stops_for_hue(&mut self, hue: Hue<F>) {
+        let mut stops = vec![];
+        let mut hue = hue + Degrees::DEG_180;
+        let delta = Degrees::DEG_30;
+        for i in 0..13 {
+            let offset = F::from_usize(i).unwrap() / F::from(12.0).unwrap();
+            let rgb = hue.max_chroma_rgb();
+            stops.push((rgb, offset));
+            hue = hue - delta;
+        }
+        self.colour_stops = stops
+    }
+
+    fn set_colour_stops(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            if let Some(hue) = colour.hue() {
+                self.set_colour_stops_for_hue(hue);
+            } else {
+                let grey = colour.rgb();
+                self.colour_stops = vec![(grey, F::ZERO), (grey, F::ONE)];
+            }
+        } else {
+            self.set_default_colour_stops();
+        }
+    }
+
+    fn set_default_colour_stops(&mut self) {
+        let grey = RGB::WHITE * F::HALF;
+        self.colour_stops = vec![(grey, F::ZERO), (grey, F::ONE)];
+    }
+
+    fn set_defaults_for_no_hue(&mut self) {
+        self.hue = None;
+        self.hue_value = None;
+        if let Some(target_hue) = self.target_hue {
+            self.set_colour_stops_for_hue(target_hue);
+        } else {
+            self.set_default_colour_stops();
+        }
+    }
+
+    fn set_defaults_for_no_target(&mut self) {
+        self.target_hue = None;
+        if let Some(hue) = self.hue {
+            self.set_colour_stops_for_hue(hue);
+            self.hue_value = Some(F::HALF);
+        } else {
+            self.set_default_colour_stops();
+        }
+    }
+
+    fn calc_hue_value(hue: Hue<F>, target_hue: Hue<F>) -> F {
+        F::HALF - (target_hue - hue).degrees() / Degrees::DEG_360.degrees()
+    }
+}
+
+impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfce<F> for HueCAD<F> {
+    const LABEL: &'static str = "Hue";
+
+    fn new() -> Self {
+        let grey = RGB::WHITE * F::HALF;
+        Self {
+            hue: None,
+            target_hue: None,
+            hue_value: None,
+            hue_fg_rgb: RGB::BLACK,
+            target_hue_fg_rgb: RGB::BLACK,
+            colour_stops: vec![(grey, F::ZERO), (grey, F::ONE)],
+        }
+    }
+
+    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            if let Some(hue) = colour.hue() {
+                self.hue = Some(hue);
+                self.hue_fg_rgb = hue.max_chroma_rgb().best_foreground_rgb();
+                if let Some(target_hue) = self.target_hue {
+                    self.hue_value = Some(Self::calc_hue_value(hue, target_hue));
+                } else {
+                    self.set_colour_stops(Some(colour));
+                    self.hue_value = Some(F::HALF);
+                }
+            } else {
+                self.set_defaults_for_no_hue()
+            }
+        } else {
+            self.set_defaults_for_no_hue()
+        }
+    }
+
+    fn attr_value(&self) -> Option<F> {
+        self.hue_value
+    }
+
+    fn attr_value_fg_rgb(&self) -> RGB<F> {
+        self.hue_fg_rgb
+    }
+
+    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            if let Some(target_hue) = colour.hue() {
+                self.target_hue = Some(target_hue);
+                self.target_hue_fg_rgb = target_hue.max_chroma_rgb().best_foreground_rgb();
+                self.set_colour_stops_for_hue(target_hue);
+                if let Some(hue) = self.hue {
+                    self.hue_value = Some(Self::calc_hue_value(hue, target_hue));
+                }
+            } else {
+                self.set_defaults_for_no_target();
+            }
+        } else {
+            self.set_defaults_for_no_target();
+        }
+    }
+
+    fn attr_target_value(&self) -> Option<F> {
+        if self.target_hue.is_some() {
+            Some(F::HALF)
+        } else {
+            None
+        }
+    }
+
+    fn attr_target_value_fg_rgb(&self) -> RGB<F> {
+        self.target_hue_fg_rgb
+    }
+
+    fn colour_stops(&self) -> Vec<(RGB<F>, F)> {
+        self.colour_stops.clone()
     }
 }
