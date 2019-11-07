@@ -15,6 +15,7 @@ use pw_gix::wrapper::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::angles::Degrees;
+use crate::attributes::{ArtistCADS, CADStackIfce};
 use crate::colour::*;
 
 macro_rules! connect_button {
@@ -79,6 +80,7 @@ struct Sample {
 pub struct ColourEditor {
     vbox: gtk::Box,
     rgb_manipulator: RefCell<RGBManipulator>,
+    cads: ArtistCADS,
     rgb_entry: RGBHexEntryBox,
     drawing_area: gtk::DrawingArea,
     incr_value_btn: gtk::Button,
@@ -102,6 +104,7 @@ impl ColourEditor {
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator: RefCell::new(RGBManipulator::new()),
+            cads: ArtistCADS::new(),
             drawing_area: gtk::DrawingArea::new(),
             rgb_entry: RGBHexEntryBox::create(),
             incr_value_btn: gtk::Button::new_with_label("Value++"),
@@ -124,6 +127,7 @@ impl ColourEditor {
         ced.drawing_area.add_events(events);
         ced.drawing_area.set_size_request(200, 200);
 
+        ced.vbox.pack_start(&ced.cads.pwo(), false, false, 0);
         ced.vbox.pack_start(&ced.rgb_entry.pwo(), false, false, 0);
         ced.vbox.pack_start(&ced.incr_value_btn, false, false, 0);
 
@@ -274,6 +278,7 @@ impl ColourEditor {
     fn set_rgb(&self, rgb: RGB) {
         self.rgb_entry.set_rgb(rgb);
         self.rgb_manipulator.borrow_mut().set_rgb(rgb);
+        self.cads.set_colour(Some(rgb));
         self.incr_value_btn
             .set_widget_colour_rgb(rgb * 0.8 + RGB::WHITE * 0.2);
         self.decr_value_btn.set_widget_colour_rgb(rgb * 0.8);

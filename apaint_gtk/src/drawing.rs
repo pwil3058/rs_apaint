@@ -94,7 +94,7 @@ impl<'a> Draw<f64> for Drawer<'a> {
         match posn {
             TextPosn::Centre(point) => {
                 self.cairo_context
-                    .move_to(point.x - te.width / 2.0, point.y - te.height / 2.0);
+                    .move_to(point.x - te.width / 2.0, point.y + te.height / 2.0);
             }
             _ => (),
         }

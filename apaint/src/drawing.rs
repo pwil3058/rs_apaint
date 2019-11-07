@@ -147,7 +147,7 @@ pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
         self.draw_polygon(&points, fill);
     }
 
-    fn draw_isosceles(&self, centre: Point<F>, dirn: Dirn, side_length: F, fill: bool) {
+    fn draw_equilateral(&self, centre: Point<F>, dirn: Dirn, side_length: F, fill: bool) {
         let half_base = side_length * F::HALF;
         let half_height = side_length * F::SQRT_3 / F::FOUR;
         let points = match dirn {
@@ -175,7 +175,71 @@ pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
                     y: centre.y - half_height,
                 },
                 Point {
+                    x: centre.x + half_base,
+                    y: centre.y + half_height,
+                },
+            ],
+            Dirn::Right => vec![
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y - half_base,
+                },
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y + half_base,
+                },
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y,
+                },
+            ],
+            Dirn::Left => vec![
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y - half_base,
+                },
+                Point {
+                    x: centre.x + half_height,
+                    y: centre.y + half_base,
+                },
+                Point {
+                    x: centre.x - half_height,
+                    y: centre.y,
+                },
+            ],
+        };
+        self.draw_polygon(&points, fill);
+    }
+
+    fn draw_isosceles(&self, centre: Point<F>, dirn: Dirn, base: F, height: F, fill: bool) {
+        let half_base = base * F::HALF;
+        let half_height = height * F::HALF;
+        let points = match dirn {
+            Dirn::Up => vec![
+                Point {
                     x: centre.x - half_base,
+                    y: centre.y - half_height,
+                },
+                Point {
+                    x: centre.x,
+                    y: centre.y + half_height,
+                },
+                Point {
+                    x: centre.x + half_base,
+                    y: centre.y - half_height,
+                },
+            ],
+            Dirn::Down => vec![
+                Point {
+                    x: centre.x - half_base,
+                    y: centre.y + half_height,
+                },
+                Point {
+                    x: centre.x,
+                    y: centre.y - half_height,
+                },
+                Point {
+                    x: centre.x + half_base,
                     y: centre.y + half_height,
                 },
             ],

@@ -38,19 +38,27 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
             let indicator_x = size.width * attr_value;
             drawer.set_fill_colour(self.attr_value_fg_rgb());
             drawer.set_line_colour(self.attr_value_fg_rgb());
-            let side: F = F::from(8.0).unwrap();
-            drawer.draw_isosceles((indicator_x, F::ONE).into(), Dirn::Up, side, true);
+            let base: F = F::from(8.0).unwrap();
+            let height: F = F::from(6.0).unwrap();
             drawer.draw_isosceles(
-                (indicator_x, size.height - F::ONE).into(),
+                (indicator_x, F::HALF * height).into(),
+                Dirn::Up,
+                base,
+                height,
+                true,
+            );
+            drawer.draw_isosceles(
+                (indicator_x, size.height - F::HALF * height).into(),
                 Dirn::Down,
-                side,
+                base,
+                height,
                 true,
             );
         }
     }
 
     fn draw_target_attr_value_indicator(&self, drawer: &impl Draw<F>) {
-        if let Some(attr_value) = self.attr_value() {
+        if let Some(attr_value) = self.attr_target_value() {
             let size = drawer.size();
             let indicator_x = size.width * attr_value;
             drawer.set_line_width(F::TWO);
