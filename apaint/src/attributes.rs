@@ -135,6 +135,10 @@ where
         self.value_fg_rgb
     }
 
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
+    }
+
     fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_value = Some(colour.value());
@@ -194,6 +198,10 @@ where
 
     fn attr_value_fg_rgb(&self) -> RGB<F> {
         self.warmth_fg_rgb
+    }
+
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
     }
 
     fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
