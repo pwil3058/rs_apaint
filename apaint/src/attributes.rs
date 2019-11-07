@@ -367,3 +367,100 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfc
         self.colour_stops.clone()
     }
 }
+
+// Chroma
+pub struct ChromaCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+    chroma: Option<F>,
+    target_chroma: Option<F>,
+    chroma_fg_rgb: RGB<F>,
+    target_chroma_fg_rgb: RGB<F>,
+    colour_stops: Vec<(RGB<F>, F)>,
+}
+
+impl<F: ColourComponent + DegreesConst + RadiansConst> ChromaCAD<F> {
+    fn set_colour_stops(&mut self, colour: Option<impl ColourInterface<F>>) {
+        self.colour_stops = if let Some(colour) = colour {
+            if colour.is_grey() {
+                let grey = colour.rgb();
+                vec![(grey, F::ZERO), (grey, F::ONE)]
+            } else {
+                let start_rgb = colour.monotone_rgb();
+                let end_rgb = colour.max_chroma_rgb();
+                vec![(start_rgb, F::ZERO), (end_rgb, F::ONE)]
+            }
+        } else {
+            Self::default_colour_stops()
+        }
+    }
+
+    fn default_colour_stops() -> Vec<(RGB<F>, F)> {
+        let grey = RGB::WHITE * F::HALF;
+        vec![(grey, F::ZERO), (grey, F::ONE)]
+    }
+}
+
+impl<F> ColourAttributeDisplayIfce<F> for ChromaCAD<F>
+where
+    F: ColourComponent + DegreesConst + RadiansConst,
+{
+    const LABEL: &'static str = "Chroma";
+
+    fn new() -> Self {
+        let grey = RGB::WHITE * F::HALF;
+        Self {
+            chroma: None,
+            target_chroma: None,
+            chroma_fg_rgb: RGB::BLACK,
+            target_chroma_fg_rgb: RGB::BLACK,
+            colour_stops: vec![(grey, F::ZERO), (grey, F::ONE)],
+        }
+    }
+
+    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.chroma = Some(colour.chroma());
+            self.chroma_fg_rgb = colour.best_foreground_rgb();
+            self.set_colour_stops(Some(colour));
+        } else {
+            self.chroma = None;
+            self.chroma_fg_rgb = RGB::BLACK;
+            if self.target_chroma.is_none() {
+                self.colour_stops = Self::default_colour_stops()
+            }
+        }
+    }
+
+    fn attr_value(&self) -> Option<F> {
+        self.chroma
+    }
+
+    fn attr_value_fg_rgb(&self) -> RGB<F> {
+        self.chroma_fg_rgb
+    }
+
+    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.target_chroma = Some(colour.chroma());
+            self.target_chroma_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+        } else {
+            self.target_chroma = None;
+            self.target_chroma_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_target_value(&self) -> Option<F> {
+        self.target_chroma
+    }
+
+    fn attr_target_value_fg_rgb(&self) -> RGB<F> {
+        self.target_chroma_fg_rgb
+    }
+
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
+    }
+
+    fn colour_stops(&self) -> Vec<(RGB<F>, F)> {
+        self.colour_stops.clone()
+    }
+}
