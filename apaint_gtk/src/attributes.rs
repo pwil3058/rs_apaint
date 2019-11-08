@@ -9,9 +9,9 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use pw_gix::wrapper::*;
 
 use crate::colour::{ColourInterface, RGB};
-use crate::drawing::Drawer;
 use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD, WarmthCAD};
 use apaint::drawing::Size;
+use apaint_cairo::Drawer;
 
 pub trait DynColourAttributeDisplay: PackableWidgetObject<PWT = gtk::DrawingArea> {
     fn set_rgb(&self, rgb: Option<RGB>);

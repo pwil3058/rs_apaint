@@ -8,7 +8,7 @@ pub type Point = drawing::Point<f64>;
 pub type Size = drawing::Size<f64>;
 pub type TextPosn = drawing::TextPosn<f64>;
 
-use crate::colour::RGB;
+pub type RGB = colour_math::RGB<f64>;
 
 pub struct Drawer<'a> {
     pub cairo_context: &'a cairo::Context,

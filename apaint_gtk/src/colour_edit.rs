@@ -15,7 +15,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use crate::angles::Degrees;
 use crate::attributes::{ColourAttributeDisplayStack, DynColourAttributeDisplay};
 use crate::colour::*;
-use crate::drawing::Point;
+use apaint_cairo::Point;
 
 macro_rules! connect_button {
     ( $ed:ident, $btn:ident, $delta:ident, $apply:ident ) => {
