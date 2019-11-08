@@ -15,7 +15,7 @@ use pw_gix::wrapper::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::angles::Degrees;
-use crate::attributes::{artist_cads, ColourAttributeDisplayStack};
+use crate::attributes::{ColourAttributeDisplayStack, DynColourAttributeDisplay};
 use crate::colour::*;
 
 macro_rules! connect_button {
@@ -100,11 +100,14 @@ pub struct ColourEditor {
 }
 
 impl ColourEditor {
-    pub fn new(extra_buttons: &[gtk::Button]) -> Rc<Self> {
+    pub fn new(
+        cads: &[Rc<dyn DynColourAttributeDisplay>],
+        extra_buttons: &[gtk::Button],
+    ) -> Rc<Self> {
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator: RefCell::new(RGBManipulator::new()),
-            cads: ColourAttributeDisplayStack::new(artist_cads()),
+            cads: ColourAttributeDisplayStack::new(cads),
             drawing_area: gtk::DrawingArea::new(),
             rgb_entry: RGBHexEntryBox::create(),
             incr_value_btn: gtk::Button::new_with_label("Value++"),

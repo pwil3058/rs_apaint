@@ -7,6 +7,7 @@ use pw_gix::wrapper::*;
 
 use apaint::characteristics::CharacteristicIfce;
 
+use apaint_gtk::attributes::artist_cads;
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour_edit::ColourEditor;
 
@@ -31,7 +32,12 @@ fn main() {
     hbox.show_all();
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(&hbox, false, false, 0);
-    vbox.pack_start(&ColourEditor::new(&vec![]).pwo(), true, true, 0);
+    vbox.pack_start(
+        &ColourEditor::new(&artist_cads(), &vec![]).pwo(),
+        true,
+        true,
+        0,
+    );
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

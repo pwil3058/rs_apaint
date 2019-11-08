@@ -25,12 +25,15 @@ pub struct ColourAttributeDisplayStack {
 }
 
 impl ColourAttributeDisplayStack {
-    pub fn new(cads: Vec<Rc<dyn DynColourAttributeDisplay>>) -> Self {
+    pub fn new(cads: &[Rc<dyn DynColourAttributeDisplay>]) -> Self {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         for cad in cads.iter() {
             vbox.pack_start(&cad.pwo(), true, true, 0);
         }
-        Self { vbox, cads }
+        Self {
+            vbox,
+            cads: cads.to_vec(),
+        }
     }
 
     pub fn set_colour(&self, colour: Option<impl ColourInterface<f64>>) {
