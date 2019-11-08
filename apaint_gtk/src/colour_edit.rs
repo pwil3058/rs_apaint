@@ -5,8 +5,6 @@ use std::rc::Rc;
 
 use gtk::{prelude::*, BoxExt, ButtonExt, WidgetExt, WidgetExtManual};
 
-use pw_gix::cairox::Draw;
-use pw_gix::geometry::Point;
 use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
 use pw_gix::gtkx::menu::WrappedMenu;
@@ -17,6 +15,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use crate::angles::Degrees;
 use crate::attributes::{ColourAttributeDisplayStack, DynColourAttributeDisplay};
 use crate::colour::*;
+use crate::drawing::Point;
 
 macro_rules! connect_button {
     ( $ed:ident, $btn:ident, $delta:ident, $apply:ident ) => {
@@ -315,11 +314,13 @@ impl ColourEditor {
     }
 
     fn draw(&self, cairo_context: &cairo::Context) {
+        use pw_gix::cairox::*;
         let rgb = self.rgb_manipulator.borrow().rgb();
         cairo_context.set_source_colour_rgb(rgb);
         cairo_context.paint();
         for sample in self.samples.borrow().iter() {
-            cairo_context.set_source_pixbuf_at(&sample.pixbuf, sample.position, false);
+            let point = pw_gix::geometry::Point(sample.position.x, sample.position.y);
+            cairo_context.set_source_pixbuf_at(&sample.pixbuf, point, false);
             cairo_context.set_line_width(0.0);
             cairo_context.paint();
         }

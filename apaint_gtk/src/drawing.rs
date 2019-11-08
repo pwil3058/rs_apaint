@@ -2,20 +2,24 @@
 
 use std::cell::Cell;
 
-pub use apaint::drawing::*;
+use apaint::drawing;
+
+pub type Point = drawing::Point<f64>;
+pub type Size = drawing::Size<f64>;
+pub type TextPosn = drawing::TextPosn<f64>;
 
 use crate::colour::RGB;
 
 pub struct Drawer<'a> {
     pub cairo_context: &'a cairo::Context,
-    size: Size<f64>,
+    size: Size,
     fill_colour: Cell<RGB>,
     line_colour: Cell<RGB>,
     text_colour: Cell<RGB>,
 }
 
 impl<'a> Drawer<'a> {
-    pub fn new(cairo_context: &'a cairo::Context, size: Size<f64>) -> Self {
+    pub fn new(cairo_context: &'a cairo::Context, size: Size) -> Self {
         Self {
             cairo_context,
             size,
@@ -40,12 +44,12 @@ impl<'a> Drawer<'a> {
     }
 }
 
-impl<'a> Draw<f64> for Drawer<'a> {
-    fn size(&self) -> Size<f64> {
+impl<'a> drawing::Draw<f64> for Drawer<'a> {
+    fn size(&self) -> Size {
         self.size
     }
 
-    fn draw_circle(&self, centre: Point<f64>, radius: f64, fill: bool) {
+    fn draw_circle(&self, centre: Point, radius: f64, fill: bool) {
         const TWO_PI: f64 = 2.0 * std::f64::consts::PI;
         self.cairo_context
             .arc(centre.x, centre.y, radius, 0.0, TWO_PI);
@@ -56,7 +60,7 @@ impl<'a> Draw<f64> for Drawer<'a> {
         }
     }
 
-    fn draw_line(&self, line: &[Point<f64>]) {
+    fn draw_line(&self, line: &[Point]) {
         if let Some(start) = line.first() {
             self.cairo_context.move_to(start.x, start.y);
             for point in line[1..].iter() {
@@ -68,7 +72,7 @@ impl<'a> Draw<f64> for Drawer<'a> {
         }
     }
 
-    fn draw_polygon(&self, polygon: &[Point<f64>], fill: bool) {
+    fn draw_polygon(&self, polygon: &[Point], fill: bool) {
         if let Some(start) = polygon.first() {
             self.cairo_context.move_to(start.x, start.y);
             for point in polygon[1..].iter() {
@@ -85,7 +89,7 @@ impl<'a> Draw<f64> for Drawer<'a> {
         }
     }
 
-    fn draw_text(&self, text: &str, posn: TextPosn<f64>, font_size: f64) {
+    fn draw_text(&self, text: &str, posn: TextPosn, font_size: f64) {
         if text.len() == 0 {
             return;
         }
@@ -118,12 +122,7 @@ impl<'a> Draw<f64> for Drawer<'a> {
         self.text_colour.set(rgb);
     }
 
-    fn paint_linear_gradient(
-        &self,
-        posn: Point<f64>,
-        size: Size<f64>,
-        colour_stops: &[(RGB, f64)],
-    ) {
+    fn paint_linear_gradient(&self, posn: Point, size: Size, colour_stops: &[(RGB, f64)]) {
         let linear_gradient =
             cairo::LinearGradient::new(0.0, 0.5 * size.height, size.width, 0.5 * size.height);
         for colour_stop in colour_stops.iter() {
