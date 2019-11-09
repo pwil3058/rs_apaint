@@ -336,19 +336,19 @@ impl ColourEditor {
         let mut npixels: u32 = 0;
         for sample in self.samples.borrow().iter() {
             assert_eq!(sample.pixbuf.get_bits_per_sample(), 8);
-            let nc = sample.pixbuf.get_n_channels();
-            let rs = sample.pixbuf.get_rowstride();
-            let width = sample.pixbuf.get_width();
-            let n_rows = sample.pixbuf.get_height();
+            let nc = sample.pixbuf.get_n_channels() as usize;
+            let rs = sample.pixbuf.get_rowstride() as usize;
+            let width = sample.pixbuf.get_width() as usize;
+            let n_rows = sample.pixbuf.get_height() as usize;
             unsafe {
                 let data = sample.pixbuf.get_pixels();
                 for row_num in 0..n_rows {
                     let row_start = row_num * rs;
-                    for j in 0..width {
-                        let offset = (row_start + j * nc) as usize;
-                        red += data[offset] as u64;
-                        green += data[offset + 1] as u64;
-                        blue += data[offset + 2] as u64;
+                    let row_end = row_start + width * nc;
+                    for chunk in (&data[row_start..row_end]).chunks(nc) {
+                        red += chunk[0] as u64;
+                        green += chunk[1] as u64;
+                        blue += chunk[2] as u64;
                     }
                 }
             }
