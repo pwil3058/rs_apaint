@@ -314,14 +314,17 @@ impl ColourEditor {
     }
 
     fn draw(&self, cairo_context: &cairo::Context) {
-        use pw_gix::cairox::*;
         let rgb = self.rgb_manipulator.borrow().rgb();
-        cairo_context.set_source_colour_rgb(rgb);
+        cairo_context.set_source_rgb(rgb[0], rgb[1], rgb[2]);
         cairo_context.paint();
         for sample in self.samples.borrow().iter() {
-            let point = pw_gix::geometry::Point(sample.position.x, sample.position.y);
-            cairo_context.set_source_pixbuf_at(&sample.pixbuf, point, false);
-            cairo_context.set_line_width(0.0);
+            let buffer = sample
+                .pixbuf
+                .save_to_bufferv("png", &[])
+                .expect("pixbuf to png error");
+            let mut reader = std::io::Cursor::new(buffer);
+            let surface = cairo::ImageSurface::create_from_png(&mut reader).unwrap();
+            cairo_context.set_source_surface(&surface, sample.position.x, sample.position.y);
             cairo_context.paint();
         }
     }
