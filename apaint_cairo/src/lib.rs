@@ -2,6 +2,8 @@
 
 use std::cell::Cell;
 
+//use cairo::*;
+
 use apaint::drawing;
 
 pub type Point = drawing::Point<f64>;
@@ -138,5 +140,12 @@ impl<'a> drawing::Draw<f64> for Drawer<'a> {
         //cairo_context.set_source(&cairo::Pattern::LinearGradient(linear_gradient));
         self.cairo_context.set_source(&linear_gradient);
         self.cairo_context.fill()
+    }
+
+    fn insert_png(&self, posn: Point, reader: &mut impl std::io::Read) {
+        let surface = cairo::ImageSurface::create_from_png(reader).unwrap();
+        self.cairo_context
+            .set_source_surface(&surface, posn.x, posn.y);
+        self.cairo_context.paint();
     }
 }

@@ -100,6 +100,7 @@ pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
     fn set_fill_colour(&self, rgb: RGB<F>);
     fn set_text_colour(&self, rgb: RGB<F>);
     fn paint_linear_gradient(&self, posn: Point<F>, size: Size<F>, colour_stops: &[(RGB<F>, F)]);
+    fn insert_png(&self, posn: Point<F>, reader: &mut impl std::io::Read);
 
     fn draw_diamond(&self, centre: Point<F>, side_length: F, fill: bool) {
         let dist = side_length / F::SQRT_2;
