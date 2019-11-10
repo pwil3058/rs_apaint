@@ -12,6 +12,7 @@ use apaint_cairo::*;
 #[derive(PWO, Wrapper)]
 pub struct Graticule {
     drawing_area: gtk::DrawingArea,
+    graticule: apaint::graticule::Graticule<f64>,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
@@ -21,6 +22,7 @@ impl Graticule {
     pub fn new() -> Rc<Self> {
         let graticule = Rc::new(Self {
             drawing_area: gtk::DrawingArea::new(),
+            graticule: apaint::graticule::Graticule::default(),
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
             last_xy: Cell::new(None),
@@ -45,7 +47,7 @@ impl Graticule {
                 cairo_context.translate(origin_offset.x, origin_offset.y);
                 let cartesian = CairoCartesian::new(cairo_context, size);
                 cartesian.set_scale(graticule_c.zoom.get());
-                graticule_c.draw(&cartesian);
+                graticule_c.graticule.draw(&cartesian);
                 gtk::Inhibit(false)
             });
 
@@ -137,13 +139,5 @@ impl Graticule {
     fn shift_origin_offset(&self, delta: Point) {
         let new_offset = self.origin_offset.get() + delta;
         self.origin_offset.set(new_offset);
-    }
-
-    fn draw(&self, cartesian: &CairoCartesian) {
-        cartesian.set_line_width(0.01);
-        cartesian.draw_line(&[Point { x: -1.0, y: 0.0 }, Point { x: 1.0, y: 0.0 }]);
-        cartesian.draw_line(&[Point { x: 0.0, y: 1.0 }, Point { x: 0.0, y: -1.0 }]);
-        cartesian.draw_circle(Point { x: 0.0, y: 0.0 }, 1.0, false);
-        cartesian.draw_diamond(Point { x: 0.5, y: 0.5 }, 0.1, false);
     }
 }

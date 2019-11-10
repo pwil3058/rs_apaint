@@ -4,6 +4,7 @@ pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
 pub mod drawing;
+pub mod graticule;
 
 pub use colour_math::{ColourComponent, ColourInterface};
 
