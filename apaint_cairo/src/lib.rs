@@ -175,6 +175,11 @@ impl<'a> CairoCartesian<'a> {
         }
     }
 
+    pub fn set_scale(&self, scale: f64) {
+        debug_assert!(scale > 0.0);
+        self.cairo_context.scale(scale, scale);
+    }
+
     fn set_colour(&self, rgb: RGB) {
         self.cairo_context.set_source_rgb(rgb[0], rgb[1], rgb[2]);
     }
@@ -229,14 +234,6 @@ impl<'a> Cartesian<f64> for CairoCartesian<'a> {
                 }
             }
         }
-    }
-
-    fn set_scale(&self, scale: f64) {
-        self.cairo_context.scale(scale, scale);
-    }
-
-    fn set_offset(&self, x_offset: f64, y_offset: f64) {
-        self.cairo_context.translate(x_offset, y_offset);
     }
 
     fn set_line_width(&self, width: f64) {

@@ -61,6 +61,39 @@ impl<F: FloatPlus + DegreesConst + RadiansConst> From<(Angle<F>, F)> for Point<F
     }
 }
 
+impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Sub for Point<F> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Add for Point<F> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Add<Size<F>> for Point<F> {
+    type Output = Self;
+
+    fn add(self, size: Size<F>) -> Self {
+        Self {
+            x: self.x + size.width,
+            y: self.y + size.height,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Size<F: FloatPlus> {
     pub width: F,
@@ -281,8 +314,6 @@ pub trait Cartesian<F: ColourComponent + DegreesConst + RadiansConst> {
     fn draw_circle(&self, centre: Point<F>, radius: F, fill: bool);
     fn draw_line(&self, line: &[Point<F>]);
     fn draw_polygon(&self, polygon: &[Point<F>], fill: bool);
-    fn set_scale(&self, scale: F);
-    fn set_offset(&self, x_offset: F, y_offset: F);
     fn set_line_width(&self, width: F);
     fn set_line_colour(&self, rgb: RGB<F>);
     fn set_fill_colour(&self, rgb: RGB<F>);
