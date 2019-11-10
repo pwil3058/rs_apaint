@@ -13,8 +13,8 @@ use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD
 use apaint_cairo::{Drawer, Size};
 
 pub trait DynColourAttributeDisplay: PackableWidgetObject<PWT = gtk::DrawingArea> {
-    fn set_rgb(&self, rgb: Option<RGB>);
-    fn set_target_rgb(&self, rgb: Option<RGB>);
+    fn set_rgb(&self, rgb: Option<&RGB>);
+    fn set_target_rgb(&self, rgb: Option<&RGB>);
 }
 
 #[derive(PWO, Wrapper)]
@@ -35,20 +35,20 @@ impl ColourAttributeDisplayStack {
         }
     }
 
-    pub fn set_colour(&self, colour: Option<impl ColourInterface<f64>>) {
+    pub fn set_colour(&self, colour: Option<&impl ColourInterface<f64>>) {
         for cad in self.cads.iter() {
             if let Some(colour) = colour {
-                cad.set_rgb(Some(colour.rgb()));
+                cad.set_rgb(Some(&colour.rgb()));
             } else {
                 cad.set_rgb(None);
             }
         }
     }
 
-    pub fn set_target_colour(&self, colour: Option<impl ColourInterface<f64>>) {
+    pub fn set_target_colour(&self, colour: Option<&impl ColourInterface<f64>>) {
         for cad in self.cads.iter() {
             if let Some(colour) = colour {
-                cad.set_target_rgb(Some(colour.rgb()));
+                cad.set_target_rgb(Some(&colour.rgb()));
             } else {
                 cad.set_target_rgb(None);
             }
@@ -87,12 +87,12 @@ impl<A> DynColourAttributeDisplay for ColourAttributeDisplay<A>
 where
     A: ColourAttributeDisplayIfce<f64> + 'static,
 {
-    fn set_rgb(&self, rgb: Option<RGB>) {
+    fn set_rgb(&self, rgb: Option<&RGB>) {
         self.attribute.borrow_mut().set_colour(rgb);
         self.drawing_area.queue_draw();
     }
 
-    fn set_target_rgb(&self, rgb: Option<RGB>) {
+    fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.attribute.borrow_mut().set_colour(rgb);
         self.drawing_area.queue_draw();
     }

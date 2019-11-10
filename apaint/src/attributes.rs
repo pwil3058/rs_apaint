@@ -9,11 +9,11 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
 
     fn new() -> Self;
 
-    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>);
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>);
     fn attr_value(&self) -> Option<F>;
     fn attr_value_fg_rgb(&self) -> RGB<F>;
 
-    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>);
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>);
     fn attr_target_value(&self) -> Option<F>;
     fn attr_target_value_fg_rgb(&self) -> RGB<F>;
 
@@ -115,7 +115,7 @@ where
         }
     }
 
-    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.value = Some(colour.value());
             self.value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
@@ -133,7 +133,7 @@ where
         self.value_fg_rgb
     }
 
-    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_value = Some(colour.value());
             self.target_value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
@@ -179,7 +179,7 @@ where
         }
     }
 
-    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.warmth = Some(colour.warmth());
             self.warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
@@ -197,7 +197,7 @@ where
         self.warmth_fg_rgb
     }
 
-    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_warmth = Some(colour.warmth());
             self.target_warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
@@ -249,7 +249,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> HueCAD<F> {
         self.colour_stops = stops
     }
 
-    fn set_colour_stops(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour_stops(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             if let Some(hue) = colour.hue() {
                 self.set_colour_stops_for_hue(hue);
@@ -307,7 +307,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfc
         }
     }
 
-    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             if let Some(hue) = colour.hue() {
                 self.hue = Some(hue);
@@ -334,7 +334,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfc
         self.hue_fg_rgb
     }
 
-    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             if let Some(target_hue) = colour.hue() {
                 self.target_hue = Some(target_hue);
@@ -378,7 +378,7 @@ pub struct ChromaCAD<F: ColourComponent + DegreesConst + RadiansConst> {
 }
 
 impl<F: ColourComponent + DegreesConst + RadiansConst> ChromaCAD<F> {
-    fn set_colour_stops(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour_stops(&mut self, colour: Option<&impl ColourInterface<F>>) {
         self.colour_stops = if let Some(colour) = colour {
             if colour.is_grey() {
                 let grey = colour.rgb();
@@ -416,7 +416,7 @@ where
         }
     }
 
-    fn set_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.chroma = Some(colour.chroma());
             self.chroma_fg_rgb = colour.best_foreground_rgb();
@@ -444,7 +444,7 @@ where
         self.chroma_fg_rgb
     }
 
-    fn set_target_colour(&mut self, colour: Option<impl ColourInterface<F>>) {
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_chroma = Some(colour.chroma());
             self.target_chroma_fg_rgb = colour.monotone_rgb().best_foreground_rgb();

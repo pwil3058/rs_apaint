@@ -280,7 +280,7 @@ impl ColourEditor {
     fn set_rgb(&self, rgb: RGB) {
         self.rgb_entry.set_rgb(rgb);
         self.rgb_manipulator.borrow_mut().set_rgb(rgb);
-        self.cads.set_colour(Some(rgb));
+        self.cads.set_colour(Some(&rgb));
         self.incr_value_btn
             .set_widget_colour_rgb(rgb * 0.8 + RGB::WHITE * 0.2);
         self.decr_value_btn.set_widget_colour_rgb(rgb * 0.8);
