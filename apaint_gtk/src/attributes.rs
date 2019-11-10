@@ -10,8 +10,7 @@ use pw_gix::wrapper::*;
 
 use crate::colour::{ColourInterface, RGB};
 use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD, WarmthCAD};
-use apaint::drawing::Size;
-use apaint_cairo::Drawer;
+use apaint_cairo::{Drawer, Size};
 
 pub trait DynColourAttributeDisplay: PackableWidgetObject<PWT = gtk::DrawingArea> {
     fn set_rgb(&self, rgb: Option<RGB>);
@@ -72,7 +71,7 @@ impl<A: ColourAttributeDisplayIfce<f64> + 'static> ColourAttributeDisplay<A> {
         cad.drawing_area.set_size_request(90, 30);
         let cad_c = Rc::clone(&cad);
         cad.drawing_area.connect_draw(move |da, cairo_context| {
-            let size: Size<f64> = Size {
+            let size: Size = Size {
                 width: da.get_allocated_width() as f64,
                 height: da.get_allocated_height() as f64,
             };
