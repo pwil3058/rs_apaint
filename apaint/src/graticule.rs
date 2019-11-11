@@ -20,24 +20,32 @@ where
         self.draw_graticule(cartesian);
     }
 
-    fn draw_graticule(&self, cartesian: &impl Cartesian<F>) {
-        let num_rings = 10;
-        let divisor = F::from_i32(num_rings).unwrap();
-        let centre = Point::<F>::default();
+    fn draw_rings(&self, num_rings: u32, cartesian: &impl Cartesian<F>) {
         cartesian.set_line_width(F::from(0.01).unwrap());
         cartesian.set_line_colour(RGB::WHITE * F::HALF);
+        let divisor = F::from_u32(num_rings).unwrap();
+        let centre = Point::<F>::default();
         for num in 1..num_rings + 1 {
             let radius: F = F::from(num).unwrap() / divisor;
             cartesian.draw_circle(centre, radius, false);
         }
+    }
+
+    fn draw_spokes(&self, start_ring: F, cartesian: &impl Cartesian<F>) {
         cartesian.set_line_width(F::from(0.015).unwrap());
         let mut hue = RGB::<F>::RED.hue().unwrap();
         for _ in 0..13 {
             cartesian.set_line_colour(hue.max_chroma_rgb());
             let angle: Angle<F> = hue.angle().into();
+            let start: Point<F> = (angle.clone(), start_ring).into();
             let end: Point<F> = (angle, F::ONE).into();
-            cartesian.draw_line(&[centre, end]);
+            cartesian.draw_line(&[start, end]);
             hue = hue + Degrees::DEG_30;
         }
+    }
+
+    fn draw_graticule(&self, cartesian: &impl Cartesian<F>) {
+        self.draw_spokes(F::from(0.1).unwrap(), cartesian);
+        self.draw_rings(10, cartesian);
     }
 }
