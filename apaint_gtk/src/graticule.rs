@@ -10,7 +10,7 @@ use pw_gix::wrapper::*;
 use apaint_cairo::*;
 
 #[derive(PWO, Wrapper)]
-pub struct Graticule<G>
+pub struct GtkGraticule<G>
 where
     G: apaint::graticule::Graticule<f64> + Sized,
 {
@@ -21,52 +21,53 @@ where
     last_xy: Cell<Option<Point>>,
 }
 
-impl<G> Graticule<G>
+impl<G> GtkGraticule<G>
 where
     G: apaint::graticule::Graticule<f64> + Sized + 'static,
 {
     pub fn new() -> Rc<Self> {
-        let graticule = Rc::new(Self {
+        let gtk_graticule = Rc::new(Self {
             drawing_area: gtk::DrawingArea::new(),
             graticule: G::default(),
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
             last_xy: Cell::new(None),
         });
-        graticule.drawing_area.set_size_request(200, 200);
+        gtk_graticule.drawing_area.set_size_request(200, 200);
+        gtk_graticule.drawing_area.set_has_tooltip(true);
         let events = gdk::EventMask::SCROLL_MASK
             | gdk::EventMask::BUTTON_PRESS_MASK
             | gdk::EventMask::BUTTON_MOTION_MASK
             | gdk::EventMask::LEAVE_NOTIFY_MASK
             | gdk::EventMask::BUTTON_RELEASE_MASK;
-        graticule.drawing_area.add_events(events);
+        gtk_graticule.drawing_area.add_events(events);
 
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_draw(move |_, cairo_context| {
-                cairo_context.transform(graticule_c.current_transform_matrix());
-                graticule_c
+                cairo_context.transform(gtk_graticule_c.current_transform_matrix());
+                gtk_graticule_c
                     .graticule
                     .draw(&CairoCartesian::new(cairo_context));
                 gtk::Inhibit(false)
             });
 
         // ZOOM
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_scroll_event(move |da, scroll_event| {
                 if let Some(device) = scroll_event.get_device() {
                     if device.get_source() == gdk::InputSource::Mouse {
                         match scroll_event.get_direction() {
                             gdk::ScrollDirection::Up => {
-                                graticule_c.decr_zoom();
+                                gtk_graticule_c.decr_zoom();
                                 da.queue_draw();
                                 return gtk::Inhibit(true);
                             }
                             gdk::ScrollDirection::Down => {
-                                graticule_c.incr_zoom();
+                                gtk_graticule_c.incr_zoom();
                                 da.queue_draw();
                                 return gtk::Inhibit(true);
                             }
@@ -78,53 +79,69 @@ where
             });
 
         // MOVE ORIGIN
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_button_press_event(move |_, event| {
                 debug_assert_eq!(event.get_event_type(), gdk::EventType::ButtonPress);
                 if event.get_button() == 1 {
-                    graticule_c.last_xy.set(Some(event.get_position().into()));
+                    gtk_graticule_c
+                        .last_xy
+                        .set(Some(event.get_position().into()));
                     return gtk::Inhibit(true);
                 }
                 Inhibit(false)
             });
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_motion_notify_event(move |da, event| {
-                if let Some(last_xy) = graticule_c.last_xy.get() {
+                if let Some(last_xy) = gtk_graticule_c.last_xy.get() {
                     let this_xy: Point = event.get_position().into();
                     let delta_xy = this_xy - last_xy;
-                    graticule_c.last_xy.set(Some(this_xy));
-                    graticule_c.shift_origin_offset(delta_xy);
+                    gtk_graticule_c.last_xy.set(Some(this_xy));
+                    gtk_graticule_c.shift_origin_offset(delta_xy);
                     da.queue_draw();
                     gtk::Inhibit(true)
                 } else {
                     gtk::Inhibit(false)
                 }
             });
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_button_release_event(move |_, event| {
                 debug_assert_eq!(event.get_event_type(), gdk::EventType::ButtonRelease);
                 if event.get_button() == 1 {
-                    graticule_c.last_xy.set(None);
+                    gtk_graticule_c.last_xy.set(None);
                     gtk::Inhibit(true)
                 } else {
                     gtk::Inhibit(false)
                 }
             });
-        let graticule_c = Rc::clone(&graticule);
-        graticule
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
             .drawing_area
             .connect_leave_notify_event(move |_, _| {
-                graticule_c.last_xy.set(None);
+                gtk_graticule_c.last_xy.set(None);
                 gtk::Inhibit(false)
             });
 
-        graticule
+        // TOOLTIP
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
+            .drawing_area
+            .connect_query_tooltip(move |_, x, y, _, tooltip| {
+                let point = gtk_graticule_c.device_to_user(x as f64, y as f64);
+                if let Some(text) = gtk_graticule_c.graticule.tooltip_for_point(point) {
+                    tooltip.set_text(Some(&text));
+                    true
+                } else {
+                    false
+                }
+            });
+
+        gtk_graticule
     }
 
     fn decr_zoom(&self) {
@@ -149,10 +166,10 @@ where
         ctm
     }
 
-    fn _device_to_user(&self, point: Point) -> Point {
+    fn device_to_user(&self, x: f64, y: f64) -> Point {
         let mut ctm = self.current_transform_matrix();
         ctm.invert();
-        ctm.transform_point(point.x, point.y).into()
+        ctm.transform_point(x, y).into()
     }
 
     fn device_to_user_delta(&self, point: Point) -> Point {

@@ -10,7 +10,7 @@ use apaint::characteristics::CharacteristicIfce;
 use apaint_gtk::attributes::artist_cads;
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour_edit::ColourEditor;
-use apaint_gtk::graticule::Graticule;
+use apaint_gtk::graticule::GtkGraticule;
 
 #[derive(Default)]
 struct DummyGraticule {}
@@ -44,7 +44,7 @@ fn main() {
         false,
         0,
     );
-    vbox.pack_start(&Graticule::<DummyGraticule>::new().pwo(), true, true, 0);
+    vbox.pack_start(&GtkGraticule::<DummyGraticule>::new().pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

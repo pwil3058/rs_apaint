@@ -40,4 +40,8 @@ where
         self.draw_spokes(F::from(0.1).unwrap(), cartesian);
         self.draw_rings(10, cartesian);
     }
+
+    fn tooltip_for_point(&self, point: Point<F>) -> Option<String> {
+        Some("a tooltip should pop up".to_string())
+    }
 }
