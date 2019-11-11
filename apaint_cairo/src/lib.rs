@@ -159,25 +159,21 @@ pub struct CairoCartesian<'a> {
 }
 
 impl<'a> CairoCartesian<'a> {
-    pub fn new(cairo_context: &'a cairo::Context, size: Size) -> Self {
-        let scale = if size.width > size.height {
-            size.height / 2.05
+    pub fn cartesian_transform_matrix(width: f64, height: f64) -> cairo::Matrix {
+        let scale = if width > height {
+            height / 2.05
         } else {
-            size.width / 2.05
+            width / 2.05
         };
-        let matrix =
-            cairo::Matrix::new(scale, 0.0, 0.0, -scale, size.width / 2.0, size.height / 2.0);
-        cairo_context.transform(matrix);
+        cairo::Matrix::new(scale, 0.0, 0.0, -scale, width / 2.0, height / 2.0)
+    }
+
+    pub fn new(cairo_context: &'a cairo::Context) -> Self {
         Self {
             cairo_context,
             fill_colour: Cell::new(RGB::BLACK),
             line_colour: Cell::new(RGB::BLACK),
         }
-    }
-
-    pub fn set_scale(&self, scale: f64) {
-        debug_assert!(scale > 0.0);
-        self.cairo_context.scale(scale, scale);
     }
 
     fn set_colour(&self, rgb: RGB) {

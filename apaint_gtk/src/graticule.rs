@@ -38,16 +38,11 @@ impl Graticule {
         let graticule_c = Rc::clone(&graticule);
         graticule
             .drawing_area
-            .connect_draw(move |da, cairo_context| {
-                let size: Size = Size {
-                    width: da.get_allocated_width() as f64,
-                    height: da.get_allocated_height() as f64,
-                };
-                let origin_offset = graticule_c.origin_offset.get();
-                cairo_context.translate(origin_offset.x, origin_offset.y);
-                let cartesian = CairoCartesian::new(cairo_context, size);
-                cartesian.set_scale(graticule_c.zoom.get());
-                graticule_c.graticule.draw(&cartesian);
+            .connect_draw(move |_, cairo_context| {
+                cairo_context.transform(graticule_c.current_transform_matrix());
+                graticule_c
+                    .graticule
+                    .draw(&CairoCartesian::new(cairo_context));
                 gtk::Inhibit(false)
             });
 
@@ -136,8 +131,32 @@ impl Graticule {
         self.zoom.set(new_zoom);
     }
 
-    fn shift_origin_offset(&self, delta: Point) {
-        let new_offset = self.origin_offset.get() + delta;
-        self.origin_offset.set(new_offset);
+    fn current_transform_matrix(&self) -> cairo::Matrix {
+        let zoom = self.zoom.get();
+        let origin_offset = self.origin_offset.get();
+        let mut ctm = CairoCartesian::cartesian_transform_matrix(
+            self.drawing_area.get_allocated_width() as f64,
+            self.drawing_area.get_allocated_height() as f64,
+        );
+        ctm.scale(zoom, zoom);
+        ctm.translate(origin_offset.x, origin_offset.y);
+        ctm
+    }
+
+    fn _device_to_user(&self, point: Point) -> Point {
+        let mut ctm = self.current_transform_matrix();
+        ctm.invert();
+        ctm.transform_point(point.x, point.y).into()
+    }
+
+    fn device_to_user_delta(&self, point: Point) -> Point {
+        let mut ctm = self.current_transform_matrix();
+        ctm.invert();
+        ctm.transform_distance(point.x, point.y).into()
+    }
+
+    fn shift_origin_offset(&self, device_delta: Point) {
+        let delta = self.device_to_user_delta(device_delta);
+        self.origin_offset.set(self.origin_offset.get() + delta);
     }
 }
