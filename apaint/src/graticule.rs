@@ -4,19 +4,11 @@ use crate::drawing::{Cartesian, Point};
 use colour_math::{ColourComponent, ColourInterface, RGB};
 use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
 
-#[derive(Default)]
-pub struct Graticule<F>
+pub trait Graticule<F>: std::default::Default
 where
     F: ColourComponent + DegreesConst + RadiansConst,
 {
-    phantom: std::marker::PhantomData<F>,
-}
-
-impl<F> Graticule<F>
-where
-    F: ColourComponent + DegreesConst + RadiansConst,
-{
-    pub fn draw(&self, cartesian: &impl Cartesian<F>) {
+    fn draw(&self, cartesian: &impl Cartesian<F>) {
         self.draw_graticule(cartesian);
     }
 

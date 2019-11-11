@@ -10,19 +10,25 @@ use pw_gix::wrapper::*;
 use apaint_cairo::*;
 
 #[derive(PWO, Wrapper)]
-pub struct Graticule {
+pub struct Graticule<G>
+where
+    G: apaint::graticule::Graticule<f64> + Sized,
+{
     drawing_area: gtk::DrawingArea,
-    graticule: apaint::graticule::Graticule<f64>,
+    graticule: G,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
-impl Graticule {
+impl<G> Graticule<G>
+where
+    G: apaint::graticule::Graticule<f64> + Sized + 'static,
+{
     pub fn new() -> Rc<Self> {
         let graticule = Rc::new(Self {
             drawing_area: gtk::DrawingArea::new(),
-            graticule: apaint::graticule::Graticule::default(),
+            graticule: G::default(),
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
             last_xy: Cell::new(None),
