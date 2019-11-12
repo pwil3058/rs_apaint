@@ -2,9 +2,9 @@
 
 use crate::drawing::{Dirn, Draw, Point, TextPosn};
 use colour_math::{ColourComponent, ColourInterface, Hue, RGB};
-use normalised_angles::{Degrees, DegreesConst, RadiansConst};
+use normalised_angles::Degrees;
 
-pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + RadiansConst> {
+pub trait ColourAttributeDisplayIfce<F: ColourComponent> {
     const LABEL: &'static str;
 
     fn new() -> Self;
@@ -93,7 +93,7 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent + DegreesConst + Radians
 }
 
 // VALUE
-pub struct ValueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+pub struct ValueCAD<F: ColourComponent> {
     value: Option<F>,
     target_value: Option<F>,
     value_fg_rgb: RGB<F>,
@@ -102,7 +102,7 @@ pub struct ValueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
 
 impl<F> ColourAttributeDisplayIfce<F> for ValueCAD<F>
 where
-    F: ColourComponent + DegreesConst + RadiansConst,
+    F: ColourComponent,
 {
     const LABEL: &'static str = "Value";
 
@@ -157,7 +157,7 @@ where
 }
 
 // Warmth
-pub struct WarmthCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+pub struct WarmthCAD<F: ColourComponent> {
     warmth: Option<F>,
     target_warmth: Option<F>,
     warmth_fg_rgb: RGB<F>,
@@ -166,7 +166,7 @@ pub struct WarmthCAD<F: ColourComponent + DegreesConst + RadiansConst> {
 
 impl<F> ColourAttributeDisplayIfce<F> for WarmthCAD<F>
 where
-    F: ColourComponent + DegreesConst + RadiansConst,
+    F: ColourComponent,
 {
     const LABEL: &'static str = "Warmth";
 
@@ -226,7 +226,7 @@ where
 }
 
 // HUE
-pub struct HueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+pub struct HueCAD<F: ColourComponent> {
     hue: Option<Hue<F>>,
     target_hue: Option<Hue<F>>,
     hue_value: Option<F>,
@@ -235,7 +235,7 @@ pub struct HueCAD<F: ColourComponent + DegreesConst + RadiansConst> {
     colour_stops: Vec<(RGB<F>, F)>,
 }
 
-impl<F: ColourComponent + DegreesConst + RadiansConst> HueCAD<F> {
+impl<F: ColourComponent> HueCAD<F> {
     fn set_colour_stops_for_hue(&mut self, hue: Hue<F>) {
         let mut stops = vec![];
         let mut hue = hue + Degrees::DEG_180;
@@ -292,7 +292,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> HueCAD<F> {
     }
 }
 
-impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfce<F> for HueCAD<F> {
+impl<F: ColourComponent> ColourAttributeDisplayIfce<F> for HueCAD<F> {
     const LABEL: &'static str = "Hue";
 
     fn new() -> Self {
@@ -369,7 +369,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> ColourAttributeDisplayIfc
 }
 
 // Chroma
-pub struct ChromaCAD<F: ColourComponent + DegreesConst + RadiansConst> {
+pub struct ChromaCAD<F: ColourComponent> {
     chroma: Option<F>,
     target_chroma: Option<F>,
     chroma_fg_rgb: RGB<F>,
@@ -377,7 +377,7 @@ pub struct ChromaCAD<F: ColourComponent + DegreesConst + RadiansConst> {
     colour_stops: Vec<(RGB<F>, F)>,
 }
 
-impl<F: ColourComponent + DegreesConst + RadiansConst> ChromaCAD<F> {
+impl<F: ColourComponent> ChromaCAD<F> {
     fn set_colour_stops(&mut self, colour: Option<&impl ColourInterface<F>>) {
         self.colour_stops = if let Some(colour) = colour {
             if colour.is_grey() {
@@ -401,7 +401,7 @@ impl<F: ColourComponent + DegreesConst + RadiansConst> ChromaCAD<F> {
 
 impl<F> ColourAttributeDisplayIfce<F> for ChromaCAD<F>
 where
-    F: ColourComponent + DegreesConst + RadiansConst,
+    F: ColourComponent,
 {
     const LABEL: &'static str = "Chroma";
 

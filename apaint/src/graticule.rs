@@ -5,11 +5,11 @@ use std::rc::Rc;
 use crate::drawing::{Cartesian, Point};
 use crate::ColouredItem;
 use colour_math::{ColourComponent, ColourInterface, RGB};
-use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
+use normalised_angles::{Angle, Degrees};
 
 pub trait Graticule<F>
 where
-    F: ColourComponent + DegreesConst + RadiansConst,
+    F: ColourComponent,
 {
     fn draw(&self, cartesian: &impl Cartesian<F>) {
         self.draw_graticule(cartesian);
@@ -53,11 +53,11 @@ where
     }
 }
 
-pub struct ColourShape<F: ColourComponent + DegreesConst + RadiansConst> {
+pub struct ColourShape<F: ColourComponent> {
     coloured_item: Rc<dyn ColouredItem<F>>,
 }
 
-impl<F: ColourComponent + DegreesConst + RadiansConst> ColourShape<F> {
+impl<F: ColourComponent> ColourShape<F> {
     pub fn coloured_item(&self) -> Rc<dyn ColouredItem<F>> {
         Rc::clone(&self.coloured_item)
     }

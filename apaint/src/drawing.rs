@@ -1,7 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 use colour_math::{ColourComponent, RGB};
 use float_plus::FloatPlus;
-use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
+use normalised_angles::{Angle, Degrees};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point<F: FloatPlus> {
@@ -15,7 +15,7 @@ impl<F: FloatPlus> Point<F> {
     }
 }
 
-impl<F: FloatPlus + DegreesConst + RadiansConst> Point<F> {
+impl<F: ColourComponent> Point<F> {
     pub fn angle(&self) -> Angle<F> {
         if let Some(degrees) = Degrees::atan2(self.y, self.x) {
             degrees.into()
@@ -52,7 +52,7 @@ impl<F: FloatPlus> From<(F, F)> for Point<F> {
     }
 }
 
-impl<F: FloatPlus + DegreesConst + RadiansConst> From<(Angle<F>, F)> for Point<F> {
+impl<F: ColourComponent> From<(Angle<F>, F)> for Point<F> {
     fn from(polar: (Angle<F>, F)) -> Point<F> {
         Point {
             x: polar.1 * polar.0.cos(),
@@ -61,7 +61,7 @@ impl<F: FloatPlus + DegreesConst + RadiansConst> From<(Angle<F>, F)> for Point<F
     }
 }
 
-impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Sub for Point<F> {
+impl<F: ColourComponent> std::ops::Sub for Point<F> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
@@ -72,7 +72,7 @@ impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Sub for Point<F> {
     }
 }
 
-impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Add for Point<F> {
+impl<F: ColourComponent> std::ops::Add for Point<F> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -83,7 +83,7 @@ impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Add for Point<F> {
     }
 }
 
-impl<F: FloatPlus + DegreesConst + RadiansConst> std::ops::Add<Size<F>> for Point<F> {
+impl<F: ColourComponent> std::ops::Add<Size<F>> for Point<F> {
     type Output = Self;
 
     fn add(self, size: Size<F>) -> Self {
@@ -122,7 +122,7 @@ pub enum TextPosn<F: FloatPlus> {
     Centre(Point<F>),
 }
 
-pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
+pub trait Draw<F: ColourComponent> {
     fn size(&self) -> Size<F>;
     fn draw_circle(&self, centre: Point<F>, radius: F, fill: bool);
     fn draw_line(&self, line: &[Point<F>]);
@@ -310,7 +310,7 @@ pub trait Draw<F: ColourComponent + DegreesConst + RadiansConst> {
     }
 }
 
-pub trait Cartesian<F: ColourComponent + DegreesConst + RadiansConst> {
+pub trait Cartesian<F: ColourComponent> {
     fn draw_circle(&self, centre: Point<F>, radius: F, fill: bool);
     fn draw_line(&self, line: &[Point<F>]);
     fn draw_polygon(&self, polygon: &[Point<F>], fill: bool);

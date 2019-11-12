@@ -10,8 +10,6 @@ pub use colour_math::*;
 pub use float_plus::*;
 pub use normalised_angles::*;
 
-pub trait FloatExt: FloatPlus + ColourComponent + DegreesConst + RadiansConst {}
-
 pub trait TooltipText {
     fn tooltip_text(&self) -> Option<String>;
 }
