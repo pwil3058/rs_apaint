@@ -4,7 +4,7 @@ use crate::drawing::{Cartesian, Point};
 use colour_math::{ColourComponent, ColourInterface, RGB};
 use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
 
-pub trait Graticule<F>: std::default::Default
+pub trait Graticule<F, T>
 where
     F: ColourComponent + DegreesConst + RadiansConst,
 {
@@ -41,7 +41,11 @@ where
         self.draw_rings(10, cartesian);
     }
 
-    fn tooltip_for_point(&self, point: Point<F>) -> Option<String> {
-        Some("a tooltip should pop up".to_string())
+    fn tooltip_for_point(&self, _point: Point<F>) -> Option<String> {
+        None
+    }
+
+    fn item_at_point(&self, _point: Point<F>) -> Option<T> {
+        None
     }
 }

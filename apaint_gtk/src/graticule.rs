@@ -1,34 +1,47 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{cell::Cell, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+};
 
 use gtk::prelude::*;
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
-use pw_gix::wrapper::*;
+use pw_gix::{gtkx::menu::ManagedMenu, wrapper::*};
 
 use apaint_cairo::*;
+use pw_gix::sav_state::{MaskedCondns, WidgetStatesControlled};
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule<G>
+pub struct GtkGraticule<G, T>
 where
-    G: apaint::graticule::Graticule<f64> + Sized,
+    G: apaint::graticule::Graticule<f64, T> + Sized,
 {
     drawing_area: gtk::DrawingArea,
     graticule: G,
+    chosen_item: RefCell<Option<T>>,
+    popup_menu: ManagedMenu,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
-impl<G> GtkGraticule<G>
+impl<G, T> GtkGraticule<G, T>
 where
-    G: apaint::graticule::Graticule<f64> + Sized + 'static,
+    G: apaint::graticule::Graticule<f64, T> + Sized + Default + 'static,
+    T: 'static,
 {
-    pub fn new() -> Rc<Self> {
+    const HAS_CHOSEN_ITEM: u64 = 1;
+
+    pub fn new(menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)]) -> Rc<Self> {
+        let popup_menu =
+            ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, menu_items);
         let gtk_graticule = Rc::new(Self {
             drawing_area: gtk::DrawingArea::new(),
             graticule: G::default(),
+            chosen_item: RefCell::new(None),
+            popup_menu,
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
             last_xy: Cell::new(None),
@@ -78,20 +91,44 @@ where
                 gtk::Inhibit(false)
             });
 
-        // MOVE ORIGIN
+        // COMMENCE MOVE ORIGIN OR POPUP MENU
         let gtk_graticule_c = Rc::clone(&gtk_graticule);
         gtk_graticule
             .drawing_area
             .connect_button_press_event(move |_, event| {
                 debug_assert_eq!(event.get_event_type(), gdk::EventType::ButtonPress);
-                if event.get_button() == 1 {
-                    gtk_graticule_c
-                        .last_xy
-                        .set(Some(event.get_position().into()));
-                    return gtk::Inhibit(true);
+                match event.get_button() {
+                    1 => {
+                        gtk_graticule_c
+                            .last_xy
+                            .set(Some(event.get_position().into()));
+                        gtk::Inhibit(true)
+                    }
+                    3 => {
+                        if let Some(item) = gtk_graticule_c
+                            .graticule
+                            .item_at_point(event.get_position().into())
+                        {
+                            *gtk_graticule_c.chosen_item.borrow_mut() = Some(item);
+                            gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
+                                condns: Self::HAS_CHOSEN_ITEM,
+                                mask: Self::HAS_CHOSEN_ITEM,
+                            });
+                        } else {
+                            *gtk_graticule_c.chosen_item.borrow_mut() = None;
+                            gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
+                                condns: 0,
+                                mask: Self::HAS_CHOSEN_ITEM,
+                            });
+                        };
+                        gtk_graticule_c.popup_menu.popup_at_event(event);
+                        gtk::Inhibit(true)
+                    }
+                    _ => gtk::Inhibit(false),
                 }
-                Inhibit(false)
             });
+
+        // MOVE ORIGIN
         let gtk_graticule_c = Rc::clone(&gtk_graticule);
         gtk_graticule
             .drawing_area
