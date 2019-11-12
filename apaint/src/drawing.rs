@@ -1,7 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 use colour_math::{ColourComponent, RGB};
 use float_plus::FloatPlus;
-use normalised_angles::{Angle, Degrees};
+use normalised_angles::Degrees;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point<F: FloatPlus> {
@@ -16,9 +16,9 @@ impl<F: FloatPlus> Point<F> {
 }
 
 impl<F: ColourComponent> Point<F> {
-    pub fn angle(&self) -> Angle<F> {
+    pub fn angle(&self) -> Degrees<F> {
         if let Some(degrees) = Degrees::atan2(self.y, self.x) {
-            degrees.into()
+            degrees
         } else {
             Degrees::DEG_0.into()
         }
@@ -52,8 +52,8 @@ impl<F: FloatPlus> From<(F, F)> for Point<F> {
     }
 }
 
-impl<F: ColourComponent> From<(Angle<F>, F)> for Point<F> {
-    fn from(polar: (Angle<F>, F)) -> Point<F> {
+impl<F: ColourComponent> From<(Degrees<F>, F)> for Point<F> {
+    fn from(polar: (Degrees<F>, F)) -> Point<F> {
         Point {
             x: polar.1 * polar.0.cos(),
             y: polar.1 * polar.0.sin(),

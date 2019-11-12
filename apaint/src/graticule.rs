@@ -5,7 +5,7 @@ use std::rc::Rc;
 use crate::drawing::{Cartesian, Point};
 use crate::ColouredItem;
 use colour_math::{ColourComponent, ColourInterface, RGB};
-use normalised_angles::{Angle, Degrees};
+use normalised_angles::Degrees;
 
 pub trait Graticule<F>
 where
@@ -31,8 +31,8 @@ where
         let mut hue = RGB::<F>::RED.hue().unwrap();
         for _ in 0..13 {
             cartesian.set_line_colour(hue.max_chroma_rgb());
-            let angle: Angle<F> = hue.angle().into();
-            let start: Point<F> = (angle.clone(), start_ring).into();
+            let angle = hue.angle();
+            let start: Point<F> = (angle, start_ring).into();
             let end: Point<F> = (angle, F::ONE).into();
             cartesian.draw_line(&[start, end]);
             hue = hue + Degrees::DEG_30;
