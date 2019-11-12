@@ -3,7 +3,7 @@
 use std::rc::Rc;
 
 use crate::drawing::{Cartesian, Point};
-use crate::{ColouredItem, TooltipText};
+use crate::ColouredItem;
 use colour_math::{ColourComponent, ColourInterface, RGB};
 use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
 
@@ -51,4 +51,16 @@ where
     fn item_at_point(&self, _point: Point<F>) -> Option<Rc<dyn ColouredItem<F>>> {
         None
     }
+}
+
+pub struct ColourShape<F: ColourComponent + DegreesConst + RadiansConst> {
+    coloured_item: Rc<dyn ColouredItem<F>>,
+}
+
+impl<F: ColourComponent + DegreesConst + RadiansConst> ColourShape<F> {
+    pub fn coloured_item(&self) -> Rc<dyn ColouredItem<F>> {
+        Rc::clone(&self.coloured_item)
+    }
+
+    pub fn draw(&self, _cartesian: &impl Cartesian<F>) {}
 }
