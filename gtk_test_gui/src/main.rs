@@ -15,7 +15,7 @@ use apaint_gtk::graticule::GtkGraticule;
 #[derive(Default)]
 struct DummyGraticule {}
 
-impl apaint::graticule::Graticule<f64, u64> for DummyGraticule {}
+impl apaint::graticule::Graticule<f64> for DummyGraticule {}
 
 fn main() {
     if gtk::init().is_err() {
@@ -45,7 +45,7 @@ fn main() {
         0,
     );
     vbox.pack_start(
-        &GtkGraticule::<DummyGraticule, u64>::new(&vec![]).pwo(),
+        &GtkGraticule::<DummyGraticule>::new(&vec![]).pwo(),
         true,
         true,
         0,

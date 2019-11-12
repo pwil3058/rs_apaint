@@ -7,30 +7,33 @@ use std::{
 
 use gtk::prelude::*;
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-use pw_gix::{gtkx::menu::ManagedMenu, wrapper::*};
+use pw_gix::{
+    gtkx::menu::ManagedMenu,
+    sav_state::{MaskedCondns, WidgetStatesControlled},
+    wrapper::*,
+};
 
+use apaint::ColouredItem;
 use apaint_cairo::*;
-use pw_gix::sav_state::{MaskedCondns, WidgetStatesControlled};
+use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule<G, T>
+pub struct GtkGraticule<G>
 where
-    G: apaint::graticule::Graticule<f64, T> + Sized,
+    G: apaint::graticule::Graticule<f64> + Sized,
 {
     drawing_area: gtk::DrawingArea,
     graticule: G,
-    chosen_item: RefCell<Option<T>>,
+    chosen_item: RefCell<Option<Rc<dyn ColouredItem<f64>>>>,
     popup_menu: ManagedMenu,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
-impl<G, T> GtkGraticule<G, T>
+impl<G> GtkGraticule<G>
 where
-    G: apaint::graticule::Graticule<f64, T> + Sized + Default + 'static,
-    T: 'static,
+    G: apaint::graticule::Graticule<f64> + Sized + Default + 'static,
 {
     const HAS_CHOSEN_ITEM: u64 = 1;
 

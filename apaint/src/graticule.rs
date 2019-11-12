@@ -1,10 +1,13 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+use std::rc::Rc;
+
 use crate::drawing::{Cartesian, Point};
+use crate::{ColouredItem, TooltipText};
 use colour_math::{ColourComponent, ColourInterface, RGB};
 use normalised_angles::{Angle, Degrees, DegreesConst, RadiansConst};
 
-pub trait Graticule<F, T>
+pub trait Graticule<F>
 where
     F: ColourComponent + DegreesConst + RadiansConst,
 {
@@ -45,7 +48,7 @@ where
         None
     }
 
-    fn item_at_point(&self, _point: Point<F>) -> Option<T> {
+    fn item_at_point(&self, _point: Point<F>) -> Option<Rc<dyn ColouredItem<F>>> {
         None
     }
 }
