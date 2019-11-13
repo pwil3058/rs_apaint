@@ -491,6 +491,32 @@ pub trait Cartesian<F: ColourComponent> {
         };
         self.draw_polygon(&points, fill);
     }
+
+    fn draw_plus_sign(&self, centre: Point<F>, side_length: F) {
+        let half_side = side_length * F::HALF;
+        let points = vec![
+            Point {
+                x: centre.x,
+                y: centre.y - half_side,
+            },
+            Point {
+                x: centre.x,
+                y: centre.y + half_side,
+            },
+        ];
+        self.draw_line(&points);
+        let points = vec![
+            Point {
+                x: centre.x - half_side,
+                y: centre.y,
+            },
+            Point {
+                x: centre.x + half_side,
+                y: centre.y,
+            },
+        ];
+        self.draw_line(&points);
+    }
 }
 
 #[cfg(test)]

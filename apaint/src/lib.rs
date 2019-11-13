@@ -3,6 +3,7 @@
 pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
+pub mod drawable;
 pub mod drawing;
 pub mod graticule;
 
