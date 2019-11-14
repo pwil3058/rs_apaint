@@ -6,13 +6,13 @@ use crate::{
     drawing::{Cartesian, Point},
     ColouredItem,
 };
-use colour_math::{ColourComponent, ScalarAttribute, RGB};
+use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
 pub trait Drawable<F: ColourComponent> {
     fn draw(&self, cartesian: &impl Cartesian<F>);
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Proximity<F: ColourComponent + PartialOrd> {
     Enclosed(F),
     NotEnclosed(F),
@@ -33,7 +33,7 @@ impl<F: ColourComponent> std::cmp::PartialOrd for Proximity<F> {
     }
 }
 
-pub trait DrawableColourItem<F, CI>: Drawable<F>
+pub trait DrawableColourShape<F, CI>: Drawable<F>
 where
     F: ColourComponent,
     CI: ColouredItem<F>,
@@ -42,14 +42,27 @@ where
     fn coloured_item(&self) -> Rc<CI>;
 }
 
-pub trait DrawableColourItems<F, T, CI>
+pub trait DrawableColourShapes<F, T, CI>
 where
     F: ColourComponent,
-    T: DrawableColourItem<F, CI>,
+    T: DrawableColourShape<F, CI> + Sized,
     CI: ColouredItem<F>,
 {
-    fn nearest_to(&self, _point: Point<F>) -> Option<(Rc<CI>, Proximity<F>)> {
-        None
+    fn iter(&self) -> Box<dyn Iterator<Item = T>>;
+
+    fn nearest_to(&self, point: Point<F>) -> Option<(Rc<CI>, Proximity<F>)> {
+        let mut nearest: Option<(Rc<CI>, Proximity<F>)> = None;
+        for t in self.iter() {
+            let proximity = t.proximity_to(point);
+            if let Some((_, nearest_so_far)) = nearest {
+                if proximity < nearest_so_far {
+                    nearest = Some((t.coloured_item(), proximity));
+                }
+            } else {
+                nearest = Some((t.coloured_item(), proximity));
+            }
+        }
+        nearest
     }
 }
 
@@ -140,7 +153,7 @@ where
     }
 }
 
-impl<F, CI> DrawableColourItem<F, CI> for ColourShape<F, CI>
+impl<F, CI> DrawableColourShape<F, CI> for ColourShape<F, CI>
 where
     F: ColourComponent,
     CI: ColouredItem<F>,
@@ -154,4 +167,53 @@ where
     fn coloured_item(&self) -> Rc<CI> {
         Rc::clone(&self.coloured_item)
     }
+}
+
+pub fn colour_attr_xy<F: ColourComponent>(
+    coloured_item: Rc<impl ColourInterface<F>>,
+    scalar_attribute: ScalarAttribute,
+) -> Point<F> {
+    if let Some(hue_angle) = coloured_item.hue_angle() {
+        let radius = coloured_item.scalar_attribute(scalar_attribute);
+        Point::from((hue_angle, radius))
+    } else {
+        Point {
+            x: F::from(-1.05).unwrap(),
+            y: F::ONE - F::TWO * coloured_item.value(),
+        }
+    }
+}
+
+pub trait XYForAttribute<F: ColourComponent>: ColourInterface<F> {
+    fn xy_for_attribute(&self, scalar_attribute: ScalarAttribute) -> Point<F> {
+        if let Some(hue_angle) = self.hue_angle() {
+            let radius = self.scalar_attribute(scalar_attribute);
+            Point::from((hue_angle, radius))
+        } else {
+            Point {
+                x: F::from(-1.05).unwrap(),
+                y: F::ONE - F::TWO * self.value(),
+            }
+        }
+    }
+}
+
+pub struct Square<F, CI>
+where
+    F: ColourComponent,
+    CI: ColouredItem<F>,
+{
+    coloured_item: Rc<CI>,
+    xy: Point<F>,
+    outline_rgb: RGB<F>,
+}
+
+impl<F, CI> Square<F, CI>
+where
+    F: ColourComponent,
+    CI: ColouredItem<F> + XYForAttribute<F>,
+{
+    //pub fn new(coloured_item: Rc<CI>, scalar_attribute: ScalarAttribute) -> Self {
+    //     let xy = coloured_item.xy_for_attribute(scalar_attribute);
+    //}
 }

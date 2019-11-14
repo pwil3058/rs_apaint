@@ -3,9 +3,10 @@
 pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
-pub mod drawable;
+//pub mod drawable;
 pub mod drawing;
 pub mod graticule;
+pub mod hue_wheel;
 
 pub use colour_math::*;
 pub use float_plus::*;
