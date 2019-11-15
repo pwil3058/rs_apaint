@@ -18,7 +18,6 @@ use apaint::hue_wheel::*;
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
-use gdk::enums::key::A;
 
 #[derive(PWO, Wrapper)]
 pub struct GtkGraticule {

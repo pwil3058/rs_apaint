@@ -1,7 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use crate::drawing::{Dirn, Draw, Point, TextPosn};
-use colour_math::{ColourComponent, ColourInterface, Hue, RGB};
+use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::Degrees;
 
 pub trait ColourAttributeDisplayIfce<F: ColourComponent> {
@@ -471,6 +471,120 @@ where
 
     fn attr_target_value_fg_rgb(&self) -> RGB<F> {
         self.target_chroma_fg_rgb
+    }
+
+    fn label_colour(&self) -> RGB<F> {
+        RGB::WHITE
+    }
+
+    fn colour_stops(&self) -> Vec<(RGB<F>, F)> {
+        self.colour_stops.clone()
+    }
+}
+
+// Greyness
+pub struct GreynessCAD<F: ColourComponent> {
+    greyness: Option<F>,
+    target_greyness: Option<F>,
+    greyness_fg_rgb: RGB<F>,
+    target_greyness_fg_rgb: RGB<F>,
+    colour_stops: Vec<(RGB<F>, F)>,
+}
+
+impl<F: ColourComponent> GreynessCAD<F> {
+    fn set_colour_stops(&mut self, colour: Option<&impl ColourInterface<F>>) {
+        self.colour_stops = if let Some(colour) = colour {
+            if colour.is_grey() {
+                let grey = colour.rgb();
+                vec![(grey, F::ZERO), (grey, F::ONE)]
+            } else {
+                let start_rgb = colour.max_chroma_rgb();
+                let end_rgb = colour.monotone_rgb();
+                vec![(start_rgb, F::ZERO), (end_rgb, F::ONE)]
+            }
+        } else {
+            Self::default_colour_stops()
+        }
+    }
+
+    fn default_colour_stops() -> Vec<(RGB<F>, F)> {
+        let grey = RGB::WHITE * F::HALF;
+        vec![(grey, F::ZERO), (grey, F::ONE)]
+    }
+}
+
+impl<F> ColourAttributeDisplayIfce<F> for GreynessCAD<F>
+where
+    F: ColourComponent,
+{
+    const LABEL: &'static str = "Greyness";
+
+    fn new() -> Self {
+        let grey = RGB::WHITE * F::HALF;
+        Self {
+            greyness: None,
+            target_greyness: None,
+            greyness_fg_rgb: RGB::BLACK,
+            target_greyness_fg_rgb: RGB::BLACK,
+            colour_stops: vec![(grey, F::ZERO), (grey, F::ONE)],
+        }
+    }
+
+    fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.greyness = Some(colour.greyness());
+            self.greyness_fg_rgb = colour.best_foreground_rgb();
+            if let Some(target_greyness) = self.target_greyness {
+                if target_greyness == F::ZERO {
+                    self.set_colour_stops(Some(colour));
+                }
+            } else {
+                self.set_colour_stops(Some(colour));
+            }
+        } else {
+            self.greyness = None;
+            self.greyness_fg_rgb = RGB::BLACK;
+            if self.target_greyness.is_none() {
+                self.colour_stops = Self::default_colour_stops()
+            }
+        }
+    }
+
+    fn attr_value(&self) -> Option<F> {
+        self.greyness
+    }
+
+    fn attr_value_fg_rgb(&self) -> RGB<F> {
+        self.greyness_fg_rgb
+    }
+
+    fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
+        if let Some(colour) = colour {
+            self.target_greyness = Some(colour.greyness());
+            self.target_greyness_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            if colour.is_grey() {
+                if let Some(greyness) = self.greyness {
+                    if greyness == F::ZERO {
+                        self.set_colour_stops(Some(colour));
+                    }
+                } else {
+                    self.set_colour_stops(Some(colour));
+                }
+            } else {
+                self.set_colour_stops(Some(colour));
+            }
+        } else {
+            self.target_greyness = None;
+            self.target_greyness_fg_rgb = RGB::BLACK;
+        }
+    }
+
+    fn attr_target_value(&self) -> Option<F> {
+        self.target_greyness
+    }
+
+    fn attr_target_value_fg_rgb(&self) -> RGB<F> {
+        self.target_greyness_fg_rgb
     }
 
     fn label_colour(&self) -> RGB<F> {

@@ -99,14 +99,11 @@ pub struct ColourEditor {
 }
 
 impl ColourEditor {
-    pub fn new(
-        cads: &[Rc<dyn DynColourAttributeDisplay>],
-        extra_buttons: &[gtk::Button],
-    ) -> Rc<Self> {
+    pub fn new(scalar_attributes: &[ScalarAttribute], extra_buttons: &[gtk::Button]) -> Rc<Self> {
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator: RefCell::new(RGBManipulator::new()),
-            cads: ColourAttributeDisplayStack::new(cads),
+            cads: ColourAttributeDisplayStack::new(scalar_attributes),
             drawing_area: gtk::DrawingArea::new(),
             rgb_entry: RGBHexEntryBox::create(),
             incr_value_btn: gtk::Button::new_with_label("Value++"),

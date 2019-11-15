@@ -7,7 +7,6 @@ use pw_gix::wrapper::*;
 
 use apaint::characteristics::CharacteristicIfce;
 
-use apaint_gtk::attributes::artist_cads;
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::colour_edit::ColourEditor;
@@ -35,7 +34,11 @@ fn main() {
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(&hbox, false, false, 0);
     vbox.pack_start(
-        &ColourEditor::new(&artist_cads(), &vec![]).pwo(),
+        &ColourEditor::new(
+            &[ScalarAttribute::Value, ScalarAttribute::Greyness],
+            &vec![],
+        )
+        .pwo(),
         false,
         false,
         0,

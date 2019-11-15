@@ -9,7 +9,9 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use pw_gix::wrapper::*;
 
 use crate::colour::{ColourInterface, ScalarAttribute, RGB};
-use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD, WarmthCAD};
+use apaint::attributes::{
+    ChromaCAD, ColourAttributeDisplayIfce, GreynessCAD, HueCAD, ValueCAD, WarmthCAD,
+};
 use apaint_cairo::{Drawer, Size};
 
 pub trait DynColourAttributeDisplay: PackableWidgetObject<PWT = gtk::DrawingArea> {
@@ -24,7 +26,7 @@ pub struct ColourAttributeDisplayStack {
 }
 
 impl ColourAttributeDisplayStack {
-    pub fn new(cads: &[Rc<dyn DynColourAttributeDisplay>]) -> Self {
+    pub fn new_obsolete(cads: &[Rc<dyn DynColourAttributeDisplay>]) -> Self {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         for cad in cads.iter() {
             vbox.pack_start(&cad.pwo(), true, true, 0);
@@ -33,6 +35,26 @@ impl ColourAttributeDisplayStack {
             vbox,
             cads: cads.to_vec(),
         }
+    }
+
+    pub fn new(scalar_attributes: &[ScalarAttribute]) -> Self {
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let mut cads = vec![];
+        let hue_cad: Rc<dyn DynColourAttributeDisplay> =
+            ColourAttributeDisplay::<HueCAD<f64>>::new();
+        vbox.pack_start(&hue_cad.pwo(), true, true, 0);
+        cads.push(hue_cad);
+        for scalar_attribute in scalar_attributes.iter() {
+            let cad: Rc<dyn DynColourAttributeDisplay> = match scalar_attribute {
+                ScalarAttribute::Value => ColourAttributeDisplay::<ValueCAD<f64>>::new(),
+                ScalarAttribute::Chroma => ColourAttributeDisplay::<ChromaCAD<f64>>::new(),
+                ScalarAttribute::Warmth => ColourAttributeDisplay::<WarmthCAD<f64>>::new(),
+                ScalarAttribute::Greyness => ColourAttributeDisplay::<GreynessCAD<f64>>::new(),
+            };
+            vbox.pack_start(&cad.pwo(), true, true, 0);
+            cads.push(cad);
+        }
+        Self { vbox, cads }
     }
 
     pub fn set_colour(&self, colour: Option<&impl ColourInterface<f64>>) {
@@ -98,19 +120,9 @@ where
     }
 }
 
-pub fn artist_cads() -> Vec<Rc<dyn DynColourAttributeDisplay>> {
-    vec![
-        ColourAttributeDisplay::<HueCAD<f64>>::new(),
-        ColourAttributeDisplay::<ChromaCAD<f64>>::new(),
-        ColourAttributeDisplay::<ValueCAD<f64>>::new(),
-        ColourAttributeDisplay::<WarmthCAD<f64>>::new(),
-    ]
-}
-
 #[derive(PWO)]
 pub struct AttributeSelectorRadioButtons {
     gtk_box: gtk::Box,
-    radio_buttons: Vec<gtk::RadioButton>,
     callbacks: RefCell<Vec<Box<dyn Fn(ScalarAttribute)>>>,
 }
 
@@ -118,7 +130,6 @@ impl AttributeSelectorRadioButtons {
     pub fn new(orientation: gtk::Orientation, attributes: &[ScalarAttribute]) -> Rc<Self> {
         let asrb = Rc::new(Self {
             gtk_box: gtk::Box::new(orientation, 0),
-            radio_buttons: vec![],
             callbacks: RefCell::new(vec![]),
         });
 
