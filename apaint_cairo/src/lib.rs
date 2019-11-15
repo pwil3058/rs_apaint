@@ -236,6 +236,11 @@ impl<'a> Cartesian<f64> for CairoCartesian<'a> {
         self.cairo_context.set_line_width(width);
     }
 
+    fn set_background_colour(&self, rgb: RGB) {
+        self.set_colour(rgb);
+        self.cairo_context.paint();
+    }
+
     fn set_line_colour(&self, rgb: RGB) {
         self.line_colour.set(rgb);
     }

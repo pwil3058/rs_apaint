@@ -140,11 +140,10 @@ impl GtkGraticule {
                         gtk::Inhibit(true)
                     }
                     3 => {
-                        if let Some(item) = gtk_graticule_c
-                            .coloured_items
-                            .borrow()
-                            .item_at_point(event.get_position().into())
-                        {
+                        if let Some(item) = gtk_graticule_c.coloured_items.borrow().item_at_point(
+                            event.get_position().into(),
+                            gtk_graticule_c.attribute.get(),
+                        ) {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item);
                             gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
                                 condns: Self::HAS_CHOSEN_ITEM,
@@ -209,7 +208,7 @@ impl GtkGraticule {
                 if let Some(text) = gtk_graticule_c
                     .coloured_items
                     .borrow()
-                    .tooltip_for_point(point)
+                    .tooltip_for_point(point, gtk_graticule_c.attribute.get())
                 {
                     tooltip.set_text(Some(&text));
                     true

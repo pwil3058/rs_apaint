@@ -315,6 +315,7 @@ pub trait Cartesian<F: ColourComponent> {
     fn draw_line(&self, line: &[Point<F>]);
     fn draw_polygon(&self, polygon: &[Point<F>], fill: bool);
     fn set_line_width(&self, width: F);
+    fn set_background_colour(&self, rgb: RGB<F>);
     fn set_line_colour(&self, rgb: RGB<F>);
     fn set_fill_colour(&self, rgb: RGB<F>);
 
