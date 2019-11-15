@@ -3,9 +3,7 @@
 pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
-//pub mod drawable;
 pub mod drawing;
-pub mod graticule;
 pub mod hue_wheel;
 
 pub use colour_math::*;
@@ -21,5 +19,3 @@ impl<F: ColourComponent> TooltipText for RGB<F> {
         Some(format!("RGB: {}", self.pango_string()))
     }
 }
-
-pub trait ColouredItem<F: ColourComponent>: ColourInterface<F> + TooltipText {}

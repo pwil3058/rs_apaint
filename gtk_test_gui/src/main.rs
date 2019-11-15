@@ -13,11 +13,6 @@ use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::colour_edit::ColourEditor;
 use apaint_gtk::graticule::GtkGraticule;
 
-#[derive(Default)]
-struct DummyGraticule {}
-
-impl apaint::graticule::Graticule<f64> for DummyGraticule {}
-
 fn main() {
     if gtk::init().is_err() {
         println!("Hello, world!");

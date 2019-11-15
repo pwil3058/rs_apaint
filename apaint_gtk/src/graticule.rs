@@ -14,7 +14,7 @@ use pw_gix::{
 };
 
 use crate::attributes::AttributeSelectorRadioButtons;
-use apaint::{hue_wheel::*, ColouredItem};
+use apaint::hue_wheel::*;
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
