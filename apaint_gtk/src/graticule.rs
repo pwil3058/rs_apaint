@@ -13,37 +13,46 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint::ColouredItem;
+use crate::attributes::AttributeSelectorRadioButtons;
+use apaint::{hue_wheel::*, ColouredItem};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
+use colour_math::ScalarAttribute;
+use gdk::enums::key::A;
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule<G>
-where
-    G: apaint::graticule::Graticule<f64> + Sized,
-{
+pub struct GtkGraticule {
+    vbox: gtk::Box,
     drawing_area: gtk::DrawingArea,
-    graticule: G,
-    chosen_item: RefCell<Option<Rc<dyn ColouredItem<f64>>>>,
+    coloured_items: RefCell<Vec<RGB>>,
+    chosen_item: RefCell<Option<RGB>>,
+    attribute_selector: Rc<AttributeSelectorRadioButtons>,
+    attribute: Cell<ScalarAttribute>,
     popup_menu: ManagedMenu,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
-impl<G> GtkGraticule<G>
-where
-    G: apaint::graticule::Graticule<f64> + Sized + Default + 'static,
-{
+impl GtkGraticule {
     const HAS_CHOSEN_ITEM: u64 = 1;
 
-    pub fn new(menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)]) -> Rc<Self> {
+    pub fn new(
+        menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)],
+        attributes: &[ScalarAttribute],
+    ) -> Rc<Self> {
         let popup_menu =
             ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, menu_items);
         let gtk_graticule = Rc::new(Self {
+            vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             drawing_area: gtk::DrawingArea::new(),
-            graticule: G::default(),
+            coloured_items: RefCell::new(Vec::new()),
             chosen_item: RefCell::new(None),
+            attribute_selector: AttributeSelectorRadioButtons::new(
+                gtk::Orientation::Horizontal,
+                attributes,
+            ),
+            attribute: Cell::new(*attributes.first().unwrap()),
             popup_menu,
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
@@ -58,14 +67,35 @@ where
             | gdk::EventMask::BUTTON_RELEASE_MASK;
         gtk_graticule.drawing_area.add_events(events);
 
+        gtk_graticule
+            .vbox
+            .pack_start(&gtk_graticule.attribute_selector.pwo(), false, false, 0);
+        gtk_graticule
+            .vbox
+            .pack_start(&gtk_graticule.drawing_area, true, true, 0);
+
+        let gtk_graticule_c = Rc::clone(&gtk_graticule);
+        gtk_graticule
+            .attribute_selector
+            .connect_changed(move |attribute| {
+                gtk_graticule_c.attribute.set(attribute);
+                gtk_graticule_c.drawing_area.queue_draw()
+            });
+
         let gtk_graticule_c = Rc::clone(&gtk_graticule);
         gtk_graticule
             .drawing_area
             .connect_draw(move |_, cairo_context| {
                 cairo_context.transform(gtk_graticule_c.current_transform_matrix());
+                let cartesian = CairoCartesian::new(cairo_context);
                 gtk_graticule_c
-                    .graticule
-                    .draw(&CairoCartesian::new(cairo_context));
+                    .coloured_items
+                    .borrow()
+                    .draw_graticule(&cartesian);
+                gtk_graticule_c
+                    .coloured_items
+                    .borrow()
+                    .draw_all(gtk_graticule_c.attribute.get(), &cartesian);
                 gtk::Inhibit(false)
             });
 
@@ -99,7 +129,9 @@ where
         gtk_graticule
             .drawing_area
             .connect_button_press_event(move |_, event| {
-                debug_assert_eq!(event.get_event_type(), gdk::EventType::ButtonPress);
+                if event.get_event_type() != gdk::EventType::ButtonPress {
+                    return gtk::Inhibit(false);
+                };
                 match event.get_button() {
                     1 => {
                         gtk_graticule_c
@@ -109,7 +141,8 @@ where
                     }
                     3 => {
                         if let Some(item) = gtk_graticule_c
-                            .graticule
+                            .coloured_items
+                            .borrow()
                             .item_at_point(event.get_position().into())
                         {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item);
@@ -173,7 +206,11 @@ where
             .drawing_area
             .connect_query_tooltip(move |_, x, y, _, tooltip| {
                 let point = gtk_graticule_c.device_to_user(x as f64, y as f64);
-                if let Some(text) = gtk_graticule_c.graticule.tooltip_for_point(point) {
+                if let Some(text) = gtk_graticule_c
+                    .coloured_items
+                    .borrow()
+                    .tooltip_for_point(point)
+                {
                     tooltip.set_text(Some(&text));
                     true
                 } else {
@@ -221,5 +258,9 @@ where
     fn shift_origin_offset(&self, device_delta: Point) {
         let delta = self.device_to_user_delta(device_delta);
         self.origin_offset.set(self.origin_offset.get() + delta);
+    }
+
+    pub fn add_item(&self, rgb: RGB) {
+        self.coloured_items.borrow_mut().push(rgb)
     }
 }

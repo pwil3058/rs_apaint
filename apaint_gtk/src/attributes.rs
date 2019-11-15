@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use gtk::{BoxExt, WidgetExt};
+use gtk::{BoxExt, RadioButtonExt, ToggleButtonExt, WidgetExt};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -8,7 +8,7 @@ use std::rc::Rc;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use pw_gix::wrapper::*;
 
-use crate::colour::{ColourInterface, RGB};
+use crate::colour::{ColourInterface, ScalarAttribute, RGB};
 use apaint::attributes::{ChromaCAD, ColourAttributeDisplayIfce, HueCAD, ValueCAD, WarmthCAD};
 use apaint_cairo::{Drawer, Size};
 
@@ -105,4 +105,52 @@ pub fn artist_cads() -> Vec<Rc<dyn DynColourAttributeDisplay>> {
         ColourAttributeDisplay::<ValueCAD<f64>>::new(),
         ColourAttributeDisplay::<WarmthCAD<f64>>::new(),
     ]
+}
+
+#[derive(PWO)]
+pub struct AttributeSelectorRadioButtons {
+    gtk_box: gtk::Box,
+    radio_buttons: Vec<gtk::RadioButton>,
+    callbacks: RefCell<Vec<Box<dyn Fn(ScalarAttribute)>>>,
+}
+
+impl AttributeSelectorRadioButtons {
+    pub fn new(orientation: gtk::Orientation, attributes: &[ScalarAttribute]) -> Rc<Self> {
+        let asrb = Rc::new(Self {
+            gtk_box: gtk::Box::new(orientation, 0),
+            radio_buttons: vec![],
+            callbacks: RefCell::new(vec![]),
+        });
+
+        let mut first: Option<gtk::RadioButton> = None;
+        for attr in attributes.iter() {
+            let button = gtk::RadioButton::new_with_label(&attr.to_string());
+            asrb.gtk_box.pack_start(&button, false, false, 0);
+            if let Some(ref first) = first {
+                button.join_group(Some(first))
+            } else {
+                first = Some(button.clone())
+            }
+            let asrb_c = Rc::clone(&asrb);
+            let attr = *attr;
+            button.connect_toggled(move |button| {
+                let its_us = button.get_active();
+                if its_us {
+                    asrb_c.notify(attr);
+                }
+            });
+        }
+
+        asrb
+    }
+
+    pub fn connect_changed<F: Fn(ScalarAttribute) + 'static>(&self, callback: F) {
+        self.callbacks.borrow_mut().push(Box::new(callback))
+    }
+
+    fn notify(&self, attr: ScalarAttribute) {
+        for callback in self.callbacks.borrow().iter() {
+            callback(attr);
+        }
+    }
 }

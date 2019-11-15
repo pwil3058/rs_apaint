@@ -9,6 +9,7 @@ use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::attributes::artist_cads;
 use apaint_gtk::characteristics::FinishEntry;
+use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::colour_edit::ColourEditor;
 use apaint_gtk::graticule::GtkGraticule;
 
@@ -44,12 +45,24 @@ fn main() {
         false,
         0,
     );
-    vbox.pack_start(
-        &GtkGraticule::<DummyGraticule>::new(&vec![]).pwo(),
-        true,
-        true,
-        0,
+    let graticule = GtkGraticule::new(
+        &vec![],
+        &[
+            ScalarAttribute::Value,
+            ScalarAttribute::Chroma,
+            ScalarAttribute::Warmth,
+        ],
     );
+    for rgb in RGB::PRIMARIES.iter() {
+        graticule.add_item(*rgb);
+    }
+    for rgb in RGB::SECONDARIES.iter() {
+        graticule.add_item(*rgb);
+    }
+    for rgb in RGB::GREYS.iter() {
+        graticule.add_item(*rgb);
+    }
+    vbox.pack_start(&graticule.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());
