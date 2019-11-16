@@ -13,7 +13,7 @@ use pw_gix::wrapper::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::angles::Degrees;
-use crate::attributes::{ColourAttributeDisplayStack, DynColourAttributeDisplay};
+use crate::attributes::ColourAttributeDisplayStack;
 use crate::colour::*;
 use apaint_cairo::Point;
 
