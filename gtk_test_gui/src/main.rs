@@ -11,7 +11,7 @@ use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::colour_edit::ColourEditor;
 use apaint_gtk::graticule::GtkGraticule;
-use apaint_gtk::list::RGBListView;
+use apaint_gtk::list::RGBList;
 
 fn main() {
     if gtk::init().is_err() {
@@ -62,7 +62,7 @@ fn main() {
         graticule.add_item(*rgb);
     }
     vbox.pack_start(&graticule.pwo(), true, true, 0);
-    let list = RGBListView::new();
+    let list = RGBList::new();
     vbox.pack_start(&list.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);

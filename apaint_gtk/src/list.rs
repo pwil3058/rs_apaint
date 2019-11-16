@@ -10,44 +10,20 @@ use pw_gix::{gtkx::list_store::ListRowOps, wrapper::PackableWidgetObject};
 use crate::colour::{ColourInterface, RGB};
 
 #[derive(PWO)]
-pub struct RGBListView {
+pub struct ColouredItemListView {
     view: gtk::TreeView,
     selected_id: RefCell<Option<String>>,
 }
 
-impl RGBListView {
-    pub fn new() -> Rc<Self> {
-        let list_store =
-            gtk::ListStore::new(&[gtk::Type::String, gtk::Type::String, gtk::Type::String]);
-        for rgb in RGB::PRIMARIES
-            .iter()
-            .chain(RGB::SECONDARIES.iter())
-            .chain(RGB::GREYS.iter())
-        {
-            let row: Vec<gtk::Value> = vec![
-                rgb.pango_string().to_value(),
-                rgb.pango_string().to_value(),
-                rgb.best_foreground_rgb().pango_string().to_value(),
-            ];
-            list_store.append_row(&row);
-        }
-
+impl ColouredItemListView {
+    pub fn new(list_store: &gtk::ListStore, columns: &[gtk::TreeViewColumn]) -> Rc<Self> {
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
-        view.set_model(Some(&list_store));
+        view.set_model(Some(list_store));
         view.get_selection().set_mode(gtk::SelectionMode::None);
 
-        let col = gtk::TreeViewColumnBuilder::new()
-            .title("Id")
-            .resizable(false)
-            .sort_column_id(0)
-            .sort_indicator(true)
-            .build();
-        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
-        col.pack_start(&cell, false);
-        col.add_attribute(&cell, "text", 0);
-        col.add_attribute(&cell, "background", 1);
-        col.add_attribute(&cell, "foreground", 2);
-        view.append_column(&col);
+        for col in columns.iter() {
+            view.append_column(col);
+        }
 
         let rgb_l_v = Rc::new(Self {
             view,
@@ -83,5 +59,51 @@ impl RGBListView {
             }
         };
         *self.selected_id.borrow_mut() = None;
+    }
+}
+
+#[derive(PWO)]
+pub struct RGBList {
+    scrolled_window: gtk::ScrolledWindow,
+    _list_store: gtk::ListStore,
+}
+
+impl RGBList {
+    pub fn new() -> Rc<Self> {
+        let _list_store =
+            gtk::ListStore::new(&[gtk::Type::String, gtk::Type::String, gtk::Type::String]);
+        for rgb in RGB::PRIMARIES
+            .iter()
+            .chain(RGB::SECONDARIES.iter())
+            .chain(RGB::GREYS.iter())
+        {
+            let row: Vec<gtk::Value> = vec![
+                rgb.pango_string().to_value(),
+                rgb.pango_string().to_value(),
+                rgb.best_foreground_rgb().pango_string().to_value(),
+            ];
+            _list_store.append_row(&row);
+        }
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Id")
+            .resizable(false)
+            .sort_column_id(0)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 0);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+
+        let ci_list_view = ColouredItemListView::new(&_list_store, &[col]);
+        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+        scrolled_window.add(&ci_list_view.pwo());
+
+        Rc::new(Self {
+            scrolled_window,
+            _list_store,
+        })
     }
 }
