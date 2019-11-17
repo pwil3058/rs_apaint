@@ -16,13 +16,45 @@ pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd {
     fn full(&self) -> &'static str;
 }
 
-/// Finish.
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
 pub enum Finish {
     Gloss,
     SemiGloss,
     SemiFlat,
     Flat,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+pub enum Transparency {
+    Opaque,
+    SemiOpaque,
+    SemiTransparent,
+    Transparent,
+    Clear,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+pub enum Permanence {
+    ExtremelyPermanent,
+    Permanent,
+    ModeratelyDurable,
+    Fugitive,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+pub enum Fluorescence {
+    Fluorescent,
+    SemiFluorescent,
+    SemiNonFluorescent,
+    NonFluorescent,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+pub enum Metallicness {
+    Metal,
+    Metallic,
+    SemiMetallic,
+    NonMetallic,
 }
 
 #[cfg(test)]

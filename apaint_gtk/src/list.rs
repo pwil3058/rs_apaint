@@ -128,17 +128,29 @@ pub struct RGBList {
 
 impl RGBList {
     pub fn new() -> Rc<Self> {
-        let _list_store =
-            gtk::ListStore::new(&[gtk::Type::String, gtk::Type::String, gtk::Type::String]);
+        let _list_store = gtk::ListStore::new(&[
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            f64::static_type(),
+        ]);
         for rgb in RGB::PRIMARIES
             .iter()
             .chain(RGB::SECONDARIES.iter())
             .chain(RGB::GREYS.iter())
         {
+            let ha = if let Some(angle) = rgb.hue_angle() {
+                angle.degrees()
+            } else {
+                -181.0 + rgb.value()
+            };
             let row: Vec<gtk::Value> = vec![
                 rgb.pango_string().to_value(),
                 rgb.pango_string().to_value(),
                 rgb.best_foreground_rgb().pango_string().to_value(),
+                rgb.max_chroma_rgb().pango_string().to_value(),
+                ha.to_value(),
             ];
             _list_store.append_row(&row);
         }
@@ -155,9 +167,18 @@ impl RGBList {
         col.add_attribute(&cell, "background", 1);
         col.add_attribute(&cell, "foreground", 2);
 
+        let col2 = gtk::TreeViewColumnBuilder::new()
+            .title("Hue")
+            .sort_column_id(4)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col2.pack_start(&cell, false);
+        col2.add_attribute(&cell, "background", 3);
+
         let ci_list_view = ColouredItemListView::new(
             &_list_store,
-            &[col],
+            &[col, col2],
             &[(
                 "info",
                 "Colour Information",
