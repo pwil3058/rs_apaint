@@ -5,7 +5,7 @@ extern crate proc_macro;
 use heck::KebabCase;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput};
+use syn::{parse_macro_input, Data, DeriveInput, Ident};
 
 fn acronym(input: &str) -> String {
     let mut output = String::new();
@@ -17,7 +17,7 @@ fn acronym(input: &str) -> String {
     output
 }
 
-#[proc_macro_derive(Characteristic)]
+#[proc_macro_derive(Characteristic, attributes(default))]
 pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
     let enum_name = parsed_input.ident;
@@ -27,11 +27,21 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let mut full_tokens = vec![];
     let mut from_tokens = vec![];
     let mut value_tokens = vec![];
+    let mut first: Option<Ident> = None;
+    let mut default: Option<Ident> = None;
     let fmt_str = format!("\"{{}}\": Malformed '{}' value string", name);
     match parsed_input.data {
         Data::Enum(e) => {
             for v in e.variants {
                 let v_name = v.ident.clone();
+                if first.is_none() {
+                    first = Some(v.ident.clone());
+                }
+                for attr in v.attrs.iter() {
+                    if attr.path.is_ident("default") {
+                        default = Some(v.ident.clone());
+                    }
+                }
                 let v_abbrev = acronym(&v.ident.to_string());
                 let v_full = v.ident.to_string().to_kebab_case();
                 let token = quote! {
@@ -54,6 +64,11 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
         }
         _ => panic!("'Characteristic' can only be derived for enums."),
     }
+    let default_value = if let Some(default) = default {
+        default
+    } else {
+        first.unwrap()
+    };
     let tokens = quote! {
         impl CharacteristicIfce for #enum_name {
             const NAME: &'static str = #name;
@@ -85,6 +100,10 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
                     _ => Err(format!(#fmt_str, string)),
                 }
             }
+        }
+
+        impl std::default::Default for #enum_name {
+            fn default() -> Self { #enum_name::#default_value }
         }
     };
 

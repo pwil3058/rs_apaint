@@ -36,6 +36,7 @@ pub enum Transparency {
 #[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
 pub enum Permanence {
     ExtremelyPermanent,
+    #[default]
     Permanent,
     ModeratelyDurable,
     Fugitive,
@@ -46,6 +47,7 @@ pub enum Fluorescence {
     Fluorescent,
     SemiFluorescent,
     SemiNonFluorescent,
+    #[default]
     NonFluorescent,
 }
 
@@ -54,6 +56,7 @@ pub enum Metallicness {
     Metal,
     Metallic,
     SemiMetallic,
+    #[default]
     NonMetallic,
 }
 
@@ -79,5 +82,14 @@ mod tests {
         for a in ["gloss", "semi-gloss", "semi-flat", "flat"].iter() {
             assert_eq!(Finish::from_str(a).unwrap().full(), *a);
         }
+    }
+
+    #[test]
+    fn defaults() {
+        assert_eq!(Finish::default(), Finish::Gloss);
+        assert_eq!(Transparency::default(), Transparency::Opaque);
+        assert_eq!(Permanence::default(), Permanence::Permanent);
+        assert_eq!(Fluorescence::default(), Fluorescence::NonFluorescent);
+        assert_eq!(Metallicness::default(), Metallicness::NonMetallic);
     }
 }
