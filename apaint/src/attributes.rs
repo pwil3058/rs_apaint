@@ -1,7 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use crate::drawing::{Dirn, Draw, Point, TextPosn};
-use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
+use colour_math::{ColourComponent, ColourInterface, Hue, RGB};
 use normalised_angles::Degrees;
 
 pub trait ColourAttributeDisplayIfce<F: ColourComponent> {

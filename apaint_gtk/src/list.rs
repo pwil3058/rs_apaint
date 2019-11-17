@@ -1,22 +1,34 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use gtk::prelude::*;
 
 use apaint_gtk_boilerplate::PWO;
-use pw_gix::{gtkx::list_store::ListRowOps, wrapper::PackableWidgetObject};
+use pw_gix::{
+    gtkx::{list_store::ListRowOps, menu::ManagedMenu},
+    sav_state::WidgetStatesControlled,
+    wrapper::PackableWidgetObject,
+};
 
 use crate::colour::{ColourInterface, RGB};
+use pw_gix::sav_state::MaskedCondns;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
     view: gtk::TreeView,
     selected_id: RefCell<Option<String>>,
+    popup_menu: ManagedMenu,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&str)>>>>,
 }
 
 impl ColouredItemListView {
-    pub fn new(list_store: &gtk::ListStore, columns: &[gtk::TreeViewColumn]) -> Rc<Self> {
+    const SAV_SELECTION_MADE: u64 = 1;
+    pub fn new(
+        list_store: &gtk::ListStore,
+        columns: &[gtk::TreeViewColumn],
+        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
+    ) -> Rc<Self> {
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
         view.set_model(Some(list_store));
         view.get_selection().set_mode(gtk::SelectionMode::None);
@@ -28,13 +40,28 @@ impl ColouredItemListView {
         let rgb_l_v = Rc::new(Self {
             view,
             selected_id: RefCell::new(None),
+            popup_menu: ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, &[]),
+            callbacks: RefCell::new(HashMap::new()),
         });
+
+        for &(name, label_text, image, tooltip_text, condns) in menu_items.iter() {
+            let rgb_l_v_c = Rc::clone(&rgb_l_v);
+            rgb_l_v
+                .popup_menu
+                .append_item(name, label_text, image, tooltip_text, condns)
+                .connect_activate(move |_| rgb_l_v_c.menu_item_selected(name));
+            rgb_l_v
+                .callbacks
+                .borrow_mut()
+                .insert(name.to_string(), vec![]);
+        }
 
         let rgb_l_v_c = Rc::clone(&rgb_l_v);
         rgb_l_v.view.connect_button_press_event(move |_, event| {
             if event.get_event_type() == gdk::EventType::ButtonPress {
                 if event.get_button() == 3 {
                     rgb_l_v_c.set_selected_id(event.get_position());
+                    rgb_l_v_c.popup_menu.popup_at_event(event);
                     return gtk::Inhibit(true);
                 }
             };
@@ -52,6 +79,10 @@ impl ColouredItemListView {
                         let value = list_store.get_value(&iter, 0);
                         if let Some(string) = value.get() {
                             *self.selected_id.borrow_mut() = Some(string);
+                            self.popup_menu.update_condns(MaskedCondns {
+                                condns: Self::SAV_SELECTION_MADE,
+                                mask: Self::SAV_SELECTION_MADE,
+                            });
                             return;
                         }
                     }
@@ -59,6 +90,32 @@ impl ColouredItemListView {
             }
         };
         *self.selected_id.borrow_mut() = None;
+        self.popup_menu.update_condns(MaskedCondns {
+            condns: 0,
+            mask: Self::SAV_SELECTION_MADE,
+        });
+    }
+
+    pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {
+        self.callbacks
+            .borrow_mut()
+            .get_mut(name)
+            .expect("invalid name")
+            .push(Box::new(callback));
+    }
+
+    fn menu_item_selected(&self, name: &str) {
+        if let Some(ref id) = *self.selected_id.borrow() {
+            for callback in self
+                .callbacks
+                .borrow()
+                .get(name)
+                .expect("invalid name")
+                .iter()
+            {
+                callback(&id)
+            }
+        }
     }
 }
 
@@ -97,7 +154,18 @@ impl RGBList {
         col.add_attribute(&cell, "background", 1);
         col.add_attribute(&cell, "foreground", 2);
 
-        let ci_list_view = ColouredItemListView::new(&_list_store, &[col]);
+        let ci_list_view = ColouredItemListView::new(
+            &_list_store,
+            &[col],
+            &[(
+                "info",
+                "Colour Information",
+                None,
+                "Show detailed information for colour under the pointer",
+                ColouredItemListView::SAV_SELECTION_MADE,
+            )],
+        );
+        ci_list_view.connect_popup_menu_item("info", |id| println!("info requested for '{}'", id));
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
         scrolled_window.add(&ci_list_view.pwo());
 
