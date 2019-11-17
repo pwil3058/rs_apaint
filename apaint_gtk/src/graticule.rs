@@ -2,6 +2,7 @@
 
 use std::{
     cell::{Cell, RefCell},
+    collections::HashMap,
     rc::Rc,
 };
 
@@ -28,20 +29,19 @@ pub struct GtkGraticule {
     attribute_selector: Rc<AttributeSelectorRadioButtons>,
     attribute: Cell<ScalarAttribute>,
     popup_menu: ManagedMenu,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&RGB)>>>>,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
 impl GtkGraticule {
-    const HAS_CHOSEN_ITEM: u64 = 1;
+    pub const HAS_CHOSEN_ITEM: u64 = 1;
 
     pub fn new(
-        menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)],
+        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
         attributes: &[ScalarAttribute],
     ) -> Rc<Self> {
-        let popup_menu =
-            ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, menu_items);
         let gtk_graticule = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             drawing_area: gtk::DrawingArea::new(),
@@ -52,11 +52,25 @@ impl GtkGraticule {
                 attributes,
             ),
             attribute: Cell::new(*attributes.first().unwrap()),
-            popup_menu,
+            popup_menu: ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, &[]),
+            callbacks: RefCell::new(HashMap::new()),
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
             last_xy: Cell::new(None),
         });
+
+        for &(name, label_text, image, tooltip_text, condns) in menu_items.iter() {
+            let gtk_graticule_c = Rc::clone(&gtk_graticule);
+            gtk_graticule
+                .popup_menu
+                .append_item(name, label_text, image, tooltip_text, condns)
+                .connect_activate(move |_| gtk_graticule_c.menu_item_selected(name));
+            gtk_graticule
+                .callbacks
+                .borrow_mut()
+                .insert(name.to_string(), vec![]);
+        }
+
         gtk_graticule.drawing_area.set_size_request(200, 200);
         gtk_graticule.drawing_area.set_has_tooltip(true);
         let events = gdk::EventMask::SCROLL_MASK
@@ -139,8 +153,9 @@ impl GtkGraticule {
                         gtk::Inhibit(true)
                     }
                     3 => {
+                        let device_point: Point = event.get_position().into();
                         if let Some(item) = gtk_graticule_c.coloured_items.borrow().item_at_point(
-                            event.get_position().into(),
+                            gtk_graticule_c.device_to_user(device_point.x, device_point.y),
                             gtk_graticule_c.attribute.get(),
                         ) {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item);
@@ -260,5 +275,27 @@ impl GtkGraticule {
 
     pub fn add_item(&self, rgb: RGB) {
         self.coloured_items.borrow_mut().push(rgb)
+    }
+
+    pub fn connect_popup_menu_item<F: Fn(&RGB) + 'static>(&self, name: &str, callback: F) {
+        self.callbacks
+            .borrow_mut()
+            .get_mut(name)
+            .expect("invalid name")
+            .push(Box::new(callback));
+    }
+
+    fn menu_item_selected(&self, name: &str) {
+        if let Some(ref item) = *self.chosen_item.borrow() {
+            for callback in self
+                .callbacks
+                .borrow()
+                .get(name)
+                .expect("invalid name")
+                .iter()
+            {
+                callback(item)
+            }
+        }
     }
 }

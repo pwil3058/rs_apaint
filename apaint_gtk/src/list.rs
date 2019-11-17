@@ -23,7 +23,8 @@ pub struct ColouredItemListView {
 }
 
 impl ColouredItemListView {
-    const SAV_SELECTION_MADE: u64 = 1;
+    pub const SAV_SELECTION_MADE: u64 = 1;
+
     pub fn new(
         list_store: &gtk::ListStore,
         columns: &[gtk::TreeViewColumn],

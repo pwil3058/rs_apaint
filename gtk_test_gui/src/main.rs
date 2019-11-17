@@ -45,7 +45,13 @@ fn main() {
         0,
     );
     let graticule = GtkGraticule::new(
-        &vec![],
+        &[(
+            "add",
+            "Add",
+            None,
+            "Add the selected colour to the colour mixer",
+            GtkGraticule::HAS_CHOSEN_ITEM,
+        )],
         &[
             ScalarAttribute::Value,
             ScalarAttribute::Chroma,
