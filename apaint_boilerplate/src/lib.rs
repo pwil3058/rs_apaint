@@ -212,6 +212,10 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
             fn scalar_attribute(&self, attr: ScalarAttribute) -> #component {
                 self.#colour.scalar_attribute(attr)
             }
+
+            fn scalar_attribute_rgb(&self, attr: ScalarAttribute) -> RGB<#component> {
+                self.#colour.scalar_attribute_rgb(attr)
+            }
         }
     };
 

@@ -206,9 +206,10 @@ impl RGBList {
             for attr in &[ScalarAttribute::Value, ScalarAttribute::Warmth] {
                 // TODO: add a scalar_attribute_rgb() method to colour interface
                 let string = format!("{:5.4}", rgb.scalar_attribute(*attr));
+                let attr_rgb = rgb.scalar_attribute_rgb(*attr);
                 row.push(string.to_value());
-                row.push(rgb.pango_string().to_value());
-                row.push(rgb.best_foreground_rgb().pango_string().to_value());
+                row.push(attr_rgb.pango_string().to_value());
+                row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
             }
             _list_store.append_row(&row);
         }
