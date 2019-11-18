@@ -60,6 +60,15 @@ pub enum Metallicness {
     NonMetallic,
 }
 
+#[derive(Debug)]
+pub enum CharacteristicTypes {
+    Finish,
+    Transparency,
+    Permanence,
+    Fluorescence,
+    Metalicness,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -11,7 +11,7 @@ use pw_gix::{
     wrapper::PackableWidgetObject,
 };
 
-use crate::colour::{ColourInterface, RGB};
+use crate::colour::{ColourInterface, ScalarAttribute, RGB};
 use pw_gix::sav_state::MaskedCondns;
 
 #[derive(PWO)]
@@ -27,14 +27,14 @@ impl ColouredItemListView {
 
     pub fn new(
         list_store: &gtk::ListStore,
-        columns: &[gtk::TreeViewColumn],
+        attributes: &[ScalarAttribute],
         menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
     ) -> Rc<Self> {
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
         view.set_model(Some(list_store));
         view.get_selection().set_mode(gtk::SelectionMode::None);
 
-        for col in columns.iter() {
+        for col in ColouredItemListView::columns(attributes).iter() {
             view.append_column(col);
         }
 
@@ -118,6 +118,51 @@ impl ColouredItemListView {
             }
         }
     }
+
+    fn columns(attributes: &[ScalarAttribute]) -> Vec<gtk::TreeViewColumn> {
+        let mut cols = vec![];
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Id")
+            .resizable(false)
+            .sort_column_id(0)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 0);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Hue")
+            .sort_column_id(4)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "background", 3);
+        cols.push(col);
+
+        let mut index = 5;
+        for attr in attributes.iter() {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title(&attr.to_string())
+                .sort_column_id(index)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "text", index);
+            col.add_attribute(&cell, "background", index + 1);
+            col.add_attribute(&cell, "foreground", index + 2);
+            cols.push(col);
+            index += 3;
+        }
+
+        cols
+    }
 }
 
 #[derive(PWO)]
@@ -134,6 +179,12 @@ impl RGBList {
             gtk::Type::String,
             gtk::Type::String,
             f64::static_type(),
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
         ]);
         for rgb in RGB::PRIMARIES
             .iter()
@@ -145,13 +196,20 @@ impl RGBList {
             } else {
                 -181.0 + rgb.value()
             };
-            let row: Vec<gtk::Value> = vec![
+            let mut row: Vec<gtk::Value> = vec![
                 rgb.pango_string().to_value(),
                 rgb.pango_string().to_value(),
                 rgb.best_foreground_rgb().pango_string().to_value(),
                 rgb.max_chroma_rgb().pango_string().to_value(),
                 ha.to_value(),
             ];
+            for attr in &[ScalarAttribute::Value, ScalarAttribute::Warmth] {
+                // TODO: add a scalar_attribute_rgb() method to colour interface
+                let string = format!("{:5.4}", rgb.scalar_attribute(*attr));
+                row.push(string.to_value());
+                row.push(rgb.pango_string().to_value());
+                row.push(rgb.best_foreground_rgb().pango_string().to_value());
+            }
             _list_store.append_row(&row);
         }
 
@@ -178,7 +236,7 @@ impl RGBList {
 
         let ci_list_view = ColouredItemListView::new(
             &_list_store,
-            &[col, col2],
+            &[ScalarAttribute::Value, ScalarAttribute::Warmth],
             &[(
                 "info",
                 "Colour Information",
