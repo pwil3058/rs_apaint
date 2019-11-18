@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use apaint_boilerplate::Characteristic;
 
-pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd {
+pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd + Default {
     const NAME: &'static str;
     const PROMPT: &'static str;
 
