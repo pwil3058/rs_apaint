@@ -8,6 +8,8 @@ pub mod colour_mix;
 pub mod drawing;
 pub mod hue_wheel;
 
+use apaint_boilerplate::Colour;
+
 pub use colour_math::*;
 pub use float_plus::*;
 pub use normalised_angles::*;
@@ -20,4 +22,10 @@ impl<F: ColourComponent> TooltipText for RGB<F> {
     fn tooltip_text(&self) -> Option<String> {
         Some(format!("RGB: {}", self.pango_string()))
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Colour)]
+struct Paint<F: ColourComponent> {
+    rgb: RGB<F>,
+    id: String,
 }

@@ -5,6 +5,7 @@ extern crate proc_macro;
 use heck::KebabCase;
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::spanned::Spanned;
 use syn::{parse_macro_input, Data, DeriveInput, Ident};
 
 fn acronym(input: &str) -> String {
@@ -104,6 +105,113 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
 
         impl std::default::Default for #enum_name {
             fn default() -> Self { #enum_name::#default_value }
+        }
+    };
+
+    proc_macro::TokenStream::from(tokens)
+}
+
+#[proc_macro_derive(Colour, attributes(colour, component))]
+pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
+    let parsed_input: DeriveInput = parse_macro_input!(input);
+    let struct_name = parsed_input.ident;
+    let (impl_generics, ty_generics, where_clause) = parsed_input.generics.split_for_impl();
+    let mut first: Option<Ident> = None;
+    let mut colour: Option<Ident> = None;
+    match parsed_input.data {
+        Data::Struct(st) => {
+            if let syn::Fields::Named(fields) = st.fields {
+                for field in fields.named.iter() {
+                    if first.is_none() {
+                        first = Some(field.ident.clone().unwrap());
+                    }
+                    for attr in field.attrs.iter() {
+                        if attr.path.is_ident("colour") {
+                            colour = Some(field.ident.clone().unwrap());
+                        }
+                    }
+                }
+            }
+        }
+        _ => panic!("'Colour' can only be derived for structs."),
+    }
+    let colour = if let Some(colour) = colour {
+        colour
+    } else {
+        first.unwrap()
+    };
+    let mut component = { Ident::new("F", struct_name.span()) };
+    for attr in parsed_input.attrs.iter() {
+        if attr.path.is_ident("component") {
+            if let Ok(meta) = attr.parse_meta() {
+                match meta {
+                    syn::Meta::NameValue(nv) => {
+                        if let syn::Lit::Str(lit_str) = &nv.lit {
+                            component = Ident::new(&lit_str.value(), nv.span());
+                        }
+                    }
+                    _ => panic!("expected 'component = name'"),
+                }
+            }
+        }
+    }
+    let tokens = quote! {
+        impl #impl_generics ColourInterface<#component> for #struct_name #ty_generics #where_clause {
+            fn rgb(&self) -> RGB<#component> {
+                self.#colour.rgb()
+            }
+
+            fn rgba(&self, alpha: #component) -> [#component; 4] {
+                self.#colour.rgba(alpha)
+            }
+
+            fn hue(&self) -> Option<Hue<#component>> {
+                self.#colour.hue()
+            }
+
+            fn hue_angle(&self) -> Option<Degrees<#component>> {
+                self.#colour.hue_angle()
+            }
+
+            fn is_grey(&self) -> bool {
+                self.#colour.is_grey()
+            }
+
+            fn chroma(&self) -> #component {
+                self.#colour.chroma()
+            }
+
+            fn greyness(&self) -> #component {
+                self.#colour.greyness()
+            }
+
+            fn value(&self) -> #component {
+                self.#colour.value()
+            }
+
+            fn warmth(&self) -> #component {
+                self.#colour.warmth()
+            }
+
+            fn best_foreground_rgb(&self) -> RGB<#component> {
+                self.#colour.best_foreground_rgb()
+            }
+
+            fn monochrome_rgb(&self) -> RGB<#component> {
+                self.#colour.monochrome_rgb()
+            }
+
+            fn max_chroma_rgb(&self) -> RGB<#component> {
+                self.#colour.max_chroma_rgb()
+            }
+
+            fn warmth_rgb(&self) -> RGB<#component> {
+                self.#colour.warmth_rgb()
+            }
+
+            fn scalar_attribute(&self, attr: ScalarAttribute) -> #component {
+                self.#colour.scalar_attribute(attr)
+            }
         }
     };
 

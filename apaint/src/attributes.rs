@@ -118,7 +118,7 @@ where
     fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.value = Some(colour.value());
-            self.value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.value_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
         } else {
             self.value = None;
             self.value_fg_rgb = RGB::BLACK;
@@ -136,7 +136,7 @@ where
     fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_value = Some(colour.value());
-            self.target_value_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.target_value_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
         } else {
             self.target_value = None;
             self.target_value_fg_rgb = RGB::BLACK;
@@ -182,7 +182,7 @@ where
     fn set_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.warmth = Some(colour.warmth());
-            self.warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.warmth_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
         } else {
             self.warmth = None;
             self.warmth_fg_rgb = RGB::BLACK;
@@ -200,7 +200,7 @@ where
     fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_warmth = Some(colour.warmth());
-            self.target_warmth_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.target_warmth_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
         } else {
             self.target_warmth = None;
             self.target_warmth_fg_rgb = RGB::BLACK;
@@ -384,7 +384,7 @@ impl<F: ColourComponent> ChromaCAD<F> {
                 let grey = colour.rgb();
                 vec![(grey, F::ZERO), (grey, F::ONE)]
             } else {
-                let start_rgb = colour.monotone_rgb();
+                let start_rgb = colour.monochrome_rgb();
                 let end_rgb = colour.max_chroma_rgb();
                 vec![(start_rgb, F::ZERO), (end_rgb, F::ONE)]
             }
@@ -447,7 +447,7 @@ where
     fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_chroma = Some(colour.chroma());
-            self.target_chroma_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.target_chroma_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
             if colour.is_grey() {
                 if let Some(chroma) = self.chroma {
                     if chroma == F::ZERO {
@@ -499,7 +499,7 @@ impl<F: ColourComponent> GreynessCAD<F> {
                 vec![(grey, F::ZERO), (grey, F::ONE)]
             } else {
                 let start_rgb = colour.max_chroma_rgb();
-                let end_rgb = colour.monotone_rgb();
+                let end_rgb = colour.monochrome_rgb();
                 vec![(start_rgb, F::ZERO), (end_rgb, F::ONE)]
             }
         } else {
@@ -561,7 +561,7 @@ where
     fn set_target_colour(&mut self, colour: Option<&impl ColourInterface<F>>) {
         if let Some(colour) = colour {
             self.target_greyness = Some(colour.greyness());
-            self.target_greyness_fg_rgb = colour.monotone_rgb().best_foreground_rgb();
+            self.target_greyness_fg_rgb = colour.monochrome_rgb().best_foreground_rgb();
             if colour.is_grey() {
                 if let Some(greyness) = self.greyness {
                     if greyness == F::ZERO {
