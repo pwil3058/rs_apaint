@@ -15,27 +15,33 @@ use pw_gix::{
 };
 
 use crate::attributes::AttributeSelectorRadioButtons;
-use apaint::hue_wheel::*;
+use apaint::{hue_wheel::*, Identity, TooltipText};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
-use colour_math::ScalarAttribute;
+use colour_math::{ColourInterface, ScalarAttribute};
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule {
+pub struct GtkGraticule<CI>
+where
+    CI: ColourInterface<f64> + TooltipText + DrawShapeForAttr<f64> + Identity + 'static,
+{
     vbox: gtk::Box,
     drawing_area: gtk::DrawingArea,
-    coloured_items: RefCell<Vec<RGB>>,
-    chosen_item: RefCell<Option<RGB>>,
+    coloured_items: RefCell<Vec<CI>>,
+    chosen_item: RefCell<Option<String>>,
     attribute_selector: Rc<AttributeSelectorRadioButtons>,
     attribute: Cell<ScalarAttribute>,
     popup_menu: ManagedMenu,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&RGB)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&str)>>>>,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,
 }
 
-impl GtkGraticule {
+impl<CI> GtkGraticule<CI>
+where
+    CI: ColourInterface<f64> + TooltipText + DrawShapeForAttr<f64> + Identity + 'static,
+{
     pub const HAS_CHOSEN_ITEM: u64 = 1;
 
     pub fn new(
@@ -158,7 +164,7 @@ impl GtkGraticule {
                             gtk_graticule_c.device_to_user(device_point.x, device_point.y),
                             gtk_graticule_c.attribute.get(),
                         ) {
-                            *gtk_graticule_c.chosen_item.borrow_mut() = Some(item);
+                            *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id());
                             gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
                                 condns: Self::HAS_CHOSEN_ITEM,
                                 mask: Self::HAS_CHOSEN_ITEM,
@@ -273,11 +279,11 @@ impl GtkGraticule {
         self.origin_offset.set(self.origin_offset.get() + delta);
     }
 
-    pub fn add_item(&self, rgb: RGB) {
-        self.coloured_items.borrow_mut().push(rgb)
+    pub fn add_item(&self, coloured_item: CI) {
+        self.coloured_items.borrow_mut().push(coloured_item)
     }
 
-    pub fn connect_popup_menu_item<F: Fn(&RGB) + 'static>(&self, name: &str, callback: F) {
+    pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {
         self.callbacks
             .borrow_mut()
             .get_mut(name)

@@ -26,9 +26,17 @@ impl<F: ColourComponent> TooltipText for RGB<F> {
     }
 }
 
-pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
-    fn id(&self) -> &str;
+pub trait Identity {
+    fn id(&self) -> String;
+}
 
+impl<F: ColourComponent> Identity for RGB<F> {
+    fn id(&self) -> String {
+        format!("ID: {}", self.pango_string())
+    }
+}
+
+pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> + Identity {
     fn name(&self) -> Option<&str> {
         None
     }

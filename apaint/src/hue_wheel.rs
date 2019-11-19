@@ -1,7 +1,9 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use crate::drawing::{Cartesian, Point};
-use crate::TooltipText;
+use crate::{
+    drawing::{Cartesian, Point},
+    Identity, TooltipText,
+};
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 use float_plus::FloatPlus;
 use normalised_angles::Degrees;
@@ -189,7 +191,7 @@ impl<F: ColourComponent + ShapeConsts, CI: DrawShapeForAttr<F>> Graticule<F> for
 pub trait HueWheel<F, CI>: Graticule<F>
 where
     F: ColourComponent + ShapeConsts,
-    CI: DrawShapeForAttr<F> + Copy + TooltipText,
+    CI: DrawShapeForAttr<F> + TooltipText + Identity,
 {
     fn draw_all(&self, scalar_attribute: ScalarAttribute, cartesian: &impl Cartesian<F>);
 
@@ -204,7 +206,7 @@ where
         None
     }
 
-    fn item_at_point(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Option<CI> {
+    fn item_at_point(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Option<&CI> {
         if let Some((item, proximity)) = self.nearest_to(point, scalar_attribute) {
             if let Proximity::Enclosed(_) = proximity {
                 return Some(item);
@@ -217,13 +219,13 @@ where
         &self,
         point: Point<F>,
         scalar_attribute: ScalarAttribute,
-    ) -> Option<(CI, Proximity<F>)>;
+    ) -> Option<(&CI, Proximity<F>)>;
 }
 
 impl<F, CI> HueWheel<F, CI> for Vec<CI>
 where
     F: ColourComponent + ShapeConsts,
-    CI: DrawShapeForAttr<F> + Copy + TooltipText,
+    CI: DrawShapeForAttr<F> + TooltipText + Identity,
 {
     fn draw_all(&self, scalar_attribute: ScalarAttribute, cartesian: &impl Cartesian<F>) {
         for item in self.iter() {
@@ -235,16 +237,16 @@ where
         &self,
         point: Point<F>,
         scalar_attribute: ScalarAttribute,
-    ) -> Option<(CI, Proximity<F>)> {
-        let mut nearest: Option<(CI, Proximity<F>)> = None;
+    ) -> Option<(&CI, Proximity<F>)> {
+        let mut nearest: Option<(&CI, Proximity<F>)> = None;
         for item in self.iter() {
             let proximity = item.proximity_to(point, scalar_attribute);
             if let Some((_, nearest_so_far)) = nearest {
                 if proximity < nearest_so_far {
-                    nearest = Some((*item, proximity));
+                    nearest = Some((item, proximity));
                 }
             } else {
-                nearest = Some((*item, proximity));
+                nearest = Some((item, proximity));
             }
         }
         nearest
