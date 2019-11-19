@@ -57,8 +57,14 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
         Metallicness::default()
     }
 
-    fn characteristic_abbrev(&self, characteristic_type: CharacteristicType) -> String {
-        "whatever".to_string()
+    fn characteristic_abbrev(&self, characteristic_type: CharacteristicType) -> &'static str {
+        match characteristic_type {
+            CharacteristicType::Finish => self.finish().abbrev(),
+            CharacteristicType::Transparency => self.transparency().abbrev(),
+            CharacteristicType::Permanence => self.permanence().abbrev(),
+            CharacteristicType::Fluorescence => self.fluorescence().abbrev(),
+            CharacteristicType::Metallicness => self.metallicness().abbrev(),
+        }
     }
 }
 
