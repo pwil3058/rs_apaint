@@ -60,13 +60,57 @@ pub enum Metallicness {
     NonMetallic,
 }
 
-#[derive(Debug)]
-pub enum CharacteristicTypes {
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+pub enum CharacteristicType {
     Finish,
     Transparency,
     Permanence,
     Fluorescence,
-    Metalicness,
+    Metallicness,
+}
+
+impl CharacteristicType {
+    pub fn name(&self) -> &'static str {
+        match *self {
+            CharacteristicType::Finish => Finish::NAME,
+            CharacteristicType::Transparency => Transparency::NAME,
+            CharacteristicType::Permanence => Permanence::NAME,
+            CharacteristicType::Fluorescence => Fluorescence::NAME,
+            CharacteristicType::Metallicness => Metallicness::NAME,
+        }
+    }
+
+    pub fn prompt(&self) -> &'static str {
+        match *self {
+            CharacteristicType::Finish => Finish::PROMPT,
+            CharacteristicType::Transparency => Transparency::PROMPT,
+            CharacteristicType::Permanence => Permanence::PROMPT,
+            CharacteristicType::Fluorescence => Fluorescence::PROMPT,
+            CharacteristicType::Metallicness => Metallicness::PROMPT,
+        }
+    }
+
+    pub fn str_values(&self) -> Vec<&'static str> {
+        match *self {
+            CharacteristicType::Finish => Finish::str_values(),
+            CharacteristicType::Transparency => Transparency::str_values(),
+            CharacteristicType::Permanence => Permanence::str_values(),
+            CharacteristicType::Fluorescence => Fluorescence::str_values(),
+            CharacteristicType::Metallicness => Metallicness::str_values(),
+        }
+    }
+}
+
+impl std::fmt::Display for CharacteristicType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match *self {
+            CharacteristicType::Finish => write!(f, "Finish"),
+            CharacteristicType::Transparency => write!(f, "Transparency"),
+            CharacteristicType::Permanence => write!(f, "Permanence"),
+            CharacteristicType::Fluorescence => write!(f, "Fluorescence"),
+            CharacteristicType::Metallicness => write!(f, " Metallicness"),
+        }
+    }
 }
 
 #[cfg(test)]

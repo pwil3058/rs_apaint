@@ -6,14 +6,15 @@ use gtk::prelude::*;
 
 use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
-    gtkx::{list_store::ListRowOps, menu::ManagedMenu},
+    gtkx::{list_store::ListRowOps, menu::ManagedMenu, tree_model::TreeModelRowOps},
     sav_state::MaskedCondns,
     sav_state::WidgetStatesControlled,
     wrapper::PackableWidgetObject,
 };
 
 use crate::colour::{ColourInterface, ScalarAttribute, RGB};
-use apaint::characteristics::CharacteristicTypes;
+use apaint::characteristics::CharacteristicType;
+use apaint::BasicPaintIfce;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -268,6 +269,15 @@ impl RGBList {
         self.list_store.borrow().append_row(&row);
     }
 
+    pub fn remove_rgb(&self, id: &str) {
+        let list_store = self.list_store.borrow();
+        if let Some((_, iter)) =
+            list_store.find_row_where(|store, iter| store.get_value(iter, 0).get() == Some(id))
+        {
+            list_store.remove(&iter);
+        }
+    }
+
     pub fn set_contents(&self, rgbs: &[RGB]) {
         *self.list_store.borrow_mut() = self.list_helper.new_list_store(rgbs);
         self.ci_list_view.set_list_store(&self.list_store.borrow());
@@ -275,7 +285,126 @@ impl RGBList {
 }
 
 pub struct PaintListHelper {
-    _column_types: Vec<gtk::Type>,
-    _attributes: Vec<ScalarAttribute>,
-    _characteristics: Vec<CharacteristicTypes>,
+    pub attributes: Vec<ScalarAttribute>,
+    pub characteristics: Vec<CharacteristicType>,
+}
+
+impl PaintListHelper {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: Vec<CharacteristicType>) -> Self {
+        Self {
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
+        }
+    }
+
+    pub fn column_types(&self) -> Vec<gtk::Type> {
+        let mut column_types = vec![
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            f64::static_type(),
+        ];
+        for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
+            column_types.push(gtk::Type::String);
+        }
+        column_types
+    }
+
+    pub fn columns(&self) -> Vec<gtk::TreeViewColumn> {
+        let mut cols = vec![];
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Id")
+            .resizable(false)
+            .sort_column_id(0)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 0);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Hue")
+            .sort_column_id(4)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "background", 3);
+        cols.push(col);
+
+        let mut index = 5;
+        for attr in self.attributes.iter() {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title(&attr.to_string())
+                .sort_column_id(index)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "text", index);
+            col.add_attribute(&cell, "background", index + 1);
+            col.add_attribute(&cell, "foreground", index + 2);
+            cols.push(col);
+            index += 3;
+        }
+
+        for characteristic in self.characteristics.iter() {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title(&characteristic.to_string())
+                .sort_column_id(index)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "text", index);
+            col.add_attribute(&cell, "background", 1);
+            col.add_attribute(&cell, "foreground", 2);
+            cols.push(col);
+            index += 3;
+        }
+
+        cols
+    }
+
+    pub fn row(&self, paint: &Rc<dyn BasicPaintIfce<f64>>) -> Vec<gtk::Value> {
+        let ha = if let Some(angle) = paint.hue_angle() {
+            angle.degrees()
+        } else {
+            -181.0 + paint.value()
+        };
+        let mut row: Vec<gtk::Value> = vec![
+            paint.rgb().pango_string().to_value(),
+            paint.rgb().pango_string().to_value(),
+            paint.best_foreground_rgb().pango_string().to_value(),
+            paint.max_chroma_rgb().pango_string().to_value(),
+            ha.to_value(),
+        ];
+        for attr in self.attributes.iter() {
+            // TODO: add a scalar_attribute_rgb() method to colour interface
+            let string = format!("{:5.4}", paint.scalar_attribute(*attr));
+            let attr_rgb = paint.scalar_attribute_rgb(*attr);
+            row.push(string.to_value());
+            row.push(attr_rgb.pango_string().to_value());
+            row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
+        }
+        for characteristic in self.characteristics.iter() {
+            let string = paint.characteristic_abbrev(*characteristic);
+            row.push(string.to_value());
+        }
+        row
+    }
+
+    pub fn new_list_store(&self, paints: &[Rc<dyn BasicPaintIfce<f64>>]) -> gtk::ListStore {
+        let list_store = gtk::ListStore::new(&self.column_types());
+        for paint in paints.iter() {
+            let row = self.row(paint);
+            list_store.append_row(&row);
+        }
+        list_store
+    }
 }

@@ -56,6 +56,10 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
     fn metallicness(&self) -> Metallicness {
         Metallicness::default()
     }
+
+    fn characteristic_abbrev(&self, characteristic_type: CharacteristicType) -> String {
+        "whatever".to_string()
+    }
 }
 
 impl<F: ColourComponent> TooltipText for dyn BasicPaintIfce<F> {
