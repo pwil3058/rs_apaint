@@ -7,12 +7,13 @@ use gtk::prelude::*;
 use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
     gtkx::{list_store::ListRowOps, menu::ManagedMenu},
+    sav_state::MaskedCondns,
     sav_state::WidgetStatesControlled,
     wrapper::PackableWidgetObject,
 };
 
 use crate::colour::{ColourInterface, ScalarAttribute, RGB};
-use pw_gix::sav_state::MaskedCondns;
+use apaint::characteristics::CharacteristicTypes;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -27,14 +28,14 @@ impl ColouredItemListView {
 
     pub fn new(
         list_store: &gtk::ListStore,
-        attributes: &[ScalarAttribute],
+        columns: &[gtk::TreeViewColumn],
         menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
     ) -> Rc<Self> {
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
         view.set_model(Some(list_store));
         view.get_selection().set_mode(gtk::SelectionMode::None);
 
-        for col in ColouredItemListView::columns(attributes).iter() {
+        for col in columns.iter() {
             view.append_column(col);
         }
 
@@ -119,7 +120,35 @@ impl ColouredItemListView {
         }
     }
 
-    fn columns(attributes: &[ScalarAttribute]) -> Vec<gtk::TreeViewColumn> {
+    pub fn set_list_store(&self, new_list_store: &gtk::ListStore) {
+        self.view.set_model(Some(new_list_store));
+    }
+}
+
+pub struct RGBListHelper {
+    pub attributes: Vec<ScalarAttribute>,
+    pub column_types: Vec<gtk::Type>,
+}
+
+impl RGBListHelper {
+    pub fn new(attributes: &[ScalarAttribute]) -> Self {
+        let mut column_types = vec![
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            gtk::Type::String,
+            f64::static_type(),
+        ];
+        for _ in 0..attributes.len() * 3 {
+            column_types.push(gtk::Type::String);
+        }
+        Self {
+            attributes: attributes.to_vec(),
+            column_types,
+        }
+    }
+
+    pub fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
 
         let col = gtk::TreeViewColumnBuilder::new()
@@ -146,7 +175,7 @@ impl ColouredItemListView {
         cols.push(col);
 
         let mut index = 5;
-        for attr in attributes.iter() {
+        for attr in self.attributes.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
                 .title(&attr.to_string())
                 .sort_column_id(index)
@@ -163,81 +192,57 @@ impl ColouredItemListView {
 
         cols
     }
+
+    pub fn row(&self, rgb: &RGB) -> Vec<gtk::Value> {
+        let ha = if let Some(angle) = rgb.hue_angle() {
+            angle.degrees()
+        } else {
+            -181.0 + rgb.value()
+        };
+        let mut row: Vec<gtk::Value> = vec![
+            rgb.pango_string().to_value(),
+            rgb.pango_string().to_value(),
+            rgb.best_foreground_rgb().pango_string().to_value(),
+            rgb.max_chroma_rgb().pango_string().to_value(),
+            ha.to_value(),
+        ];
+        for attr in self.attributes.iter() {
+            // TODO: add a scalar_attribute_rgb() method to colour interface
+            let string = format!("{:5.4}", rgb.scalar_attribute(*attr));
+            let attr_rgb = rgb.scalar_attribute_rgb(*attr);
+            row.push(string.to_value());
+            row.push(attr_rgb.pango_string().to_value());
+            row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
+        }
+        row
+    }
+
+    pub fn new_list_store(&self, rgbs: &[RGB]) -> gtk::ListStore {
+        let list_store = gtk::ListStore::new(&self.column_types);
+        for rgb in rgbs.iter() {
+            let row = self.row(rgb);
+            list_store.append_row(&row);
+        }
+        list_store
+    }
 }
 
 #[derive(PWO)]
 pub struct RGBList {
     scrolled_window: gtk::ScrolledWindow,
-    _list_store: gtk::ListStore,
+    ci_list_view: Rc<ColouredItemListView>,
+    list_store: RefCell<gtk::ListStore>,
+    list_helper: RGBListHelper,
 }
 
 impl RGBList {
-    pub fn new() -> Rc<Self> {
-        let _list_store = gtk::ListStore::new(&[
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            f64::static_type(),
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-        ]);
-        for rgb in RGB::PRIMARIES
-            .iter()
-            .chain(RGB::SECONDARIES.iter())
-            .chain(RGB::GREYS.iter())
-        {
-            let ha = if let Some(angle) = rgb.hue_angle() {
-                angle.degrees()
-            } else {
-                -181.0 + rgb.value()
-            };
-            let mut row: Vec<gtk::Value> = vec![
-                rgb.pango_string().to_value(),
-                rgb.pango_string().to_value(),
-                rgb.best_foreground_rgb().pango_string().to_value(),
-                rgb.max_chroma_rgb().pango_string().to_value(),
-                ha.to_value(),
-            ];
-            for attr in &[ScalarAttribute::Value, ScalarAttribute::Warmth] {
-                // TODO: add a scalar_attribute_rgb() method to colour interface
-                let string = format!("{:5.4}", rgb.scalar_attribute(*attr));
-                let attr_rgb = rgb.scalar_attribute_rgb(*attr);
-                row.push(string.to_value());
-                row.push(attr_rgb.pango_string().to_value());
-                row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
-            }
-            _list_store.append_row(&row);
-        }
-
-        let col = gtk::TreeViewColumnBuilder::new()
-            .title("Id")
-            .resizable(false)
-            .sort_column_id(0)
-            .sort_indicator(true)
-            .build();
-        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
-        col.pack_start(&cell, false);
-        col.add_attribute(&cell, "text", 0);
-        col.add_attribute(&cell, "background", 1);
-        col.add_attribute(&cell, "foreground", 2);
-
-        let col2 = gtk::TreeViewColumnBuilder::new()
-            .title("Hue")
-            .sort_column_id(4)
-            .sort_indicator(true)
-            .build();
-        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
-        col2.pack_start(&cell, false);
-        col2.add_attribute(&cell, "background", 3);
+    pub fn new(contents: &[RGB], attributes: &[ScalarAttribute]) -> Rc<Self> {
+        let list_helper = RGBListHelper::new(attributes);
+        let list_store = list_helper.new_list_store(contents);
 
         let ci_list_view = ColouredItemListView::new(
-            &_list_store,
-            &[ScalarAttribute::Value, ScalarAttribute::Warmth],
+            &list_store,
+            &list_helper.columns(),
             &[(
                 "info",
                 "Colour Information",
@@ -252,7 +257,25 @@ impl RGBList {
 
         Rc::new(Self {
             scrolled_window,
-            _list_store,
+            ci_list_view,
+            list_store: RefCell::new(list_store),
+            list_helper,
         })
     }
+
+    pub fn add_rgb(&self, rgb: &RGB) {
+        let row = self.list_helper.row(rgb);
+        self.list_store.borrow().append_row(&row);
+    }
+
+    pub fn set_contents(&self, rgbs: &[RGB]) {
+        *self.list_store.borrow_mut() = self.list_helper.new_list_store(rgbs);
+        self.ci_list_view.set_list_store(&self.list_store.borrow());
+    }
+}
+
+pub struct PaintListHelper {
+    _column_types: Vec<gtk::Type>,
+    _attributes: Vec<ScalarAttribute>,
+    _characteristics: Vec<CharacteristicTypes>,
 }

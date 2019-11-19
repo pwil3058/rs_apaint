@@ -68,7 +68,20 @@ fn main() {
         graticule.add_item(*rgb);
     }
     vbox.pack_start(&graticule.pwo(), true, true, 0);
-    let list = RGBList::new();
+    let rgbs: Vec<RGB> = RGB::PRIMARIES
+        .iter()
+        .chain(RGB::SECONDARIES.iter())
+        .chain(RGB::GREYS.iter())
+        .map(|x| *x)
+        .collect();
+    let list = RGBList::new(
+        &rgbs,
+        &[
+            ScalarAttribute::Value,
+            ScalarAttribute::Warmth,
+            ScalarAttribute::Chroma,
+        ],
+    );
     vbox.pack_start(&list.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
