@@ -31,11 +31,13 @@ pub mod characteristics {
             for str_value in C::str_values().iter() {
                 combo_box_text.append_text(str_value);
             }
+            combo_box_text.set_id_column(0);
             let ce = Rc::new(Self {
                 combo_box_text,
                 callbacks: RefCell::new(vec![]),
                 marker: std::marker::PhantomData,
             });
+            ce.set_value(None);
             let ce_clone = Rc::clone(&ce);
             ce.combo_box_text.connect_changed(move |_| {
                 for callback in ce_clone.callbacks.borrow().iter() {
@@ -65,12 +67,12 @@ pub mod characteristics {
         }
 
         pub fn set_value(&self, new_value: Option<C>) {
-            if let Some(new_value) = new_value {
-                let full = new_value.full();
-                self.combo_box_text.set_active_id(Some(full));
+            let id = if let Some(new_value) = new_value {
+                new_value.full()
             } else {
-                self.combo_box_text.set_active_id(None);
-            }
+                C::default().full()
+            };
+            self.combo_box_text.set_active_id(Some(id));
         }
 
         pub fn connect_changed<F: Fn(&Self) + 'static>(&self, f: F) {
