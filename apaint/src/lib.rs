@@ -3,6 +3,7 @@
 extern crate serde_derive;
 
 pub mod attributes;
+pub mod basic_paint;
 pub mod characteristics;
 pub mod colour_mix;
 pub mod drawing;

@@ -290,7 +290,7 @@ pub struct PaintListHelper {
 }
 
 impl PaintListHelper {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: Vec<CharacteristicType>) -> Self {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
         Self {
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
