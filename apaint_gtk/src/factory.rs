@@ -14,7 +14,7 @@ use colour_math::ScalarAttribute;
 
 use apaint::characteristics::CharacteristicType;
 use apaint_gtk_boilerplate::PWO;
-use pw_gix::sav_state::{ConditionalWidgetGroups, WidgetStatesControlled};
+use pw_gix::sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled};
 use pw_gix::wrapper::*;
 
 #[derive(PWO)]
@@ -28,6 +28,10 @@ pub struct BasicPaintEditor {
 }
 
 impl BasicPaintEditor {
+    pub const SAV_ID_READY: u64 = 1 << 0;
+    pub const SAV_NAME_READY: u64 = 1 << 1;
+    pub const SAV_NOTES_READY: u64 = 1 << 2;
+
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
@@ -60,14 +64,59 @@ impl BasicPaintEditor {
             None,
             None,
         );
-        Rc::new(Self {
+        let bpe = Rc::new(Self {
             vbox,
             id_entry,
             name_entry,
             notes_entry,
             colour_editor,
             buttons,
-        })
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.id_entry.connect_changed(move |entry| {
+            if entry.get_text_length() > 0 {
+                bpe_c.buttons.update_condns(MaskedCondns {
+                    condns: Self::SAV_ID_READY,
+                    mask: Self::SAV_ID_READY,
+                })
+            } else {
+                bpe_c.buttons.update_condns(MaskedCondns {
+                    condns: 0,
+                    mask: Self::SAV_ID_READY,
+                })
+            }
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.name_entry.connect_changed(move |entry| {
+            if entry.get_text_length() > 0 {
+                bpe_c.buttons.update_condns(MaskedCondns {
+                    condns: Self::SAV_NAME_READY,
+                    mask: Self::SAV_NAME_READY,
+                })
+            } else {
+                bpe_c.buttons.update_condns(MaskedCondns {
+                    condns: 0,
+                    mask: Self::SAV_NAME_READY,
+                })
+            }
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.notes_entry.connect_changed(move |entry| {
+            let condns = if entry.get_text_length() > 0 {
+                Self::SAV_NOTES_READY
+            } else {
+                0
+            };
+            bpe_c.buttons.update_condns(MaskedCondns {
+                condns,
+                mask: Self::SAV_NOTES_READY,
+            });
+        });
+
+        bpe
     }
 }
 
