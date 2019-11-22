@@ -7,7 +7,7 @@ use apaint_boilerplate::Colour;
 use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::*;
 
-#[derive(Debug, Deserialize, Serialize, Colour)]
+#[derive(Debug, Deserialize, Serialize, Colour, Clone)]
 pub struct BasicPaint<F: ColourComponent> {
     rgb: RGB<F>,
     id: String,
@@ -99,12 +99,12 @@ impl<F: ColourComponent> BasicPaintBuilder<F> {
         self
     }
 
-    pub fn build(self) -> BasicPaint<F> {
+    pub fn build(&self) -> BasicPaint<F> {
         BasicPaint {
             rgb: self.rgb,
-            id: self.id,
-            name: self.name,
-            notes: self.notes,
+            id: self.id.to_string(),
+            name: self.name.to_string(),
+            notes: self.notes.to_string(),
         }
     }
 }

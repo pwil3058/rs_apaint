@@ -8,7 +8,7 @@ use crate::colour_edit::ColourEditor;
 use crate::graticule::GtkGraticule;
 use crate::list::{ColouredItemListView, PaintListHelper};
 
-use apaint::basic_paint::BasicPaint;
+use apaint::basic_paint::{BasicPaint, BasicPaintBuilder};
 
 use colour_math::ScalarAttribute;
 
@@ -57,13 +57,15 @@ impl BasicPaintEditor {
         grid.attach(&label, 0, 2, 1, 1);
         let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
         grid.attach(&notes_entry, 1, 2, 1, 1);
-        let colour_editor = ColourEditor::new(attributes, &[]);
+        let add_btn = gtk::ButtonBuilder::new().label("Add").build();
+        let colour_editor = ColourEditor::new(attributes, &[add_btn.clone()]);
         vbox.pack_start(&colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
             None,
             None,
         );
+        buttons.add_widget("add", &add_btn, Self::SAV_ID_READY);
         let bpe = Rc::new(Self {
             vbox,
             id_entry,
@@ -72,6 +74,9 @@ impl BasicPaintEditor {
             colour_editor,
             buttons,
         });
+
+        let bpe_c = Rc::clone(&bpe);
+        add_btn.connect_clicked(move |_| bpe_c.process_add_action());
 
         let bpe_c = Rc::clone(&bpe);
         bpe.id_entry.connect_changed(move |entry| {
@@ -117,6 +122,21 @@ impl BasicPaintEditor {
         });
 
         bpe
+    }
+
+    fn process_add_action(&self) {
+        let id = self
+            .id_entry
+            .get_text()
+            .expect("shouldn't be called otherwise");
+        let rgb = self.colour_editor.rgb();
+        let mut paint_builder = BasicPaintBuilder::new(&id, &rgb);
+        if let Some(name) = self.name_entry.get_text() {
+            paint_builder = paint_builder.name(&name);
+        }
+        if let Some(notes) = self.notes_entry.get_text() {
+            paint_builder = paint_builder.notes(&notes);
+        }
     }
 }
 

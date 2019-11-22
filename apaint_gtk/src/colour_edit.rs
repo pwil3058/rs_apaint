@@ -366,4 +366,8 @@ impl ColourEditor {
         self.samples.borrow_mut().clear();
         self.set_rgb_and_inform(RGB::WHITE * 0.5);
     }
+
+    pub fn rgb(&self) -> RGB {
+        self.rgb_manipulator.borrow().rgb()
+    }
 }
