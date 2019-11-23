@@ -2,6 +2,8 @@
 #[macro_use]
 extern crate serde_derive;
 
+use std::convert::From;
+
 pub mod attributes;
 pub mod basic_paint;
 pub mod characteristics;
@@ -28,12 +30,31 @@ impl<F: ColourComponent> TooltipText for RGB<F> {
 }
 
 pub trait Identity {
-    fn id(&self) -> String;
+    fn id(&self) -> &str;
 }
 
-impl<F: ColourComponent> Identity for RGB<F> {
-    fn id(&self) -> String {
-        format!("ID: {}", self.pango_string())
+#[derive(Colour, Clone)]
+pub struct IdRGB<F: ColourComponent> {
+    rgb: RGB<F>,
+    id: String,
+}
+
+impl<F: ColourComponent> From<RGB<F>> for IdRGB<F> {
+    fn from(rgb: RGB<F>) -> Self {
+        let id = format!("ID: {}", rgb.pango_string());
+        Self { rgb, id }
+    }
+}
+
+impl<F: ColourComponent> Identity for IdRGB<F> {
+    fn id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl<F: ColourComponent> TooltipText for IdRGB<F> {
+    fn tooltip_text(&self) -> Option<String> {
+        Some(format!("RGB: {}", self.id))
     }
 }
 

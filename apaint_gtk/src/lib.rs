@@ -84,6 +84,7 @@ pub mod characteristics {
 }
 
 pub mod colour {
+    use apaint;
     pub use colour_math::{
         rgb::{RGBError, RGB16, RGB8},
         ColourInterface, ScalarAttribute,
@@ -93,6 +94,7 @@ pub mod colour {
     pub type Colour = colour_math::Colour<f64>;
     pub type Hue = colour_math::hue::Hue<f64>;
     pub type RGB = colour_math::rgb::RGB<f64>;
+    pub type IdRGB = apaint::IdRGB<f64>;
     pub type RGBManipulator = colour_math::manipulator::RGBManipulator<f64>;
 
     pub trait GdkConvert {

@@ -8,7 +8,7 @@ use pw_gix::wrapper::*;
 use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::characteristics::FinishEntry;
-use apaint_gtk::colour::{ScalarAttribute, RGB};
+use apaint_gtk::colour::{IdRGB, ScalarAttribute, RGB};
 use apaint_gtk::colour_edit::ColourEditor;
 use apaint_gtk::factory::BasicPaintEditor;
 use apaint_gtk::graticule::GtkGraticule;
@@ -45,13 +45,13 @@ fn main() {
         false,
         0,
     );
-    let graticule = GtkGraticule::<RGB>::new(
+    let graticule = GtkGraticule::<IdRGB>::new(
         &[(
             "add",
             "Add",
             None,
             "Add the selected colour to the colour mixer",
-            GtkGraticule::<RGB>::HAS_CHOSEN_ITEM,
+            GtkGraticule::<IdRGB>::HAS_CHOSEN_ITEM,
         )],
         &[
             ScalarAttribute::Value,
@@ -60,13 +60,13 @@ fn main() {
         ],
     );
     for rgb in RGB::PRIMARIES.iter() {
-        graticule.add_item(*rgb);
+        graticule.add_item(IdRGB::from(*rgb));
     }
     for rgb in RGB::SECONDARIES.iter() {
-        graticule.add_item(*rgb);
+        graticule.add_item(IdRGB::from(*rgb));
     }
     for rgb in RGB::GREYS.iter() {
-        graticule.add_item(*rgb);
+        graticule.add_item(IdRGB::from(*rgb));
     }
     vbox.pack_start(&graticule.pwo(), true, true, 0);
     let rgbs: Vec<RGB> = RGB::PRIMARIES

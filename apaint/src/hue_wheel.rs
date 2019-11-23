@@ -2,7 +2,7 @@
 
 use crate::{
     drawing::{Cartesian, Point},
-    Identity, TooltipText,
+    IdRGB, Identity, TooltipText,
 };
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 use float_plus::FloatPlus;
@@ -98,13 +98,21 @@ pub trait XYForAttribute<F: ColourComponent + ShapeConsts>: ColourInterface<F> {
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for RGB<F> {}
+impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for IdRGB<F> {}
 
 pub trait DrawShapeForAttr<F>: XYForAttribute<F>
 where
     F: ColourComponent + ShapeConsts,
 {
-    fn draw_shape_for_attr(&self, scalar_attribute: ScalarAttribute, cartesian: &impl Cartesian<F>);
+    const SHAPE: Shape;
+
+    fn draw_shape_for_attr(
+        &self,
+        scalar_attribute: ScalarAttribute,
+        cartesian: &impl Cartesian<F>,
+    ) {
+        self.draw_given_shape_for_attr(Self::SHAPE, scalar_attribute, cartesian)
+    }
 
     fn draw_given_shape_for_attr(
         &self,
@@ -137,21 +145,13 @@ where
         }
     }
 
-    fn proximity_to(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Proximity<F>;
+    fn proximity_to(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Proximity<F> {
+        self.proximity_to_for_shape(point, Self::SHAPE, scalar_attribute)
+    }
 }
 
-impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for RGB<F> {
-    fn draw_shape_for_attr(
-        &self,
-        scalar_attribute: ScalarAttribute,
-        cartesian: &impl Cartesian<F>,
-    ) {
-        self.draw_given_shape_for_attr(Shape::Circle, scalar_attribute, cartesian)
-    }
-
-    fn proximity_to(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Proximity<F> {
-        self.proximity_to_for_shape(point, Shape::Circle, scalar_attribute)
-    }
+impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for IdRGB<F> {
+    const SHAPE: Shape = Shape::Circle;
 }
 
 pub trait Graticule<F: ColourComponent + ShapeConsts> {

@@ -164,7 +164,7 @@ where
                             gtk_graticule_c.device_to_user(device_point.x, device_point.y),
                             gtk_graticule_c.attribute.get(),
                         ) {
-                            *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id());
+                            *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id().to_string());
                             gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
                                 condns: Self::HAS_CHOSEN_ITEM,
                                 mask: Self::HAS_CHOSEN_ITEM,

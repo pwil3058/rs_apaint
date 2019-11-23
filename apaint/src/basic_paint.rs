@@ -16,8 +16,8 @@ pub struct BasicPaint<F: ColourComponent> {
 }
 
 impl<F: ColourComponent> Identity for BasicPaint<F> {
-    fn id(&self) -> String {
-        self.id.to_string()
+    fn id(&self) -> &str {
+        &self.id
     }
 }
 
@@ -56,18 +56,7 @@ impl<F: ColourComponent> TooltipText for BasicPaint<F> {
 }
 
 impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for BasicPaint<F> {
-    // TODO: simplify implementation of DrawShapeForAttr
-    fn draw_shape_for_attr(
-        &self,
-        scalar_attribute: ScalarAttribute,
-        cartesian: &impl Cartesian<F>,
-    ) {
-        self.draw_given_shape_for_attr(Shape::Square, scalar_attribute, cartesian)
-    }
-
-    fn proximity_to(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Proximity<F> {
-        self.proximity_to_for_shape(point, Shape::Square, scalar_attribute)
-    }
+    const SHAPE: Shape = Shape::Square;
 }
 
 impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for BasicPaint<F> {}
