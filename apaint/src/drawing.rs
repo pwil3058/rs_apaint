@@ -94,6 +94,17 @@ impl<F: ColourComponent> std::ops::Add<Size<F>> for Point<F> {
     }
 }
 
+impl<F: ColourComponent> std::ops::Mul<F> for Point<F> {
+    type Output = Self;
+
+    fn mul(self, scalar: F) -> Self {
+        Self {
+            x: self.x * scalar,
+            y: self.y * scalar,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Size<F: FloatPlus> {
     pub width: F,

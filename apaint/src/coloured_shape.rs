@@ -44,22 +44,35 @@ pub trait ShapeConsts: ColourComponent {
     const SHAPE_RADIUS: Self;
 }
 
+#[derive(Debug, Clone, Copy)]
+enum CachedPoint<F: ColourComponent + ShapeConsts> {
+    Hued(Point<F>),
+    Grey(Point<F>),
+}
+
 #[derive(Debug)]
 pub struct ColouredShape<F: ColourComponent + ShapeConsts> {
     id: String,
     rgb: RGB<F>,
-    hue_angle: Option<Degrees<F>>,
+    cached_point: CachedPoint<F>,
     tooltip_text: String,
     shape: Shape,
 }
 
 impl<F: ColourComponent + ShapeConsts> ColouredShape<F> {
     pub fn new(rgb: RGB<F>, id: &str, tooltip_text: &str, shape: Shape) -> Self {
-        let hue_angle = rgb.hue_angle();
+        let cached_point = if let Some(hue_angle) = rgb.hue_angle() {
+            CachedPoint::Hued(Point::from((hue_angle, F::ONE)))
+        } else {
+            CachedPoint::Grey(Point {
+                x: F::from(-1.05).unwrap(),
+                y: F::ONE - F::TWO * rgb.value(),
+            })
+        };
         Self {
             id: id.to_string(),
             rgb,
-            hue_angle,
+            cached_point,
             tooltip_text: tooltip_text.to_string(),
             shape,
         }
@@ -70,14 +83,9 @@ impl<F: ColourComponent + ShapeConsts> ColouredShape<F> {
     }
 
     fn xy(&self, scalar_attribute: ScalarAttribute) -> Point<F> {
-        if let Some(hue_angle) = self.hue_angle {
-            let radius = self.rgb.scalar_attribute(scalar_attribute);
-            Point::from((hue_angle, radius))
-        } else {
-            Point {
-                x: F::from(-1.05).unwrap(),
-                y: F::ONE - F::TWO * self.rgb.value(),
-            }
+        match self.cached_point {
+            CachedPoint::Hued(point) => point * self.rgb.scalar_attribute(scalar_attribute),
+            CachedPoint::Grey(point) => point,
         }
     }
 
