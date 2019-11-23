@@ -113,3 +113,4 @@ pub mod colour_edit;
 pub mod factory;
 pub mod graticule;
 pub mod list;
+pub mod spec_edit;

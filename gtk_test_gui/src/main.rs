@@ -9,9 +9,9 @@ use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
-use apaint_gtk::factory::BasicPaintSpecEditor;
 use apaint_gtk::graticule::GtkGraticule;
 use apaint_gtk::list::RGBList;
+use apaint_gtk::spec_edit::BasicPaintSpecEditor;
 
 fn main() {
     if gtk::init().is_err() {
