@@ -144,7 +144,7 @@ impl BasicPaintEditor {
 pub struct BasicPaintFactory {
     _paned: gtk::Paned,
     _paint_editor: Rc<BasicPaintEditor>,
-    _hue_wheel: Rc<GtkGraticule<BasicPaint<f64>>>,
+    _hue_wheel: Rc<GtkGraticule>,
     _list_view: Rc<ColouredItemListView>,
     _paint_list_helper: PaintListHelper,
 }
@@ -153,7 +153,7 @@ impl BasicPaintFactory {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let _paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         let _paint_editor = BasicPaintEditor::new(attributes, &[]);
-        let _hue_wheel = GtkGraticule::<BasicPaint<f64>>::new(&[], attributes);
+        let _hue_wheel = GtkGraticule::new(&[], attributes);
         let _paint_list_helper = PaintListHelper::new(attributes, characteristics);
         let list_store = _paint_list_helper.new_list_store(&[]);
         let _list_view = ColouredItemListView::new(&list_store, &_paint_list_helper.columns(), &[]);

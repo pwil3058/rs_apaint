@@ -45,13 +45,13 @@ fn main() {
         false,
         0,
     );
-    let graticule = GtkGraticule::<IdRGB>::new(
+    let graticule = GtkGraticule::new(
         &[(
             "add",
             "Add",
             None,
             "Add the selected colour to the colour mixer",
-            GtkGraticule::<IdRGB>::HAS_CHOSEN_ITEM,
+            GtkGraticule::HAS_CHOSEN_ITEM,
         )],
         &[
             ScalarAttribute::Value,
@@ -60,13 +60,13 @@ fn main() {
         ],
     );
     for rgb in RGB::PRIMARIES.iter() {
-        graticule.add_item(IdRGB::from(*rgb));
+        graticule.add_item(rgb.into());
     }
     for rgb in RGB::SECONDARIES.iter() {
-        graticule.add_item(IdRGB::from(*rgb));
+        graticule.add_item(rgb.into());
     }
     for rgb in RGB::GREYS.iter() {
-        graticule.add_item(IdRGB::from(*rgb));
+        graticule.add_item(rgb.into());
     }
     vbox.pack_start(&graticule.pwo(), true, true, 0);
     let rgbs: Vec<RGB> = RGB::PRIMARIES

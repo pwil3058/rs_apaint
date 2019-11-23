@@ -15,19 +15,17 @@ use pw_gix::{
 };
 
 use crate::attributes::AttributeSelectorRadioButtons;
-use apaint::{hue_wheel::*, Identity, TooltipText};
+//use apaint::{hue_wheel::*, Identity, TooltipText};
+use apaint::coloured_shape::{ColouredShape, HueWheelNew};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::{ColourInterface, ScalarAttribute};
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule<CI>
-where
-    CI: ColourInterface<f64> + TooltipText + DrawShapeForAttr<f64> + Identity + 'static,
-{
+pub struct GtkGraticule {
     vbox: gtk::Box,
     drawing_area: gtk::DrawingArea,
-    coloured_items: RefCell<Vec<CI>>,
+    coloured_items: RefCell<HueWheelNew<f64>>,
     chosen_item: RefCell<Option<String>>,
     attribute_selector: Rc<AttributeSelectorRadioButtons>,
     attribute: Cell<ScalarAttribute>,
@@ -38,10 +36,7 @@ where
     last_xy: Cell<Option<Point>>,
 }
 
-impl<CI> GtkGraticule<CI>
-where
-    CI: ColourInterface<f64> + TooltipText + DrawShapeForAttr<f64> + Identity + 'static,
-{
+impl GtkGraticule {
     pub const HAS_CHOSEN_ITEM: u64 = 1;
 
     pub fn new(
@@ -51,7 +46,7 @@ where
         let gtk_graticule = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             drawing_area: gtk::DrawingArea::new(),
-            coloured_items: RefCell::new(Vec::new()),
+            coloured_items: RefCell::new(HueWheelNew::new()),
             chosen_item: RefCell::new(None),
             attribute_selector: AttributeSelectorRadioButtons::new(
                 gtk::Orientation::Horizontal,
@@ -110,11 +105,7 @@ where
                 gtk_graticule_c
                     .coloured_items
                     .borrow()
-                    .draw_graticule(&cartesian);
-                gtk_graticule_c
-                    .coloured_items
-                    .borrow()
-                    .draw_all(gtk_graticule_c.attribute.get(), &cartesian);
+                    .draw(gtk_graticule_c.attribute.get(), &cartesian);
                 gtk::Inhibit(false)
             });
 
@@ -279,8 +270,8 @@ where
         self.origin_offset.set(self.origin_offset.get() + delta);
     }
 
-    pub fn add_item(&self, coloured_item: CI) {
-        self.coloured_items.borrow_mut().push(coloured_item)
+    pub fn add_item(&self, coloured_item: ColouredShape<f64>) {
+        self.coloured_items.borrow_mut().add_item(coloured_item)
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

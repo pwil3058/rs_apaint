@@ -8,6 +8,7 @@ pub mod attributes;
 pub mod basic_paint;
 pub mod characteristics;
 pub mod colour_mix;
+pub mod coloured_shape;
 pub mod drawing;
 pub mod hue_wheel;
 
