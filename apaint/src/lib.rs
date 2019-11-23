@@ -115,6 +115,34 @@ impl<F: ColourComponent> TooltipText for dyn BasicPaintIfce<F> {
     }
 }
 
+pub struct BasicPaintSpec<F: ColourComponent> {
+    pub rgb: RGB<F>,
+    pub id: String,
+    pub name: String,
+    pub notes: String,
+    pub finish: Finish,
+    pub transparency: Transparency,
+    pub permanence: Permanence,
+    pub fluorescence: Fluorescence,
+    pub metallicness: Metallicness,
+}
+
+impl<F: ColourComponent> BasicPaintSpec<F> {
+    pub fn new(rgb: RGB<F>, id: &str) -> Self {
+        Self {
+            rgb,
+            id: id.to_string(),
+            name: String::new(),
+            notes: String::new(),
+            finish: Finish::default(),
+            transparency: Transparency::default(),
+            permanence: Permanence::default(),
+            fluorescence: Fluorescence::default(),
+            metallicness: Metallicness::default(),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Colour)]
 struct Paint<F: ColourComponent> {
     rgb: RGB<F>,

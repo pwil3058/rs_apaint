@@ -8,9 +8,8 @@ use pw_gix::wrapper::*;
 use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::characteristics::FinishEntry;
-use apaint_gtk::colour::{IdRGB, ScalarAttribute, RGB};
-use apaint_gtk::colour_edit::ColourEditor;
-use apaint_gtk::factory::BasicPaintEditor;
+use apaint_gtk::colour::{ScalarAttribute, RGB};
+use apaint_gtk::factory::BasicPaintSpecEditor;
 use apaint_gtk::graticule::GtkGraticule;
 use apaint_gtk::list::RGBList;
 
@@ -36,7 +35,7 @@ fn main() {
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(&hbox, false, false, 0);
     vbox.pack_start(
-        &BasicPaintEditor::new(
+        &BasicPaintSpecEditor::new(
             &[ScalarAttribute::Value, ScalarAttribute::Greyness],
             &vec![],
         )
