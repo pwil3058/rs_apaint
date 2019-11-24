@@ -15,17 +15,16 @@ use pw_gix::{
 };
 
 use crate::attributes::AttributeSelectorRadioButtons;
-//use apaint::{hue_wheel::*, Identity, TooltipText};
-use apaint::coloured_shape::{ColouredShape, HueWheelNew};
+use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
 
 #[derive(PWO, Wrapper)]
-pub struct GtkGraticule {
+pub struct GtkHueWheel {
     vbox: gtk::Box,
     drawing_area: gtk::DrawingArea,
-    coloured_items: RefCell<HueWheelNew<f64>>,
+    coloured_items: RefCell<HueWheel<f64>>,
     chosen_item: RefCell<Option<String>>,
     attribute_selector: Rc<AttributeSelectorRadioButtons>,
     attribute: Cell<ScalarAttribute>,
@@ -36,7 +35,7 @@ pub struct GtkGraticule {
     last_xy: Cell<Option<Point>>,
 }
 
-impl GtkGraticule {
+impl GtkHueWheel {
     pub const HAS_CHOSEN_ITEM: u64 = 1;
 
     pub fn new(
@@ -46,7 +45,7 @@ impl GtkGraticule {
         let gtk_graticule = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             drawing_area: gtk::DrawingArea::new(),
-            coloured_items: RefCell::new(HueWheelNew::new()),
+            coloured_items: RefCell::new(HueWheel::new()),
             chosen_item: RefCell::new(None),
             attribute_selector: AttributeSelectorRadioButtons::new(
                 gtk::Orientation::Horizontal,

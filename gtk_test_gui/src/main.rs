@@ -10,7 +10,7 @@ use apaint::characteristics::CharacteristicIfce;
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::factory::BasicPaintFactory;
-use apaint_gtk::graticule::GtkGraticule;
+use apaint_gtk::hue_wheel::GtkHueWheel;
 
 fn main() {
     if gtk::init().is_err() {
@@ -47,13 +47,13 @@ fn main() {
         false,
         0,
     );
-    let graticule = GtkGraticule::new(
+    let graticule = GtkHueWheel::new(
         &[(
             "add",
             "Add",
             None,
             "Add the selected colour to the colour mixer",
-            GtkGraticule::HAS_CHOSEN_ITEM,
+            GtkHueWheel::HAS_CHOSEN_ITEM,
         )],
         &[
             ScalarAttribute::Value,

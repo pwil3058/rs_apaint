@@ -2,13 +2,10 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::convert::From;
-
 pub mod attributes;
 pub mod basic_paint;
 pub mod characteristics;
 pub mod colour_mix;
-pub mod coloured_shape;
 pub mod drawing;
 pub mod hue_wheel;
 pub mod series;
@@ -21,46 +18,9 @@ pub use normalised_angles::*;
 
 use crate::characteristics::*;
 
-pub trait TooltipText {
-    fn tooltip_text(&self) -> Option<String>;
-}
-
-impl<F: ColourComponent> TooltipText for RGB<F> {
-    fn tooltip_text(&self) -> Option<String> {
-        Some(format!("RGB: {}", self.pango_string()))
-    }
-}
-
-pub trait Identity {
+pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
     fn id(&self) -> &str;
-}
 
-#[derive(Colour, Clone)]
-pub struct IdRGB<F: ColourComponent> {
-    rgb: RGB<F>,
-    id: String,
-}
-
-impl<F: ColourComponent> From<RGB<F>> for IdRGB<F> {
-    fn from(rgb: RGB<F>) -> Self {
-        let id = format!("ID: {}", rgb.pango_string());
-        Self { rgb, id }
-    }
-}
-
-impl<F: ColourComponent> Identity for IdRGB<F> {
-    fn id(&self) -> &str {
-        &self.id
-    }
-}
-
-impl<F: ColourComponent> TooltipText for IdRGB<F> {
-    fn tooltip_text(&self) -> Option<String> {
-        Some(format!("RGB: {}", self.id))
-    }
-}
-
-pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> + Identity {
     fn name(&self) -> Option<&str> {
         None
     }
@@ -96,22 +56,6 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> + Identity {
             CharacteristicType::Permanence => self.permanence().abbrev(),
             CharacteristicType::Fluorescence => self.fluorescence().abbrev(),
             CharacteristicType::Metallicness => self.metallicness().abbrev(),
-        }
-    }
-}
-
-impl<F: ColourComponent> TooltipText for dyn BasicPaintIfce<F> {
-    fn tooltip_text(&self) -> Option<String> {
-        if let Some(name) = self.name() {
-            if let Some(notes) = self.notes() {
-                Some(format!("{}: {}\n{}", self.id(), name, notes))
-            } else {
-                Some(format!("{}: {}", self.id(), name))
-            }
-        } else if let Some(notes) = self.notes() {
-            Some(format!("{}: {}", self.id(), notes))
-        } else {
-            Some(format!("{}: {}", self.id(), self.rgb().pango_string()))
         }
     }
 }

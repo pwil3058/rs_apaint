@@ -4,8 +4,8 @@ use apaint_boilerplate::Colour;
 use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::*;
 
-use crate::coloured_shape::{ColouredShape, Shape, ShapeConsts};
-use crate::{BasicPaintIfce, BasicPaintSpec, Identity, TooltipText};
+use crate::hue_wheel::{ColouredShape, Shape, ShapeConsts};
+use crate::{BasicPaintIfce, BasicPaintSpec};
 
 #[derive(Debug, Deserialize, Serialize, Colour, Clone)]
 pub struct BasicPaint<F: ColourComponent> {
@@ -15,13 +15,11 @@ pub struct BasicPaint<F: ColourComponent> {
     notes: String,
 }
 
-impl<F: ColourComponent> Identity for BasicPaint<F> {
+impl<F: ColourComponent> BasicPaintIfce<F> for BasicPaint<F> {
     fn id(&self) -> &str {
         &self.id
     }
-}
 
-impl<F: ColourComponent> BasicPaintIfce<F> for BasicPaint<F> {
     fn name(&self) -> Option<&str> {
         if self.name.len() == 0 {
             None
@@ -35,22 +33,6 @@ impl<F: ColourComponent> BasicPaintIfce<F> for BasicPaint<F> {
             None
         } else {
             Some(&self.notes)
-        }
-    }
-}
-
-impl<F: ColourComponent> TooltipText for BasicPaint<F> {
-    fn tooltip_text(&self) -> Option<String> {
-        if let Some(name) = self.name() {
-            if let Some(notes) = self.notes() {
-                Some(format!("{}: {}\n{}", self.id(), name, notes))
-            } else {
-                Some(format!("{}: {}", self.id(), name))
-            }
-        } else if let Some(notes) = self.notes() {
-            Some(format!("{}: {}", self.id(), notes))
-        } else {
-            Some(format!("{}: {}", self.id(), self.rgb().pango_string()))
         }
     }
 }

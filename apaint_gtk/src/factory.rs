@@ -11,7 +11,7 @@ use apaint::{basic_paint::BasicPaint, characteristics::CharacteristicType, Basic
 
 use apaint_gtk_boilerplate::PWO;
 
-use crate::graticule::GtkGraticule;
+use crate::hue_wheel::GtkHueWheel;
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::spec_edit::BasicPaintSpecEditor;
 
@@ -19,7 +19,7 @@ use crate::spec_edit::BasicPaintSpecEditor;
 pub struct BasicPaintFactory {
     paned: gtk::Paned,
     paint_editor: Rc<BasicPaintSpecEditor>,
-    hue_wheel: Rc<GtkGraticule>,
+    hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
     paint_list_helper: PaintListHelper,
 }
@@ -28,7 +28,7 @@ impl BasicPaintFactory {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         let paint_editor = BasicPaintSpecEditor::new(attributes, &[]);
-        let hue_wheel = GtkGraticule::new(&[], attributes);
+        let hue_wheel = GtkHueWheel::new(&[], attributes);
         let paint_list_helper = PaintListHelper::new(attributes, characteristics);
         let list_view = ColouredItemListView::new(
             &paint_list_helper.column_types(),
