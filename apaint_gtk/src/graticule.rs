@@ -19,7 +19,7 @@ use crate::attributes::AttributeSelectorRadioButtons;
 use apaint::coloured_shape::{ColouredShape, HueWheelNew};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
-use colour_math::{ColourInterface, ScalarAttribute};
+use colour_math::ScalarAttribute;
 
 #[derive(PWO, Wrapper)]
 pub struct GtkGraticule {
@@ -81,9 +81,11 @@ impl GtkGraticule {
             | gdk::EventMask::BUTTON_RELEASE_MASK;
         gtk_graticule.drawing_area.add_events(events);
 
-        gtk_graticule
-            .vbox
-            .pack_start(&gtk_graticule.attribute_selector.pwo(), false, false, 0);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some("Attribute: ")), false, false, 0);
+        hbox.pack_start(&gtk_graticule.attribute_selector.pwo(), true, true, 0);
+
+        gtk_graticule.vbox.pack_start(&hbox, false, false, 0);
         gtk_graticule
             .vbox
             .pack_start(&gtk_graticule.drawing_area, true, true, 0);
@@ -271,7 +273,8 @@ impl GtkGraticule {
     }
 
     pub fn add_item(&self, coloured_item: ColouredShape<f64>) {
-        self.coloured_items.borrow_mut().add_item(coloured_item)
+        self.coloured_items.borrow_mut().add_item(coloured_item);
+        self.drawing_area.queue_draw();
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

@@ -9,17 +9,11 @@ use pw_gix::wrapper::*;
 
 use colour_math::ScalarAttribute;
 
-use apaint::{
-    basic_paint::{BasicPaint, BasicPaintBuilder},
-    characteristics::CharacteristicType,
-    BasicPaintSpec,
-};
+use apaint::{characteristics::CharacteristicType, BasicPaintSpec};
 
 use apaint_gtk_boilerplate::PWO;
 
 use crate::colour_edit::ColourEditor;
-use crate::graticule::GtkGraticule;
-use crate::list::{ColouredItemListView, PaintListHelper};
 
 #[derive(PWO)]
 pub struct BasicPaintSpecEditor {
@@ -149,5 +143,9 @@ impl BasicPaintSpecEditor {
         for callback in self.add_callbacks.borrow().iter() {
             callback(&paint_spec);
         }
+    }
+
+    pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
+        self.add_callbacks.borrow_mut().push(Box::new(callback))
     }
 }

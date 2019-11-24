@@ -9,9 +9,8 @@ use apaint::characteristics::CharacteristicIfce;
 
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
+use apaint_gtk::factory::BasicPaintFactory;
 use apaint_gtk::graticule::GtkGraticule;
-use apaint_gtk::list::RGBList;
-use apaint_gtk::spec_edit::BasicPaintSpecEditor;
 
 fn main() {
     if gtk::init().is_err() {
@@ -35,8 +34,12 @@ fn main() {
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(&hbox, false, false, 0);
     vbox.pack_start(
-        &BasicPaintSpecEditor::new(
-            &[ScalarAttribute::Value, ScalarAttribute::Greyness],
+        &BasicPaintFactory::new(
+            &[
+                ScalarAttribute::Value,
+                ScalarAttribute::Greyness,
+                ScalarAttribute::Chroma,
+            ],
             &vec![],
         )
         .pwo(),
@@ -68,21 +71,6 @@ fn main() {
         graticule.add_item(rgb.into());
     }
     vbox.pack_start(&graticule.pwo(), true, true, 0);
-    let rgbs: Vec<RGB> = RGB::PRIMARIES
-        .iter()
-        .chain(RGB::SECONDARIES.iter())
-        .chain(RGB::GREYS.iter())
-        .map(|x| *x)
-        .collect();
-    let list = RGBList::new(
-        &rgbs,
-        &[
-            ScalarAttribute::Value,
-            ScalarAttribute::Warmth,
-            ScalarAttribute::Chroma,
-        ],
-    );
-    vbox.pack_start(&list.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

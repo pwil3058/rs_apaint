@@ -1,11 +1,13 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use crate::drawing::{Cartesian, Point};
-use crate::hue_wheel::{DrawShapeForAttr, Proximity, Shape, ShapeConsts, XYForAttribute};
-use crate::{BasicPaintIfce, Identity, TooltipText};
 use apaint_boilerplate::Colour;
 use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::*;
+
+use crate::coloured_shape::{ColouredShape, Shape, ShapeConsts};
+use crate::drawing::{Cartesian, Point};
+//use crate::hue_wheel::{DrawShapeForAttr, Proximity, Shape, ShapeConsts, XYForAttribute};
+use crate::{BasicPaintIfce, BasicPaintSpec, Identity, TooltipText};
 
 #[derive(Debug, Deserialize, Serialize, Colour, Clone)]
 pub struct BasicPaint<F: ColourComponent> {
@@ -55,11 +57,11 @@ impl<F: ColourComponent> TooltipText for BasicPaint<F> {
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for BasicPaint<F> {
-    const SHAPE: Shape = Shape::Square;
-}
-
-impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for BasicPaint<F> {}
+//impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for BasicPaint<F> {
+//    const SHAPE: Shape = Shape::Square;
+//}
+//
+//impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for BasicPaint<F> {}
 
 pub struct BasicPaintBuilder<F: ColourComponent> {
     rgb: RGB<F>,
@@ -95,6 +97,34 @@ impl<F: ColourComponent> BasicPaintBuilder<F> {
             name: self.name.to_string(),
             notes: self.notes.to_string(),
         }
+    }
+}
+
+impl<F: ColourComponent> From<&BasicPaintSpec<F>> for BasicPaint<F> {
+    fn from(spec: &BasicPaintSpec<F>) -> Self {
+        Self {
+            rgb: spec.rgb,
+            id: spec.id.to_string(),
+            name: spec.name.to_string(),
+            notes: spec.notes.to_string(),
+        }
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> From<&BasicPaint<F>> for ColouredShape<F> {
+    fn from(paint: &BasicPaint<F>) -> Self {
+        let tooltip_text = if let Some(name) = paint.name() {
+            if let Some(notes) = paint.notes() {
+                format!("{}: {}\n{}", paint.id, name, notes)
+            } else {
+                format!("{}: {}", paint.id, name)
+            }
+        } else if let Some(notes) = paint.notes() {
+            format!("{}: {}", paint.id, notes)
+        } else {
+            format!("{}: {}", paint.id, paint.rgb().pango_string())
+        };
+        ColouredShape::new(paint.rgb, &paint.id, &tooltip_text, Shape::Square)
     }
 }
 
