@@ -11,6 +11,7 @@ pub mod colour_mix;
 pub mod coloured_shape;
 pub mod drawing;
 pub mod hue_wheel;
+pub mod series;
 
 use apaint_boilerplate::Colour;
 

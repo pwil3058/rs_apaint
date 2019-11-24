@@ -5,8 +5,6 @@ use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::*;
 
 use crate::coloured_shape::{ColouredShape, Shape, ShapeConsts};
-use crate::drawing::{Cartesian, Point};
-//use crate::hue_wheel::{DrawShapeForAttr, Proximity, Shape, ShapeConsts, XYForAttribute};
 use crate::{BasicPaintIfce, BasicPaintSpec, Identity, TooltipText};
 
 #[derive(Debug, Deserialize, Serialize, Colour, Clone)]
@@ -56,12 +54,6 @@ impl<F: ColourComponent> TooltipText for BasicPaint<F> {
         }
     }
 }
-
-//impl<F: ColourComponent + ShapeConsts> DrawShapeForAttr<F> for BasicPaint<F> {
-//    const SHAPE: Shape = Shape::Square;
-//}
-//
-//impl<F: ColourComponent + ShapeConsts> XYForAttribute<F> for BasicPaint<F> {}
 
 pub struct BasicPaintBuilder<F: ColourComponent> {
     rgb: RGB<F>,

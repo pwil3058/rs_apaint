@@ -1,9 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use crate::{
-    drawing::{Cartesian, Point},
-    IdRGB, Identity, TooltipText,
-};
+use crate::drawing::{Cartesian, Point};
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 use float_plus::FloatPlus;
 use normalised_angles::Degrees;
