@@ -55,6 +55,14 @@ where
         &self.series_id
     }
 
+    pub fn set_proprietor(&mut self, proprietor: &str) {
+        self.series_id.proprietor = proprietor.to_string()
+    }
+
+    pub fn set_series_name(&mut self, series_name: &str) {
+        self.series_id.series_name = series_name.to_string()
+    }
+
     pub fn paints(&self) -> impl Iterator<Item = &P> {
         self.paint_list.iter()
     }

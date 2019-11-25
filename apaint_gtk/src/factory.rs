@@ -31,6 +31,8 @@ where
     list_view: Rc<ColouredItemListView>,
     paint_list_helper: PaintListHelper,
     paint_series: RefCell<PaintSeries<f64, P>>,
+    proprietor_entry: gtk::Entry,
+    series_name_entry: gtk::Entry,
 }
 
 impl<P> BasicPaintFactory<P>
@@ -45,6 +47,23 @@ where
             "Remove the indicated paint from the series.",
             SAV_HAS_CHOSEN_ITEM,
         )];
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let grid = gtk::GridBuilder::new().hexpand(true).build();
+        vbox.pack_start(&grid, false, false, 0);
+        let label = gtk::LabelBuilder::new()
+            .label("Series Name:")
+            .halign(gtk::Align::End)
+            .build();
+        grid.attach(&label, 0, 0, 1, 1);
+        let series_name_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        grid.attach(&series_name_entry, 1, 0, 1, 1);
+        let label = gtk::LabelBuilder::new()
+            .label("Proprietor:")
+            .halign(gtk::Align::End)
+            .build();
+        grid.attach(&label, 0, 1, 1, 1);
+        let proprietor_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        grid.attach(&proprietor_entry, 1, 1, 1, 1);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         let paint_editor = BasicPaintSpecEditor::new(attributes, &[]);
         let hue_wheel = GtkHueWheel::new(menu_items, attributes);
@@ -61,7 +80,8 @@ where
         notebook.set_tab_label_text(&scrolled_window, "Paint List");
         notebook.add(&hue_wheel.pwo());
         notebook.set_tab_label_text(&hue_wheel.pwo(), "Hue/Attribute Wheel");
-        paned.add1(&notebook);
+        vbox.pack_start(&notebook, true, true, 0);
+        paned.add1(&vbox);
         paned.add2(&paint_editor.pwo());
         let bpf = Rc::new(Self {
             paned,
@@ -70,6 +90,8 @@ where
             list_view,
             paint_list_helper,
             paint_series: RefCell::new(PaintSeries::default()),
+            proprietor_entry,
+            series_name_entry,
         });
 
         let bpf_c = Rc::clone(&bpf);
@@ -83,6 +105,20 @@ where
         let bpf_c = Rc::clone(&bpf);
         bpf.list_view
             .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.proprietor_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                bpf_c.paint_series.borrow_mut().set_proprietor(&text);
+            }
+        });
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.series_name_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                bpf_c.paint_series.borrow_mut().set_series_name(&text);
+            }
+        });
 
         bpf
     }
