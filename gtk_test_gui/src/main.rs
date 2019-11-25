@@ -5,13 +5,15 @@ use gtk::{BoxExt, ContainerExt, WidgetExt};
 
 use pw_gix::wrapper::*;
 
-use apaint::characteristics::CharacteristicIfce;
+use apaint::{basic_paint::BasicPaint, characteristics::CharacteristicIfce};
 
-use apaint::basic_paint::BasicPaint;
-use apaint_gtk::characteristics::FinishEntry;
-use apaint_gtk::colour::{ScalarAttribute, RGB};
-use apaint_gtk::factory::BasicPaintFactory;
-use apaint_gtk::hue_wheel::GtkHueWheel;
+use apaint_gtk::{
+    characteristics::FinishEntry,
+    colour::{ScalarAttribute, RGB},
+    factory::BasicPaintFactory,
+    hue_wheel::GtkHueWheel,
+    SAV_HAS_CHOSEN_ITEM,
+};
 
 fn main() {
     if gtk::init().is_err() {
@@ -54,7 +56,7 @@ fn main() {
             "Add",
             None,
             "Add the selected colour to the colour mixer",
-            GtkHueWheel::HAS_CHOSEN_ITEM,
+            SAV_HAS_CHOSEN_ITEM,
         )],
         &[
             ScalarAttribute::Value,

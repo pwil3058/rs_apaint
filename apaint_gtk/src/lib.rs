@@ -1,5 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+pub const SAV_HAS_CHOSEN_ITEM: u64 = 1 << 0;
+
 pub mod angles {
     pub use normalised_angles;
 

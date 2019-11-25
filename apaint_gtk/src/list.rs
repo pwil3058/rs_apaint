@@ -12,10 +12,12 @@ use pw_gix::{
     wrapper::PackableWidgetObject,
 };
 
-use crate::colour::{ColourInterface, ScalarAttribute};
 use apaint::characteristics::CharacteristicType;
 use apaint::BasicPaintIfce;
 use pw_gix::gtkx::list_store::TreeModelRowOps;
+
+use crate::colour::{ColourInterface, ScalarAttribute};
+use crate::SAV_HAS_CHOSEN_ITEM;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -27,8 +29,6 @@ pub struct ColouredItemListView {
 }
 
 impl ColouredItemListView {
-    pub const SAV_SELECTION_MADE: u64 = 1;
-
     pub fn new(
         column_types: &[gtk::Type],
         columns: &[gtk::TreeViewColumn],
@@ -87,8 +87,8 @@ impl ColouredItemListView {
                         if let Some(string) = value.get() {
                             *self.selected_id.borrow_mut() = Some(string);
                             self.popup_menu.update_condns(MaskedCondns {
-                                condns: Self::SAV_SELECTION_MADE,
-                                mask: Self::SAV_SELECTION_MADE,
+                                condns: SAV_HAS_CHOSEN_ITEM,
+                                mask: SAV_HAS_CHOSEN_ITEM,
                             });
                             return;
                         }
@@ -99,7 +99,7 @@ impl ColouredItemListView {
         *self.selected_id.borrow_mut() = None;
         self.popup_menu.update_condns(MaskedCondns {
             condns: 0,
-            mask: Self::SAV_SELECTION_MADE,
+            mask: SAV_HAS_CHOSEN_ITEM,
         });
     }
 

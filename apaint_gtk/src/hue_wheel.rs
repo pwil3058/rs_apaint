@@ -14,11 +14,13 @@ use pw_gix::{
     wrapper::*,
 };
 
-use crate::attributes::AttributeSelectorRadioButtons;
 use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
+
+use crate::attributes::AttributeSelectorRadioButtons;
+use crate::SAV_HAS_CHOSEN_ITEM;
 
 #[derive(PWO, Wrapper)]
 pub struct GtkHueWheel {
@@ -36,8 +38,6 @@ pub struct GtkHueWheel {
 }
 
 impl GtkHueWheel {
-    pub const HAS_CHOSEN_ITEM: u64 = 1;
-
     pub fn new(
         menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
         attributes: &[ScalarAttribute],
@@ -158,14 +158,14 @@ impl GtkHueWheel {
                         ) {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id().to_string());
                             gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
-                                condns: Self::HAS_CHOSEN_ITEM,
-                                mask: Self::HAS_CHOSEN_ITEM,
+                                condns: SAV_HAS_CHOSEN_ITEM,
+                                mask: SAV_HAS_CHOSEN_ITEM,
                             });
                         } else {
                             *gtk_graticule_c.chosen_item.borrow_mut() = None;
                             gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
                                 condns: 0,
-                                mask: Self::HAS_CHOSEN_ITEM,
+                                mask: SAV_HAS_CHOSEN_ITEM,
                             });
                         };
                         gtk_graticule_c.popup_menu.popup_at_event(event);

@@ -75,6 +75,14 @@ where
         }
     }
 
+    pub fn remove(&mut self, id: &str) -> P {
+        debug_assert!(self.is_sorted_unique());
+        match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
+            Ok(index) => self.paint_list.remove(index),
+            Err(_) => panic!("{}: id not found", id),
+        }
+    }
+
     pub fn find(&self, id: &str) -> Option<&P> {
         debug_assert!(self.is_sorted_unique());
         match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
