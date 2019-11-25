@@ -88,6 +88,10 @@ impl<F: ColourComponent> BasicPaintSpec<F> {
     }
 }
 
+pub trait FromSpec<F: ColourComponent> {
+    fn from_spec(spec: &BasicPaintSpec<F>) -> Self;
+}
+
 #[derive(Debug, Serialize, Deserialize, Colour)]
 struct Paint<F: ColourComponent> {
     rgb: RGB<F>,

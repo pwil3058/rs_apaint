@@ -7,6 +7,7 @@ use pw_gix::wrapper::*;
 
 use apaint::characteristics::CharacteristicIfce;
 
+use apaint::basic_paint::BasicPaint;
 use apaint_gtk::characteristics::FinishEntry;
 use apaint_gtk::colour::{ScalarAttribute, RGB};
 use apaint_gtk::factory::BasicPaintFactory;
@@ -34,7 +35,7 @@ fn main() {
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(&hbox, false, false, 0);
     vbox.pack_start(
-        &BasicPaintFactory::new(
+        &BasicPaintFactory::<BasicPaint<f64>>::new(
             &[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,

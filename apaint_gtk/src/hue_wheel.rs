@@ -276,6 +276,11 @@ impl GtkHueWheel {
         self.drawing_area.queue_draw();
     }
 
+    pub fn remove_item(&self, id: &str) {
+        self.coloured_items.borrow_mut().remove_item(id);
+        self.drawing_area.queue_draw();
+    }
+
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {
         self.callbacks
             .borrow_mut()

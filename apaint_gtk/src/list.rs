@@ -15,6 +15,7 @@ use pw_gix::{
 use crate::colour::{ColourInterface, ScalarAttribute};
 use apaint::characteristics::CharacteristicType;
 use apaint::BasicPaintIfce;
+use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -126,6 +127,17 @@ impl ColouredItemListView {
 
     pub fn add_row(&self, row: &[gtk::Value]) {
         self.list_store.append_row(&row.to_vec());
+    }
+
+    pub fn remove_row(&self, id: &str) {
+        if let Some((_, iter)) = self
+            .list_store
+            .find_row_where(|list_store, iter| list_store.get_value(iter, 0).get() == Some(id))
+        {
+            self.list_store.remove(&iter);
+        } else {
+            panic!("{}: id not found", id);
+        }
     }
 }
 

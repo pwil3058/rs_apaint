@@ -4,8 +4,8 @@ use apaint_boilerplate::Colour;
 use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
 use normalised_angles::*;
 
-use crate::hue_wheel::{ColouredShape, Shape, ShapeConsts};
-use crate::{BasicPaintIfce, BasicPaintSpec};
+use crate::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts};
+use crate::{BasicPaintIfce, BasicPaintSpec, FromSpec};
 
 #[derive(Debug, Deserialize, Serialize, Colour, Clone)]
 pub struct BasicPaint<F: ColourComponent> {
@@ -74,8 +74,8 @@ impl<F: ColourComponent> BasicPaintBuilder<F> {
     }
 }
 
-impl<F: ColourComponent> From<&BasicPaintSpec<F>> for BasicPaint<F> {
-    fn from(spec: &BasicPaintSpec<F>) -> Self {
+impl<F: ColourComponent> FromSpec<F> for BasicPaint<F> {
+    fn from_spec(spec: &BasicPaintSpec<F>) -> Self {
         Self {
             rgb: spec.rgb,
             id: spec.id.to_string(),
@@ -85,20 +85,20 @@ impl<F: ColourComponent> From<&BasicPaintSpec<F>> for BasicPaint<F> {
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> From<&BasicPaint<F>> for ColouredShape<F> {
-    fn from(paint: &BasicPaint<F>) -> Self {
-        let tooltip_text = if let Some(name) = paint.name() {
-            if let Some(notes) = paint.notes() {
-                format!("{}: {}\n{}", paint.id, name, notes)
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for BasicPaint<F> {
+    fn coloured_shape(&self) -> ColouredShape<F> {
+        let tooltip_text = if let Some(name) = self.name() {
+            if let Some(notes) = self.notes() {
+                format!("{}: {}\n{}", self.id, name, notes)
             } else {
-                format!("{}: {}", paint.id, name)
+                format!("{}: {}", self.id, name)
             }
-        } else if let Some(notes) = paint.notes() {
-            format!("{}: {}", paint.id, notes)
+        } else if let Some(notes) = self.notes() {
+            format!("{}: {}", self.id, notes)
         } else {
-            format!("{}: {}", paint.id, paint.rgb().pango_string())
+            format!("{}: {}", self.id, self.rgb().pango_string())
         };
-        ColouredShape::new(paint.rgb, &paint.id, &tooltip_text, Shape::Square)
+        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
     }
 }
 

@@ -1,11 +1,13 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use crate::drawing::{Cartesian, Point};
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 use float_plus::FloatPlus;
 use normalised_angles::Degrees;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+use crate::drawing::{Cartesian, Point};
+use std::cmp::Ordering;
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Shape {
     Circle,
     Diamond,
@@ -148,6 +150,10 @@ impl<F: ColourComponent + ShapeConsts> ColouredShape<F> {
     }
 }
 
+pub trait MakeColouredShape<F: ColourComponent + ShapeConsts> {
+    fn coloured_shape(&self) -> ColouredShape<F>;
+}
+
 impl<F: ColourComponent + ShapeConsts> From<&RGB<F>> for ColouredShape<F> {
     fn from(rgb: &RGB<F>) -> Self {
         let id = format!("ID: {}", rgb.pango_string());
@@ -155,6 +161,26 @@ impl<F: ColourComponent + ShapeConsts> From<&RGB<F>> for ColouredShape<F> {
         ColouredShape::new(*rgb, &id, &tooltip_text, Shape::Circle)
     }
 }
+
+impl<F: ColourComponent + ShapeConsts> Ord for ColouredShape<F> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> PartialOrd for ColouredShape<F> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> PartialEq for ColouredShape<F> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> Eq for ColouredShape<F> {}
 
 pub trait Graticule<F: ColourComponent + ShapeConsts> {
     fn draw_rings(num_rings: u32, cartesian: &impl Cartesian<F>) {
@@ -256,8 +282,27 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
         None
     }
 
-    pub fn add_item(&mut self, coloured_item: ColouredShape<F>) {
-        self.shapes.push(coloured_item)
+    pub fn add_item(&mut self, coloured_item: ColouredShape<F>) -> Option<ColouredShape<F>> {
+        //self.shapes.push(coloured_item);
+        let id = coloured_item.id();
+        match self.shapes.binary_search_by(|s| s.id().cmp(id)) {
+            Ok(index) => {
+                self.shapes.push(coloured_item);
+                let old = self.shapes.swap_remove(index);
+                Some(old)
+            }
+            Err(index) => {
+                self.shapes.insert(index, coloured_item);
+                None
+            }
+        }
+    }
+
+    pub fn remove_item(&mut self, id: &str) -> ColouredShape<F> {
+        match self.shapes.binary_search_by(|s| s.id().cmp(id)) {
+            Ok(index) => self.shapes.remove(index),
+            Err(_) => panic!("{}: shape with this id not found", id),
+        }
     }
 }
 
