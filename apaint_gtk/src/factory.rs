@@ -6,6 +6,8 @@ use std::rc::Rc;
 use gtk::prelude::*;
 use pw_gix::wrapper::*;
 
+use pw_gix::gtkx::paned::RememberPosition;
+
 use colour_math::ScalarAttribute;
 
 use apaint::{
@@ -83,6 +85,7 @@ where
         vbox.pack_start(&notebook, true, true, 0);
         paned.add1(&vbox);
         paned.add2(&paint_editor.pwo());
+        paned.set_position_from_recollections("basic paint factory h paned position", 200);
         let bpf = Rc::new(Self {
             paned,
             paint_editor,

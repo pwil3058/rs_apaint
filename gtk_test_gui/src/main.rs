@@ -3,6 +3,7 @@
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
 
+use pw_gix::recollections;
 use pw_gix::wrapper::*;
 
 use apaint::{basic_paint::BasicPaint, characteristics::CharacteristicIfce};
@@ -16,6 +17,7 @@ use apaint_gtk::{
 };
 
 fn main() {
+    recollections::init("./.recollections");
     if gtk::init().is_err() {
         println!("Hello, world!");
         return;
