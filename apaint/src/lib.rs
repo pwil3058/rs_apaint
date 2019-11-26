@@ -2,6 +2,10 @@
 #[macro_use]
 extern crate serde_derive;
 
+use std::{error, fmt, io};
+
+use serde_json;
+
 pub mod attributes;
 pub mod basic_paint;
 pub mod characteristics;
@@ -9,8 +13,6 @@ pub mod colour_mix;
 pub mod drawing;
 pub mod hue_wheel;
 pub mod series;
-
-use apaint_boilerplate::Colour;
 
 pub use colour_math::*;
 pub use float_plus::*;
@@ -92,8 +94,38 @@ pub trait FromSpec<F: ColourComponent> {
     fn from_spec(spec: &BasicPaintSpec<F>) -> Self;
 }
 
-#[derive(Debug, Serialize, Deserialize, Colour)]
-struct Paint<F: ColourComponent> {
-    rgb: RGB<F>,
-    id: String,
+#[derive(Debug)]
+pub enum Error {
+    IOError(io::Error),
+    SerdeJsonError(serde_json::Error),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::IOError(err) => write!(f, "IOError: {}", err),
+            Error::SerdeJsonError(err) => write!(f, "Serde Json Error: {}", err),
+        }
+    }
+}
+
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::IOError(err) => Some(err),
+            Error::SerdeJsonError(err) => Some(err),
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::IOError(err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Error::SerdeJsonError(err)
+    }
 }

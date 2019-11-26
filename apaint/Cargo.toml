@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 serde = "1.0"
 serde_derive = "1.0"
+serde_json = "1.0"
 
 apaint_boilerplate = { path = "../apaint_boilerplate"}
 # TODO: change colour_math dependency when it goes public

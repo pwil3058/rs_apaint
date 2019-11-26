@@ -1,9 +1,13 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::marker::PhantomData;
+use std::{io::Read, marker::PhantomData};
+
+use serde::{de::DeserializeOwned, Serialize};
+
+use colour_math::ColourComponent;
 
 use crate::BasicPaintIfce;
-use colour_math::ColourComponent;
+use std::io::Write;
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SeriesId {
@@ -106,5 +110,24 @@ where
             }
         }
         true
+    }
+}
+
+impl<'de, F, P> PaintSeries<F, P>
+where
+    F: ColourComponent,
+    P: BasicPaintIfce<F> + Serialize + DeserializeOwned + Clone,
+{
+    pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
+        let mut string = String::new();
+        reader.read_to_string(&mut string)?;
+        let series: Self = serde_json::from_str(&string)?;
+        Ok(series)
+    }
+
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), crate::Error> {
+        let json_text = serde_json::to_string_pretty(self)?;
+        writer.write_all(json_text.as_bytes())?;
+        Ok(())
     }
 }
