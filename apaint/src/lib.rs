@@ -13,6 +13,7 @@ pub mod colour_mix;
 pub mod drawing;
 pub mod hue_wheel;
 pub mod series;
+pub mod xpm;
 
 pub use colour_math::*;
 pub use float_plus::*;

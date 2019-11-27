@@ -112,5 +112,6 @@ pub mod attributes;
 pub mod colour_edit;
 pub mod factory;
 pub mod hue_wheel;
+pub mod icon_image;
 pub mod list;
 pub mod spec_edit;

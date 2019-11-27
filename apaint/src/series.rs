@@ -116,7 +116,7 @@ where
 impl<'de, F, P> PaintSeries<F, P>
 where
     F: ColourComponent,
-    P: BasicPaintIfce<F> + Serialize + DeserializeOwned + Clone,
+    P: BasicPaintIfce<F> + DeserializeOwned + Clone,
 {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
@@ -124,7 +124,13 @@ where
         let series: Self = serde_json::from_str(&string)?;
         Ok(series)
     }
+}
 
+impl<'de, F, P> PaintSeries<F, P>
+where
+    F: ColourComponent,
+    P: BasicPaintIfce<F> + Serialize + Clone,
+{
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), crate::Error> {
         let json_text = serde_json::to_string_pretty(self)?;
         writer.write_all(json_text.as_bytes())?;

@@ -1,12 +1,16 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use std::cell::RefCell;
+use std::path::Path;
 use std::rc::Rc;
+
+use serde::Serialize;
 
 use gtk::prelude::*;
 use pw_gix::wrapper::*;
 
 use pw_gix::gtkx::paned::RememberPosition;
+use pw_gix::sav_state::{ConditionalWidgetGroups, WidgetStatesControlled};
 
 use colour_math::ScalarAttribute;
 
@@ -15,19 +19,58 @@ use apaint::{
     BasicPaintIfce, BasicPaintSpec, FromSpec,
 };
 
-use apaint_gtk_boilerplate::PWO;
+use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::hue_wheel::GtkHueWheel;
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::spec_edit::BasicPaintSpecEditor;
-use crate::SAV_HAS_CHOSEN_ITEM;
+use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
+use std::fs::File;
 
 #[derive(PWO)]
+struct FactoryFileManager {
+    hbox: gtk::Box,
+    pub buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
+}
+
+impl FactoryFileManager {
+    fn new() -> Self {
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
+            WidgetStatesControlled::Sensitivity,
+            None,
+            None,
+        );
+
+        let new_colln_btn = gtk::ButtonBuilder::new()
+            .tooltip_text("Clear the editor in preparation for creating a new collection")
+            .build();
+        // TODO: change setting of image when ButtonBuilder interface is fixed.
+        new_colln_btn.set_image(Some(&icon_image::colln_new_image(24)));
+        buttons.add_widget("new_colln", &new_colln_btn, 0);
+        hbox.pack_start(&new_colln_btn, false, false, 0);
+
+        let save_as_colln_btn = gtk::ButtonBuilder::new()
+            .tooltip_text("Save the current editor content to a nominated file.")
+            .build();
+        // TODO: change setting of image when ButtonBuilder interface is fixed.
+        save_as_colln_btn.set_image(Some(&icon_image::colln_save_as_image(24)));
+        buttons.add_widget("save_as_colln", &save_as_colln_btn, 0);
+        hbox.pack_start(&save_as_colln_btn, false, false, 0);
+
+        hbox.show_all();
+
+        Self { hbox, buttons }
+    }
+}
+
+#[derive(PWO, Wrapper)]
 pub struct BasicPaintFactory<P>
 where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + Serialize + 'static,
 {
-    paned: gtk::Paned,
+    vbox: gtk::Box,
+    file_manager: FactoryFileManager,
     paint_editor: Rc<BasicPaintSpecEditor>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
@@ -39,7 +82,7 @@ where
 
 impl<P> BasicPaintFactory<P>
 where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + Serialize + 'static,
 {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)] = &[(
@@ -86,8 +129,13 @@ where
         paned.add1(&vbox);
         paned.add2(&paint_editor.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let file_manager = FactoryFileManager::new();
+        vbox.pack_start(&file_manager.pwo(), false, false, 0);
+        vbox.pack_start(&paned, true, true, 0);
         let bpf = Rc::new(Self {
-            paned,
+            vbox,
+            file_manager,
             paint_editor,
             hue_wheel,
             list_view,
@@ -123,6 +171,13 @@ where
             }
         });
 
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager
+            .buttons
+            .get_widget("save_as_colln")
+            .unwrap()
+            .connect_clicked(move |_| bpf_c.save_as());
+
         bpf
     }
 
@@ -142,5 +197,19 @@ where
         self.paint_series.borrow_mut().remove(id);
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
+    }
+
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+        let mut file = File::create(path)?;
+        self.paint_series.borrow_mut().write(&mut file)
+    }
+
+    fn save_as(&self) {
+        // TODO: use last dir data option
+        if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
+            if let Err(err) = self.write_to_file(path) {
+                self.report_error("Problem saving file", &err);
+            }
+        }
     }
 }
