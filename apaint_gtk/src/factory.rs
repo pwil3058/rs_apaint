@@ -36,6 +36,7 @@ struct FactoryFileManager {
 
 impl FactoryFileManager {
     const SAV_HAS_CURRENT_FILE: u64 = 1 << 0;
+    const SAV_IS_SAVEABLE: u64 = 1 << 1;
 
     fn new() -> Self {
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -58,7 +59,11 @@ impl FactoryFileManager {
             .build();
         // TODO: change setting of image when ButtonBuilder interface is fixed.
         save_colln_btn.set_image(Some(&icon_image::colln_save_image(24)));
-        buttons.add_widget("save_colln", &save_colln_btn, Self::SAV_HAS_CURRENT_FILE);
+        buttons.add_widget(
+            "save_colln",
+            &save_colln_btn,
+            Self::SAV_HAS_CURRENT_FILE + Self::SAV_IS_SAVEABLE,
+        );
         hbox.pack_start(&save_colln_btn, false, false, 0);
 
         let save_as_colln_btn = gtk::ButtonBuilder::new()
@@ -66,7 +71,7 @@ impl FactoryFileManager {
             .build();
         // TODO: change setting of image when ButtonBuilder interface is fixed.
         save_as_colln_btn.set_image(Some(&icon_image::colln_save_as_image(24)));
-        buttons.add_widget("save_as_colln", &save_as_colln_btn, 0);
+        buttons.add_widget("save_as_colln", &save_as_colln_btn, Self::SAV_IS_SAVEABLE);
         hbox.pack_start(&save_as_colln_btn, false, false, 0);
 
         hbox.show_all();
@@ -189,6 +194,7 @@ where
         bpf.proprietor_entry.connect_changed(move |entry| {
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_proprietor(&text);
+                bpf_c.update_saveability();
             }
         });
 
@@ -196,6 +202,7 @@ where
         bpf.series_name_entry.connect_changed(move |entry| {
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_series_name(&text);
+                bpf_c.update_saveability();
             }
         });
 
@@ -214,6 +221,19 @@ where
             .connect_clicked(move |_| bpf_c.save_as());
 
         bpf
+    }
+
+    fn update_saveability(&self) {
+        let mut condns: u64 = 0;
+        let mask: u64 = FactoryFileManager::SAV_IS_SAVEABLE;
+        let series = self.paint_series.borrow();
+        let series_id = series.series_id();
+        if series_id.proprietor().len() > 0 && series_id.series_name().len() > 0 {
+            condns = FactoryFileManager::SAV_IS_SAVEABLE;
+        }
+        self.file_manager
+            .buttons
+            .update_condns(MaskedCondns { condns, mask });
     }
 
     fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
