@@ -27,7 +27,7 @@ use crate::spec_edit::BasicPaintSpecEditor;
 use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
 use std::fs::File;
 
-#[derive(PWO, Wrapper)]
+#[derive(PWO)]
 struct FactoryFileManager {
     hbox: gtk::Box,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
@@ -37,6 +37,7 @@ struct FactoryFileManager {
 impl FactoryFileManager {
     const SAV_HAS_CURRENT_FILE: u64 = 1 << 0;
     const SAV_IS_SAVEABLE: u64 = 1 << 1;
+    const SAV_NEEDS_SAVING: u64 = 1 << 2;
 
     fn new() -> Self {
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -97,7 +98,7 @@ impl FactoryFileManager {
     }
 }
 
-#[derive(PWO)]
+#[derive(PWO, Wrapper)]
 pub struct BasicPaintFactory<P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + Serialize + 'static,
@@ -209,6 +210,13 @@ where
         let bpf_c = Rc::clone(&bpf);
         bpf.file_manager
             .buttons
+            .get_widget("new_colln")
+            .unwrap()
+            .connect_clicked(move |_| bpf_c.reset());
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager
+            .buttons
             .get_widget("save_colln")
             .unwrap()
             .connect_clicked(move |_| bpf_c.save());
@@ -228,6 +236,7 @@ where
         let mask: u64 = FactoryFileManager::SAV_IS_SAVEABLE;
         let series = self.paint_series.borrow();
         let series_id = series.series_id();
+        // TODO: take spec editor into account deciding saveability
         if series_id.proprietor().len() > 0 && series_id.series_name().len() > 0 {
             condns = FactoryFileManager::SAV_IS_SAVEABLE;
         }
@@ -265,7 +274,7 @@ where
     fn save(&self) {
         if let Some(path) = self.file_manager.current_file_path.borrow().as_ref() {
             if let Err(err) = self.write_to_file(path) {
-                self.file_manager.report_error("Problem saving file", &err);
+                self.report_error("Problem saving file", &err);
             }
         } else {
             panic!("programming error: save() should not have been called.")
@@ -274,13 +283,63 @@ where
 
     fn save_as(&self) {
         // TODO: use last dir data option
-        if let Some(path) = self
-            .file_manager
-            .ask_file_path(Some("Save as: "), None, false)
-        {
+        if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
             if let Err(err) = self.write_to_file(path) {
-                self.file_manager.report_error("Problem saving file", &err);
+                self.report_error("Problem saving file", &err);
             }
+        }
+    }
+
+    fn ok_to_reset(&self) -> bool {
+        // TODO: implement this ok_to_reset()
+        let status = self.file_manager.buttons.current_condns();
+        if status & FactoryFileManager::SAV_NEEDS_SAVING != 0 {
+            if status & FactoryFileManager::SAV_IS_SAVEABLE != 0 {
+                let buttons = [
+                    ("Cancel", gtk::ResponseType::Other(0)),
+                    ("Save and Continue", gtk::ResponseType::Other(1)),
+                    ("Continue Discarding Changes", gtk::ResponseType::Other(2)),
+                ];
+                match self.ask_question("There are unsaved changes!", None, &buttons) {
+                    gtk::ResponseType::Other(0) => return false,
+                    gtk::ResponseType::Other(1) => {
+                        if let Some(path) = self.file_manager.current_file_path.borrow().as_ref() {
+                            if let Err(err) = self.write_to_file(&path) {
+                                self.report_error("Failed to save file", &err);
+                                return false;
+                            }
+                        } else if let Some(path) =
+                            self.ask_file_path(Some("Save as: "), None, false)
+                        {
+                            if let Err(err) = self.write_to_file(path) {
+                                self.report_error("Failed to save file", &err);
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        };
+                        return true;
+                    }
+                    _ => return true,
+                }
+            } else {
+                let buttons = &[
+                    ("Cancel", gtk::ResponseType::Cancel),
+                    ("Continue Discarding Changes", gtk::ResponseType::Accept),
+                ];
+                return self.ask_question("There are unsaved changes!", None, buttons)
+                    == gtk::ResponseType::Accept;
+            }
+        };
+        true
+    }
+
+    fn reset(&self) {
+        if self.ok_to_reset() {
+            println!("reset");
+            // TODO: reset the paint spec editor
+            // TODO: reset series_id
+            // todo: reset the paint series to empty
         }
     }
 }
