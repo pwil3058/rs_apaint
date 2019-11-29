@@ -2,6 +2,7 @@
 
 use std::{io::Read, marker::PhantomData};
 
+use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
 
 use colour_math::ColourComponent;
@@ -135,5 +136,12 @@ where
         let json_text = serde_json::to_string_pretty(self)?;
         writer.write_all(json_text.as_bytes())?;
         Ok(())
+    }
+
+    pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
+        let mut hasher = Hasher::new(Algorithm::SHA256);
+        let json_text = serde_json::to_string(self)?;
+        hasher.write_all(json_text.as_bytes())?;
+        Ok(hasher.finish())
     }
 }

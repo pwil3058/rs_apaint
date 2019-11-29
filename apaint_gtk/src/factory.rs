@@ -110,6 +110,7 @@ where
     list_view: Rc<ColouredItemListView>,
     paint_list_helper: PaintListHelper,
     paint_series: RefCell<PaintSeries<f64, P>>,
+    saved_series_digest: RefCell<Vec<u8>>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
 }
@@ -175,6 +176,7 @@ where
             list_view,
             paint_list_helper,
             paint_series: RefCell::new(PaintSeries::default()),
+            saved_series_digest: RefCell::new(vec![]),
             proprietor_entry,
             series_name_entry,
         });
@@ -196,6 +198,7 @@ where
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_proprietor(&text);
                 bpf_c.update_saveability();
+                bpf_c.update_needs_save();
             }
         });
 
@@ -204,6 +207,7 @@ where
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_series_name(&text);
                 bpf_c.update_saveability();
+                bpf_c.update_needs_save();
             }
         });
 
@@ -245,6 +249,18 @@ where
             .update_condns(MaskedCondns { condns, mask });
     }
 
+    fn update_needs_save(&self) {
+        let mut condns: u64 = 0;
+        let mask = FactoryFileManager::SAV_NEEDS_SAVING;
+        let digest = self.paint_series.borrow().digest().expect("unrecoverable");
+        if digest != *self.saved_series_digest.borrow() {
+            condns = FactoryFileManager::SAV_NEEDS_SAVING;
+        };
+        self.file_manager
+            .buttons
+            .update_condns(MaskedCondns { condns, mask });
+    }
+
     fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
         let paint = P::from_spec(paint_spec);
         if let Some(old_paint) = self.paint_series.borrow_mut().add(&paint) {
@@ -254,6 +270,7 @@ where
         self.hue_wheel.add_item(paint.coloured_shape());
         let row = self.paint_list_helper.row(&paint);
         self.list_view.add_row(&row);
+        self.update_needs_save();
     }
 
     fn remove_paint(&self, id: &str) {
@@ -261,6 +278,7 @@ where
         self.paint_series.borrow_mut().remove(id);
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
+        self.update_needs_save();
     }
 
     fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
@@ -268,16 +286,21 @@ where
         let mut file = File::create(path)?;
         self.paint_series.borrow_mut().write(&mut file)?;
         self.file_manager.set_current_file_path(Some(path));
+        let new_digest = self.paint_series.borrow().digest().expect("unrecoverable");
+        *self.saved_series_digest.borrow_mut() = new_digest;
+        self.update_needs_save();
         Ok(())
     }
 
     fn save(&self) {
-        if let Some(path) = self.file_manager.current_file_path.borrow().as_ref() {
-            if let Err(err) = self.write_to_file(path) {
-                self.report_error("Problem saving file", &err);
-            }
-        } else {
-            panic!("programming error: save() should not have been called.")
+        let path = self
+            .file_manager
+            .current_file_path
+            .borrow()
+            .clone()
+            .expect("programming error: save() should not have been called.");
+        if let Err(err) = self.write_to_file(path) {
+            self.report_error("Problem saving file", &err);
         }
     }
 
@@ -303,7 +326,8 @@ where
                 match self.ask_question("There are unsaved changes!", None, &buttons) {
                     gtk::ResponseType::Other(0) => return false,
                     gtk::ResponseType::Other(1) => {
-                        if let Some(path) = self.file_manager.current_file_path.borrow().as_ref() {
+                        let o_path = self.file_manager.current_file_path.borrow().clone();
+                        if let Some(path) = o_path {
                             if let Err(err) = self.write_to_file(&path) {
                                 self.report_error("Failed to save file", &err);
                                 return false;
@@ -340,6 +364,7 @@ where
             // TODO: reset the paint spec editor
             // TODO: reset series_id
             // todo: reset the paint series to empty
+            self.update_needs_save();
         }
     }
 }
