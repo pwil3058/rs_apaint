@@ -24,6 +24,7 @@ pub struct BasicPaintSpecEditor {
     colour_editor: Rc<ColourEditor>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
+    change_callbacks: RefCell<Vec<Box<dyn Fn(u64)>>>,
 }
 
 impl BasicPaintSpecEditor {
@@ -76,6 +77,7 @@ impl BasicPaintSpecEditor {
             colour_editor,
             buttons,
             add_callbacks: RefCell::new(Vec::new()),
+            change_callbacks: RefCell::new(Vec::new()),
         });
 
         let bpe_c = Rc::clone(&bpe);
@@ -147,5 +149,28 @@ impl BasicPaintSpecEditor {
 
     pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
         self.add_callbacks.borrow_mut().push(Box::new(callback))
+    }
+
+    pub fn inform_changed(&self) {
+        let status = self.buttons.current_condns();
+        for callback in self.change_callbacks.borrow().iter() {
+            callback(status)
+        }
+    }
+
+    pub fn connect_changed<F: Fn(u64) + 'static>(&self, callback: F) {
+        self.change_callbacks.borrow_mut().push(Box::new(callback))
+    }
+
+    pub fn hard_reset(&self) {
+        self.id_entry.set_text("");
+        self.name_entry.set_text("");
+        self.notes_entry.set_text("");
+        // TODO: reset characteristics
+        self.colour_editor.reset();
+    }
+
+    pub fn has_unsaved_changes(&self) -> bool {
+        self.buttons.current_condns() & Self::SAV_ID_READY != 0
     }
 }

@@ -37,7 +37,8 @@ struct FactoryFileManager {
 impl FactoryFileManager {
     const SAV_HAS_CURRENT_FILE: u64 = 1 << 0;
     const SAV_IS_SAVEABLE: u64 = 1 << 1;
-    const SAV_NEEDS_SAVING: u64 = 1 << 2;
+    const SAV_EDITOR_NEEDS_SAVING: u64 = 1 << 2;
+    const SAV_SERIES_NEEDS_SAVING: u64 = 1 << 3;
 
     fn new() -> Self {
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -186,6 +187,10 @@ where
             .connect_add_action(move |spec| bpf_c.add_paint(spec));
 
         let bpf_c = Rc::clone(&bpf);
+        bpf.paint_editor
+            .connect_changed(move |_| bpf_c.update_editor_needs_saving());
+
+        let bpf_c = Rc::clone(&bpf);
         bpf.hue_wheel
             .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
 
@@ -198,7 +203,7 @@ where
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_proprietor(&text);
                 bpf_c.update_saveability();
-                bpf_c.update_needs_save();
+                bpf_c.update_series_needs_saving();
             }
         });
 
@@ -207,7 +212,7 @@ where
             if let Some(text) = entry.get_text() {
                 bpf_c.paint_series.borrow_mut().set_series_name(&text);
                 bpf_c.update_saveability();
-                bpf_c.update_needs_save();
+                bpf_c.update_series_needs_saving();
             }
         });
 
@@ -249,13 +254,24 @@ where
             .update_condns(MaskedCondns { condns, mask });
     }
 
-    fn update_needs_save(&self) {
+    fn update_series_needs_saving(&self) {
         let mut condns: u64 = 0;
-        let mask = FactoryFileManager::SAV_NEEDS_SAVING;
+        let mask = FactoryFileManager::SAV_SERIES_NEEDS_SAVING;
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
         if digest != *self.saved_series_digest.borrow() {
-            condns = FactoryFileManager::SAV_NEEDS_SAVING;
+            condns = FactoryFileManager::SAV_SERIES_NEEDS_SAVING;
         };
+        self.file_manager
+            .buttons
+            .update_condns(MaskedCondns { condns, mask });
+    }
+
+    fn update_editor_needs_saving(&self) {
+        let mut condns: u64 = 0;
+        let mask = FactoryFileManager::SAV_EDITOR_NEEDS_SAVING;
+        if self.paint_editor.has_unsaved_changes() {
+            condns += FactoryFileManager::SAV_EDITOR_NEEDS_SAVING;
+        }
         self.file_manager
             .buttons
             .update_condns(MaskedCondns { condns, mask });
@@ -270,7 +286,7 @@ where
         self.hue_wheel.add_item(paint.coloured_shape());
         let row = self.paint_list_helper.row(&paint);
         self.list_view.add_row(&row);
-        self.update_needs_save();
+        self.update_series_needs_saving();
     }
 
     fn remove_paint(&self, id: &str) {
@@ -278,7 +294,7 @@ where
         self.paint_series.borrow_mut().remove(id);
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
-        self.update_needs_save();
+        self.update_series_needs_saving();
     }
 
     fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
@@ -288,7 +304,7 @@ where
         self.file_manager.set_current_file_path(Some(path));
         let new_digest = self.paint_series.borrow().digest().expect("unrecoverable");
         *self.saved_series_digest.borrow_mut() = new_digest;
-        self.update_needs_save();
+        self.update_series_needs_saving();
         Ok(())
     }
 
@@ -314,9 +330,12 @@ where
     }
 
     fn ok_to_reset(&self) -> bool {
-        // TODO: implement this ok_to_reset()
         let status = self.file_manager.buttons.current_condns();
-        if status & FactoryFileManager::SAV_NEEDS_SAVING != 0 {
+        if status
+            & (FactoryFileManager::SAV_SERIES_NEEDS_SAVING
+                + FactoryFileManager::SAV_EDITOR_NEEDS_SAVING)
+            != 0
+        {
             if status & FactoryFileManager::SAV_IS_SAVEABLE != 0 {
                 let buttons = [
                     ("Cancel", gtk::ResponseType::Other(0)),
@@ -361,10 +380,11 @@ where
     fn reset(&self) {
         if self.ok_to_reset() {
             println!("reset");
-            // TODO: reset the paint spec editor
+            self.paint_editor.hard_reset();
             // TODO: reset series_id
-            // todo: reset the paint series to empty
-            self.update_needs_save();
+            // TODO: reset the paint series to empty
+            // TODO: reset the saved file name
+            self.update_series_needs_saving();
         }
     }
 }
