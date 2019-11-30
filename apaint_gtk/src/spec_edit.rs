@@ -25,6 +25,7 @@ pub struct BasicPaintSpecEditor {
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
     add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
+    accept_callbacks: RefCell<Vec<Box<dyn Fn(&str, &BasicPaintSpec<f64>)>>>,
     change_callbacks: RefCell<Vec<Box<dyn Fn(u64)>>>,
 }
 
@@ -74,7 +75,8 @@ impl BasicPaintSpecEditor {
         let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
         grid.attach(&notes_entry, 1, 2, 1, 1);
         let add_btn = gtk::ButtonBuilder::new().label("Add").build();
-        let colour_editor = ColourEditor::new(attributes, &[add_btn.clone()]);
+        let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
+        let colour_editor = ColourEditor::new(attributes, &[add_btn.clone(), accept_btn.clone()]);
         vbox.pack_start(&colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
@@ -82,6 +84,11 @@ impl BasicPaintSpecEditor {
             None,
         );
         buttons.add_widget("add", &add_btn, Self::SAV_ID_READY + Self::SAV_NOT_EDITING);
+        buttons.add_widget(
+            "accept",
+            &accept_btn,
+            Self::SAV_ID_READY + Self::SAV_HAS_CHANGES + Self::SAV_EDITING,
+        );
         let bpe = Rc::new(Self {
             vbox,
             id_entry,
@@ -91,11 +98,15 @@ impl BasicPaintSpecEditor {
             buttons,
             current_spec: RefCell::new(None),
             add_callbacks: RefCell::new(Vec::new()),
+            accept_callbacks: RefCell::new(Vec::new()),
             change_callbacks: RefCell::new(Vec::new()),
         });
 
         let bpe_c = Rc::clone(&bpe);
         add_btn.connect_clicked(move |_| bpe_c.process_add_action());
+
+        let bpe_c = Rc::clone(&bpe);
+        accept_btn.connect_clicked(move |_| bpe_c.process_accept_action());
 
         let bpe_c = Rc::clone(&bpe);
         bpe.id_entry.connect_changed(move |entry| {
@@ -170,6 +181,9 @@ impl BasicPaintSpecEditor {
             bpe_c.inform_changed();
         });
 
+        // NB: needed to correctly set the current state
+        bpe.set_current_spec(None);
+
         bpe
     }
 
@@ -207,6 +221,30 @@ impl BasicPaintSpecEditor {
         }
     }
 
+    fn process_accept_action(&self) {
+        let edited_spec = self
+            .current_spec
+            .borrow()
+            .clone()
+            .expect("programming error");
+        let id = self
+            .id_entry
+            .get_text()
+            .expect("shouldn't be called otherwise");
+        let rgb = self.colour_editor.rgb();
+        let mut paint_spec = BasicPaintSpec::new(rgb, &id);
+        if let Some(name) = self.name_entry.get_text() {
+            paint_spec.name = name.to_string();
+        }
+        if let Some(notes) = self.notes_entry.get_text() {
+            paint_spec.notes = notes.to_string();
+        }
+        self.set_current_spec(Some(&paint_spec));
+        for callback in self.accept_callbacks.borrow().iter() {
+            callback(&edited_spec.id, &paint_spec);
+        }
+    }
+
     fn set_current_spec(&self, spec: Option<&BasicPaintSpec<f64>>) {
         let mut masked_condns = MaskedCondns {
             condns: 0,
@@ -225,6 +263,10 @@ impl BasicPaintSpecEditor {
 
     pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
         self.add_callbacks.borrow_mut().push(Box::new(callback))
+    }
+
+    pub fn connect_accept_action<F: Fn(&str, &BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
+        self.accept_callbacks.borrow_mut().push(Box::new(callback))
     }
 
     pub fn inform_changed(&self) {

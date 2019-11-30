@@ -188,6 +188,10 @@ where
 
         let bpf_c = Rc::clone(&bpf);
         bpf.paint_editor
+            .connect_accept_action(move |id, spec| bpf_c.replace_paint(id, spec));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.paint_editor
             .connect_changed(move |_| bpf_c.update_editor_needs_saving());
 
         let bpf_c = Rc::clone(&bpf);
@@ -277,7 +281,7 @@ where
             .update_condns(MaskedCondns { condns, mask });
     }
 
-    fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
+    fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec<f64>) {
         let paint = P::from_spec(paint_spec);
         if let Some(old_paint) = self.paint_series.borrow_mut().add(&paint) {
             self.hue_wheel.remove_item(old_paint.id());
@@ -286,14 +290,28 @@ where
         self.hue_wheel.add_item(paint.coloured_shape());
         let row = self.paint_list_helper.row(&paint);
         self.list_view.add_row(&row);
+    }
+
+    fn do_remove_paint_work(&self, id: &str) {
+        self.paint_series.borrow_mut().remove(id);
+        self.hue_wheel.remove_item(id);
+        self.list_view.remove_row(id);
+    }
+
+    fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
+        self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
     }
 
     fn remove_paint(&self, id: &str) {
         // TODO: put in a "confirm remove" dialog here
-        self.paint_series.borrow_mut().remove(id);
-        self.hue_wheel.remove_item(id);
-        self.list_view.remove_row(id);
+        self.do_remove_paint_work(id);
+        self.update_series_needs_saving();
+    }
+
+    fn replace_paint(&self, id: &str, paint_spec: &BasicPaintSpec<f64>) {
+        self.do_remove_paint_work(id);
+        self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
     }
 
