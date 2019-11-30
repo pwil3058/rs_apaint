@@ -23,14 +23,27 @@ pub struct BasicPaintSpecEditor {
     notes_entry: gtk::Entry,
     colour_editor: Rc<ColourEditor>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
+    current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
     add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
     change_callbacks: RefCell<Vec<Box<dyn Fn(u64)>>>,
 }
 
 impl BasicPaintSpecEditor {
-    pub const SAV_ID_READY: u64 = 1 << 0;
-    pub const SAV_NAME_READY: u64 = 1 << 1;
-    pub const SAV_NOTES_READY: u64 = 1 << 2;
+    pub const SAV_EDITING: u64 = 1 << 0;
+    pub const SAV_NOT_EDITING: u64 = 1 << 1;
+    pub const SAV_ID_READY: u64 = 1 << 2;
+    pub const SAV_NAME_READY: u64 = 1 << 3;
+    pub const SAV_NOTES_READY: u64 = 1 << 4;
+    pub const SAV_HAS_CHANGES: u64 = 1 << 5;
+    pub const SAV_ID_CHANGED: u64 = 1 << 6;
+    pub const SAV_NAME_CHANGED: u64 = 1 << 7;
+    pub const SAV_NOTES_CHANGED: u64 = 1 << 8;
+    pub const SAV_RGB_CHANGED: u64 = 1 << 9;
+
+    pub const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
+        + Self::SAV_NAME_CHANGED
+        + Self::SAV_NOTES_CHANGED
+        + Self::SAV_RGB_CHANGED;
 
     pub fn new(
         attributes: &[ScalarAttribute],
@@ -68,7 +81,7 @@ impl BasicPaintSpecEditor {
             None,
             None,
         );
-        buttons.add_widget("add", &add_btn, Self::SAV_ID_READY);
+        buttons.add_widget("add", &add_btn, Self::SAV_ID_READY + Self::SAV_NOT_EDITING);
         let bpe = Rc::new(Self {
             vbox,
             id_entry,
@@ -76,6 +89,7 @@ impl BasicPaintSpecEditor {
             notes_entry,
             colour_editor,
             buttons,
+            current_spec: RefCell::new(None),
             add_callbacks: RefCell::new(Vec::new()),
             change_callbacks: RefCell::new(Vec::new()),
         });
@@ -85,48 +99,93 @@ impl BasicPaintSpecEditor {
 
         let bpe_c = Rc::clone(&bpe);
         bpe.id_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_ID_READY + Self::SAV_ID_CHANGED,
+            };
             if entry.get_text_length() > 0 {
-                bpe_c.buttons.update_condns(MaskedCondns {
-                    condns: Self::SAV_ID_READY,
-                    mask: Self::SAV_ID_READY,
-                })
-            } else {
-                bpe_c.buttons.update_condns(MaskedCondns {
-                    condns: 0,
-                    mask: Self::SAV_ID_READY,
-                })
+                masked_condns.condns += Self::SAV_ID_READY;
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.id != entry.get_text().unwrap() {
+                    masked_condns.condns += Self::SAV_ID_CHANGED;
+                }
             }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
         });
 
         let bpe_c = Rc::clone(&bpe);
         bpe.name_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_NAME_READY + Self::SAV_NAME_CHANGED,
+            };
             if entry.get_text_length() > 0 {
-                bpe_c.buttons.update_condns(MaskedCondns {
-                    condns: Self::SAV_NAME_READY,
-                    mask: Self::SAV_NAME_READY,
-                })
-            } else {
-                bpe_c.buttons.update_condns(MaskedCondns {
-                    condns: 0,
-                    mask: Self::SAV_NAME_READY,
-                })
+                masked_condns.condns += Self::SAV_NAME_READY;
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.name != entry.get_text().unwrap() {
+                    masked_condns.condns += Self::SAV_NAME_CHANGED;
+                }
             }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
         });
 
         let bpe_c = Rc::clone(&bpe);
         bpe.notes_entry.connect_changed(move |entry| {
-            let condns = if entry.get_text_length() > 0 {
-                Self::SAV_NOTES_READY
-            } else {
-                0
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_NOTES_READY + Self::SAV_NOTES_CHANGED,
             };
-            bpe_c.buttons.update_condns(MaskedCondns {
-                condns,
-                mask: Self::SAV_NOTES_READY,
-            });
+            if entry.get_text_length() > 0 {
+                masked_condns.condns += Self::SAV_NOTES_READY;
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.notes != entry.get_text().unwrap() {
+                    masked_condns.condns += Self::SAV_NOTES_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.colour_editor.connect_changed(move |rgb| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_RGB_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.rgb != rgb {
+                    masked_condns.condns += Self::SAV_RGB_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
         });
 
         bpe
+    }
+
+    fn update_has_changes(&self) {
+        let mut masked_condns = MaskedCondns {
+            condns: 0,
+            mask: Self::SAV_HAS_CHANGES,
+        };
+        if self.current_spec.borrow().is_some() {
+            if self.buttons.current_condns() & Self::CHANGED_MASK != 0 {
+                masked_condns.condns = Self::SAV_HAS_CHANGES;
+            }
+        } else if self.buttons.current_condns() & Self::SAV_ID_READY != 0 {
+            masked_condns.condns = Self::SAV_HAS_CHANGES;
+        }
+        self.buttons.update_condns(masked_condns);
     }
 
     fn process_add_action(&self) {
@@ -142,9 +201,26 @@ impl BasicPaintSpecEditor {
         if let Some(notes) = self.notes_entry.get_text() {
             paint_spec.notes = notes.to_string();
         }
+        self.set_current_spec(Some(&paint_spec));
         for callback in self.add_callbacks.borrow().iter() {
             callback(&paint_spec);
         }
+    }
+
+    fn set_current_spec(&self, spec: Option<&BasicPaintSpec<f64>>) {
+        let mut masked_condns = MaskedCondns {
+            condns: 0,
+            mask: Self::SAV_EDITING + Self::SAV_NOT_EDITING + Self::CHANGED_MASK,
+        };
+        if let Some(spec) = spec {
+            *self.current_spec.borrow_mut() = Some(spec.clone());
+            masked_condns.condns = Self::SAV_EDITING;
+        } else {
+            *self.current_spec.borrow_mut() = None;
+            masked_condns.condns = Self::SAV_NOT_EDITING;
+        };
+        self.buttons.update_condns(masked_condns);
+        self.update_has_changes();
     }
 
     pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
@@ -167,10 +243,11 @@ impl BasicPaintSpecEditor {
         self.name_entry.set_text("");
         self.notes_entry.set_text("");
         // TODO: reset characteristics
+        self.set_current_spec(None);
         self.colour_editor.reset();
     }
 
     pub fn has_unsaved_changes(&self) -> bool {
-        self.buttons.current_condns() & Self::SAV_ID_READY != 0
+        self.buttons.current_condns() & Self::SAV_HAS_CHANGES != 0
     }
 }

@@ -96,6 +96,7 @@ pub struct ColourEditor {
     auto_match_on_paste_btn: gtk::CheckButton,
     popup_menu: WrappedMenu,
     popup_menu_posn: Cell<Point>,
+    change_callbacks: RefCell<Vec<Box<dyn Fn(RGB)>>>,
 }
 
 impl ColourEditor {
@@ -120,6 +121,7 @@ impl ColourEditor {
             auto_match_on_paste_btn: gtk::CheckButton::new_with_label("On Paste?"),
             popup_menu: WrappedMenu::new(&vec![]),
             popup_menu_posn: Cell::new((0.0, 0.0).into()),
+            change_callbacks: RefCell::new(Vec::new()),
         });
 
         let events = gdk::EventMask::BUTTON_PRESS_MASK;
@@ -307,7 +309,9 @@ impl ColourEditor {
 
     fn set_rgb_and_inform(&self, rgb: RGB) {
         self.set_rgb(rgb);
-        // TODO: implement inform() component
+        for callback in self.change_callbacks.borrow().iter() {
+            callback(rgb)
+        }
     }
 
     fn draw(&self, cairo_context: &cairo::Context) {
@@ -369,5 +373,9 @@ impl ColourEditor {
 
     pub fn rgb(&self) -> RGB {
         self.rgb_manipulator.borrow().rgb()
+    }
+
+    pub fn connect_changed<F: Fn(RGB) + 'static>(&self, callback: F) {
+        self.change_callbacks.borrow_mut().push(Box::new(callback))
     }
 }

@@ -63,6 +63,7 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct BasicPaintSpec<F: ColourComponent> {
     pub rgb: RGB<F>,
     pub id: String,
