@@ -161,9 +161,9 @@ pub struct CairoCartesian<'a> {
 impl<'a> CairoCartesian<'a> {
     pub fn cartesian_transform_matrix(width: f64, height: f64) -> cairo::Matrix {
         let scale = if width > height {
-            height / 2.05
+            height / 2.15
         } else {
-            width / 2.05
+            width / 2.15
         };
         cairo::Matrix::new(scale, 0.0, 0.0, -scale, width / 2.0, height / 2.0)
     }
