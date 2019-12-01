@@ -101,7 +101,7 @@ impl ColourEditor {
     pub fn new(scalar_attributes: &[ScalarAttribute], extra_buttons: &[gtk::Button]) -> Rc<Self> {
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
-            rgb_manipulator: RefCell::new(RGBManipulator::new()),
+            rgb_manipulator: RefCell::new(RGBManipulator::new(false)),
             cads: ColourAttributeDisplayStack::new(scalar_attributes),
             drawing_area: gtk::DrawingArea::new(),
             rgb_entry: RGBHexEntryBox::create(),
