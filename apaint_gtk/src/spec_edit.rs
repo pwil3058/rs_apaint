@@ -11,11 +11,11 @@ use colour_math::ScalarAttribute;
 
 use apaint::{characteristics::CharacteristicType, BasicPaintSpec};
 
-use apaint_gtk_boilerplate::PWO;
+use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::colour_edit::ColourEditor;
 
-#[derive(PWO)]
+#[derive(PWO, Wrapper)]
 pub struct BasicPaintSpecEditor {
     vbox: gtk::Box,
     id_entry: gtk::Entry,
@@ -76,7 +76,11 @@ impl BasicPaintSpecEditor {
         grid.attach(&notes_entry, 1, 2, 1, 1);
         let add_btn = gtk::ButtonBuilder::new().label("Add").build();
         let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
-        let colour_editor = ColourEditor::new(attributes, &[add_btn.clone(), accept_btn.clone()]);
+        let reset_btn = gtk::ButtonBuilder::new().label("Reset").build();
+        let colour_editor = ColourEditor::new(
+            attributes,
+            &[add_btn.clone(), accept_btn.clone(), reset_btn.clone()],
+        );
         vbox.pack_start(&colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
@@ -89,6 +93,7 @@ impl BasicPaintSpecEditor {
             &accept_btn,
             Self::SAV_ID_READY + Self::SAV_HAS_CHANGES + Self::SAV_EDITING,
         );
+        buttons.add_widget("reset", &reset_btn, 0);
         let bpe = Rc::new(Self {
             vbox,
             id_entry,
@@ -107,6 +112,9 @@ impl BasicPaintSpecEditor {
 
         let bpe_c = Rc::clone(&bpe);
         accept_btn.connect_clicked(move |_| bpe_c.process_accept_action());
+
+        let bpe_c = Rc::clone(&bpe);
+        reset_btn.connect_clicked(move |_| bpe_c.process_reset_action());
 
         let bpe_c = Rc::clone(&bpe);
         bpe.id_entry.connect_changed(move |entry| {
@@ -245,6 +253,45 @@ impl BasicPaintSpecEditor {
         }
     }
 
+    fn process_reset_action(&self) {
+        if self.buttons.current_condns() & Self::SAV_HAS_CHANGES != 0 {
+            if self.buttons.current_condns() & Self::SAV_ID_READY != 0 {
+                let buttons = &[
+                    ("Cancel", gtk::ResponseType::Other(0)),
+                    ("Save and Continue", gtk::ResponseType::Other(1)),
+                    ("Continue Discarding Changes", gtk::ResponseType::Other(2)),
+                ];
+                match self.ask_question("There are unsaved changes!", None, buttons) {
+                    gtk::ResponseType::Other(0) => return,
+                    gtk::ResponseType::Other(1) => {
+                        if self.buttons.current_condns() & Self::SAV_EDITING != 0 {
+                            self.process_accept_action()
+                        } else {
+                            self.process_add_action()
+                        }
+                    }
+                    _ => (),
+                }
+            } else {
+                let buttons = &[
+                    ("Cancel", gtk::ResponseType::Cancel),
+                    ("Continue Discarding Changes", gtk::ResponseType::Accept),
+                ];
+                if self.ask_question("There are unsaved changes!", None, buttons)
+                    == gtk::ResponseType::Cancel
+                {
+                    return;
+                }
+            }
+        }
+        self.id_entry.set_text("");
+        self.name_entry.set_text("");
+        self.notes_entry.set_text("");
+        // NB: do not reset characteristics
+        self.set_current_spec(None);
+        self.colour_editor.reset();
+    }
+
     fn set_current_spec(&self, spec: Option<&BasicPaintSpec<f64>>) {
         let mut masked_condns = MaskedCondns {
             condns: 0,
@@ -259,6 +306,25 @@ impl BasicPaintSpecEditor {
         };
         self.buttons.update_condns(masked_condns);
         self.update_has_changes();
+    }
+
+    pub fn edit(&self, spec: &BasicPaintSpec<f64>) {
+        self.id_entry.set_text(&spec.id);
+        self.name_entry.set_text(&spec.name);
+        self.notes_entry.set_text(&spec.notes);
+        self.colour_editor.set_rgb(spec.rgb);
+        self.set_current_spec(Some(spec));
+    }
+
+    pub fn un_edit(&self, id: &str) {
+        let is_being_edited = if let Some(spec) = self.current_spec.borrow().as_ref() {
+            id == spec.id
+        } else {
+            false
+        };
+        if is_being_edited {
+            self.set_current_spec(None);
+        }
     }
 
     pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {

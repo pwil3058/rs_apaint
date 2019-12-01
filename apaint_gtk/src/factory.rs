@@ -121,13 +121,22 @@ where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + Serialize + 'static,
 {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        let menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)] = &[(
-            "remove",
-            "Remove",
-            None,
-            "Remove the indicated paint from the series.",
-            SAV_HAS_CHOSEN_ITEM,
-        )];
+        let menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)] = &[
+            (
+                "edit",
+                "Edit",
+                None,
+                "Edit the indicated paint",
+                SAV_HAS_CHOSEN_ITEM,
+            ),
+            (
+                "remove",
+                "Remove",
+                None,
+                "Remove the indicated paint from the series.",
+                SAV_HAS_CHOSEN_ITEM,
+            ),
+        ];
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
         vbox.pack_start(&grid, false, false, 0);
@@ -193,6 +202,14 @@ where
         let bpf_c = Rc::clone(&bpf);
         bpf.paint_editor
             .connect_changed(move |_| bpf_c.update_editor_needs_saving());
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.hue_wheel
+            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.list_view
+            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
 
         let bpf_c = Rc::clone(&bpf);
         bpf.hue_wheel
@@ -292,10 +309,11 @@ where
         self.list_view.add_row(&row);
     }
 
-    fn do_remove_paint_work(&self, id: &str) {
-        self.paint_series.borrow_mut().remove(id);
+    fn do_remove_paint_work(&self, id: &str) -> Result<(), apaint::Error> {
+        self.paint_series.borrow_mut().remove(id)?;
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
+        Ok(())
     }
 
     fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
@@ -305,14 +323,47 @@ where
 
     fn remove_paint(&self, id: &str) {
         // TODO: put in a "confirm remove" dialog here
-        self.do_remove_paint_work(id);
+        self.do_remove_paint_work(id).expect("should be successful");
+        self.paint_editor.un_edit(id);
         self.update_series_needs_saving();
     }
 
     fn replace_paint(&self, id: &str, paint_spec: &BasicPaintSpec<f64>) {
-        self.do_remove_paint_work(id);
+        // should not be called if paint has been removed after being chosen for edit
+        self.do_remove_paint_work(id)
+            .expect("should not be called if paint has been removed");
         self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
+    }
+
+    fn edit_paint(&self, id: &str) {
+        if self.paint_editor.has_unsaved_changes() {
+            // NB: can't offer "save" as an option as it could change indicated paint
+            let buttons = &[
+                ("Cancel", gtk::ResponseType::Cancel),
+                ("Continue Discarding Changes", gtk::ResponseType::Accept),
+            ];
+            if self.ask_question("Current paint has unsaved changes!", None, buttons)
+                == gtk::ResponseType::Cancel
+            {
+                return;
+            }
+        }
+        let paint_series = self.paint_series.borrow();
+        let paint = paint_series.find(id).expect("should be there");
+        let mut spec = BasicPaintSpec::<f64>::new(paint.rgb(), paint.id());
+        if let Some(name) = paint.name() {
+            spec.name = name.to_string();
+        }
+        if let Some(notes) = paint.notes() {
+            spec.notes = notes.to_string();
+        }
+        spec.finish = paint.finish();
+        spec.permanence = paint.permanence();
+        spec.transparency = paint.transparency();
+        spec.fluorescence = paint.fluorescence();
+        spec.metallicness = paint.metallicness();
+        self.paint_editor.edit(&spec);
     }
 
     fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {

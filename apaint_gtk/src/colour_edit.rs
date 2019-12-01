@@ -276,7 +276,7 @@ impl ColourEditor {
 }
 
 impl ColourEditor {
-    fn set_rgb(&self, rgb: RGB) {
+    pub fn set_rgb(&self, rgb: RGB) {
         self.rgb_entry.set_rgb(rgb);
         self.rgb_manipulator.borrow_mut().set_rgb(rgb);
         self.cads.set_colour(Some(&rgb));

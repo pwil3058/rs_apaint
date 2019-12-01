@@ -100,6 +100,7 @@ pub trait FromSpec<F: ColourComponent> {
 pub enum Error {
     IOError(io::Error),
     SerdeJsonError(serde_json::Error),
+    NotFound(String),
 }
 
 impl fmt::Display for Error {
@@ -107,6 +108,7 @@ impl fmt::Display for Error {
         match self {
             Error::IOError(err) => write!(f, "IOError: {}", err),
             Error::SerdeJsonError(err) => write!(f, "Serde Json Error: {}", err),
+            Error::NotFound(string) => write!(f, "{}: Not found.", string),
         }
     }
 }
@@ -116,6 +118,7 @@ impl error::Error for Error {
         match self {
             Error::IOError(err) => Some(err),
             Error::SerdeJsonError(err) => Some(err),
+            _ => None,
         }
     }
 }

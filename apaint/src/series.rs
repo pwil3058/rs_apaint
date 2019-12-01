@@ -88,11 +88,11 @@ where
         }
     }
 
-    pub fn remove(&mut self, id: &str) -> P {
+    pub fn remove(&mut self, id: &str) -> Result<P, crate::Error> {
         debug_assert!(self.is_sorted_unique());
         match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
-            Ok(index) => self.paint_list.remove(index),
-            Err(_) => panic!("{}: id not found", id),
+            Ok(index) => Ok(self.paint_list.remove(index)),
+            Err(_) => Err(crate::Error::NotFound(id.to_string())),
         }
     }
 
