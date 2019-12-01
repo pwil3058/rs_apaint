@@ -43,7 +43,7 @@ fn main() {
             &[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,
-                ScalarAttribute::Chroma,
+                //ScalarAttribute::Chroma,
             ],
             &vec![],
         )

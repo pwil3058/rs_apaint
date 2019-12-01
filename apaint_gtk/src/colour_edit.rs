@@ -86,8 +86,6 @@ pub struct ColourEditor {
     decr_value_btn: gtk::Button,
     hue_left_btn: gtk::Button,
     hue_right_btn: gtk::Button,
-    decr_greyness_btn: gtk::Button,
-    incr_greyness_btn: gtk::Button,
     decr_chroma_btn: gtk::Button,
     incr_chroma_btn: gtk::Button,
     delta_size: Cell<DeltaSize>,
@@ -111,8 +109,6 @@ impl ColourEditor {
             decr_value_btn: gtk::Button::new_with_label("Value--"),
             hue_left_btn: gtk::Button::new_with_label("<"),
             hue_right_btn: gtk::Button::new_with_label(">"),
-            decr_greyness_btn: gtk::Button::new_with_label("Greyness--"),
-            incr_greyness_btn: gtk::Button::new_with_label("Greyness++"),
             decr_chroma_btn: gtk::Button::new_with_label("Chroma--"),
             incr_chroma_btn: gtk::Button::new_with_label("Chroma++"),
             delta_size: Cell::new(DeltaSize::Normal),
@@ -126,7 +122,7 @@ impl ColourEditor {
 
         let events = gdk::EventMask::BUTTON_PRESS_MASK;
         ced.drawing_area.add_events(events);
-        ced.drawing_area.set_size_request(200, 200);
+        ced.drawing_area.set_size_request(150, 150);
 
         ced.vbox.pack_start(&ced.cads.pwo(), false, false, 0);
         ced.vbox.pack_start(&ced.rgb_entry.pwo(), false, false, 0);
@@ -141,13 +137,19 @@ impl ColourEditor {
         ced.vbox.pack_start(&ced.decr_value_btn, false, false, 0);
 
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.pack_start(&ced.decr_chroma_btn, true, true, 0);
-        hbox.pack_start(&ced.incr_chroma_btn, true, true, 0);
-        ced.vbox.pack_start(&hbox, false, false, 0);
-
-        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.pack_start(&ced.decr_greyness_btn, true, true, 0);
-        hbox.pack_start(&ced.incr_greyness_btn, true, true, 0);
+        if !scalar_attributes.contains(&ScalarAttribute::Chroma) {
+            ced.incr_chroma_btn.set_label("Greyness--");
+            ced.decr_chroma_btn.set_label("Greyness++");
+            hbox.pack_start(&ced.incr_chroma_btn, true, true, 0);
+            hbox.pack_start(&ced.decr_chroma_btn, true, true, 0);
+        } else {
+            if scalar_attributes.contains(&ScalarAttribute::Greyness) {
+                ced.incr_chroma_btn.set_label("Chroma++/Greyness--");
+                ced.decr_chroma_btn.set_label("Chroma--/Greyness++");
+            }
+            hbox.pack_start(&ced.decr_chroma_btn, true, true, 0);
+            hbox.pack_start(&ced.incr_chroma_btn, true, true, 0);
+        }
         ced.vbox.pack_start(&hbox, false, false, 0);
 
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -164,8 +166,6 @@ impl ColourEditor {
         connect_button!(ced, decr_value_btn, for_value, decr_value);
         connect_button!(ced, incr_chroma_btn, for_chroma, incr_chroma);
         connect_button!(ced, decr_chroma_btn, for_chroma, decr_chroma);
-        connect_button!(ced, incr_greyness_btn, for_chroma, decr_chroma);
-        connect_button!(ced, decr_greyness_btn, for_chroma, incr_chroma);
         connect_button!(ced, hue_left_btn, for_hue_anticlockwise, rotate);
         connect_button!(ced, hue_right_btn, for_hue_clockwise, rotate);
         let events = gdk::EventMask::KEY_PRESS_MASK
@@ -271,6 +271,8 @@ impl ColourEditor {
                 Inhibit(false)
             });
 
+        ced.reset();
+
         ced
     }
 }
@@ -284,8 +286,6 @@ impl ColourEditor {
             .set_widget_colour_rgb(rgb * 0.8 + RGB::WHITE * 0.2);
         self.decr_value_btn.set_widget_colour_rgb(rgb * 0.8);
         if rgb.is_grey() {
-            self.incr_greyness_btn.set_widget_colour_rgb(rgb);
-            self.decr_greyness_btn.set_widget_colour_rgb(rgb);
             self.incr_chroma_btn.set_widget_colour_rgb(rgb);
             self.decr_chroma_btn.set_widget_colour_rgb(rgb);
             self.hue_left_btn.set_widget_colour_rgb(rgb);
@@ -293,9 +293,6 @@ impl ColourEditor {
         } else {
             let low_chroma_rgb = rgb * 0.8 + rgb.monochrome_rgb() * 0.2;
             let high_chroma_rgb = rgb * 0.8 + rgb.max_chroma_rgb() * 0.2;
-            self.incr_greyness_btn.set_widget_colour_rgb(low_chroma_rgb);
-            self.decr_greyness_btn
-                .set_widget_colour_rgb(high_chroma_rgb);
             self.incr_chroma_btn.set_widget_colour_rgb(high_chroma_rgb);
             self.decr_chroma_btn.set_widget_colour_rgb(low_chroma_rgb);
 
