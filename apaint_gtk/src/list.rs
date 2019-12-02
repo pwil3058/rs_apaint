@@ -139,6 +139,10 @@ impl ColouredItemListView {
             panic!("{}: id not found", id);
         }
     }
+
+    pub fn remove_all(&self) {
+        self.list_store.clear();
+    }
 }
 
 pub struct PaintListHelper {

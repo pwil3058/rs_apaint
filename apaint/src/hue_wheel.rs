@@ -304,6 +304,10 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
             Err(_) => panic!("{}: shape with this id not found", id),
         }
     }
+
+    pub fn remove_all(&mut self) {
+        self.shapes.clear();
+    }
 }
 
 impl ShapeConsts for f64 {

@@ -191,6 +191,7 @@ impl BasicPaintSpecEditor {
 
         // NB: needed to correctly set the current state
         bpe.set_current_spec(None);
+        bpe.update_has_changes();
 
         bpe
     }
@@ -224,6 +225,7 @@ impl BasicPaintSpecEditor {
             paint_spec.notes = notes.to_string();
         }
         self.set_current_spec(Some(&paint_spec));
+        self.update_has_changes();
         for callback in self.add_callbacks.borrow().iter() {
             callback(&paint_spec);
         }
@@ -248,6 +250,7 @@ impl BasicPaintSpecEditor {
             paint_spec.notes = notes.to_string();
         }
         self.set_current_spec(Some(&paint_spec));
+        self.update_has_changes();
         for callback in self.accept_callbacks.borrow().iter() {
             callback(&edited_spec.id, &paint_spec);
         }
@@ -284,12 +287,13 @@ impl BasicPaintSpecEditor {
                 }
             }
         }
+        self.set_current_spec(None);
         self.id_entry.set_text("");
         self.name_entry.set_text("");
         self.notes_entry.set_text("");
         // NB: do not reset characteristics
-        self.set_current_spec(None);
         self.colour_editor.reset();
+        self.update_has_changes();
     }
 
     fn set_current_spec(&self, spec: Option<&BasicPaintSpec<f64>>) {
@@ -305,15 +309,15 @@ impl BasicPaintSpecEditor {
             masked_condns.condns = Self::SAV_NOT_EDITING;
         };
         self.buttons.update_condns(masked_condns);
-        self.update_has_changes();
     }
 
     pub fn edit(&self, spec: &BasicPaintSpec<f64>) {
+        self.set_current_spec(Some(spec));
         self.id_entry.set_text(&spec.id);
         self.name_entry.set_text(&spec.name);
         self.notes_entry.set_text(&spec.notes);
         self.colour_editor.set_rgb(spec.rgb);
-        self.set_current_spec(Some(spec));
+        self.update_has_changes();
     }
 
     pub fn un_edit(&self, id: &str) {
@@ -324,6 +328,7 @@ impl BasicPaintSpecEditor {
         };
         if is_being_edited {
             self.set_current_spec(None);
+            self.update_has_changes();
         }
     }
 
@@ -347,12 +352,13 @@ impl BasicPaintSpecEditor {
     }
 
     pub fn hard_reset(&self) {
+        self.set_current_spec(None);
         self.id_entry.set_text("");
         self.name_entry.set_text("");
         self.notes_entry.set_text("");
         // TODO: reset characteristics
-        self.set_current_spec(None);
         self.colour_editor.reset();
+        self.update_has_changes();
     }
 
     pub fn has_unsaved_changes(&self) -> bool {

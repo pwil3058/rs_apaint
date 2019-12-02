@@ -96,6 +96,10 @@ where
         }
     }
 
+    pub fn remove_all(&mut self) {
+        self.paint_list.clear()
+    }
+
     pub fn find(&self, id: &str) -> Option<&P> {
         debug_assert!(self.is_sorted_unique());
         match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
