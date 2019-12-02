@@ -177,7 +177,7 @@ where
         let proprietor_entry = gtk::EntryBuilder::new().hexpand(true).build();
         grid.attach(&proprietor_entry, 1, 1, 1, 1);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
-        let paint_editor = BasicPaintSpecEditor::new(attributes, &[]);
+        let paint_editor = BasicPaintSpecEditor::new(attributes, characteristics);
         let hue_wheel = GtkHueWheel::new(menu_items, attributes);
         let paint_list_helper = PaintListHelper::new(attributes, characteristics);
         let list_view = ColouredItemListView::new(

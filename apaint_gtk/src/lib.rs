@@ -17,7 +17,10 @@ pub mod characteristics {
     use apaint_gtk_boilerplate::PWO;
     use pw_gix::wrapper::*;
 
-    use apaint::characteristics::{CharacteristicIfce, Finish};
+    pub use apaint::characteristics::{
+        CharacteristicIfce, CharacteristicType, Finish, Fluorescence, Metallicness, Permanence,
+        Transparency,
+    };
     use gtk::{ComboBoxExt, ComboBoxTextExt};
 
     #[derive(PWO)]
@@ -83,6 +86,10 @@ pub mod characteristics {
     }
 
     pub type FinishEntry = CharacteristicEntry<Finish>;
+    pub type TransparencyEntry = CharacteristicEntry<Transparency>;
+    pub type PermanenceEntry = CharacteristicEntry<Permanence>;
+    pub type FluorescenceEntry = CharacteristicEntry<Fluorescence>;
+    pub type MetallicnessEntry = CharacteristicEntry<Metallicness>;
 }
 
 pub mod colour {

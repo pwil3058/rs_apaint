@@ -9,11 +9,13 @@ use pw_gix::wrapper::*;
 
 use colour_math::ScalarAttribute;
 
-use apaint::{characteristics::CharacteristicType, BasicPaintSpec};
+use apaint::BasicPaintSpec;
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
+use crate::characteristics::{CharacteristicIfce, CharacteristicType, Finish, FinishEntry};
 use crate::colour_edit::ColourEditor;
+use gdk::enums::key::ch;
 
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintSpecEditor {
@@ -22,6 +24,8 @@ pub struct BasicPaintSpecEditor {
     name_entry: gtk::Entry,
     notes_entry: gtk::Entry,
     colour_editor: Rc<ColourEditor>,
+    finish_entry: Rc<FinishEntry>,
+
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
     add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
@@ -46,10 +50,8 @@ impl BasicPaintSpecEditor {
         + Self::SAV_NOTES_CHANGED
         + Self::SAV_RGB_CHANGED;
 
-    pub fn new(
-        attributes: &[ScalarAttribute],
-        _characteristics: &[CharacteristicType],
-    ) -> Rc<Self> {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
+        println!("characteristics: {:?}", characteristics);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
         vbox.pack_start(&grid, false, false, 0);
@@ -74,6 +76,25 @@ impl BasicPaintSpecEditor {
         grid.attach(&label, 0, 2, 1, 1);
         let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
         grid.attach(&notes_entry, 1, 2, 1, 1);
+
+        let finish_entry = FinishEntry::new();
+
+        let mut row: i32 = 3;
+        for characteristic in characteristics.iter() {
+            match *characteristic {
+                CharacteristicType::Finish => {
+                    let label = gtk::LabelBuilder::new()
+                        .label(Finish::PROMPT)
+                        .halign(gtk::Align::End)
+                        .build();
+                    grid.attach(&label, 0, row, 1, 1);
+                    grid.attach(&finish_entry.pwo(), 1, row, 1, 1);
+                }
+                _ => (),
+            };
+            row += 1;
+        }
+
         let add_btn = gtk::ButtonBuilder::new().label("Add").build();
         let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
         let reset_btn = gtk::ButtonBuilder::new().label("Reset").build();
@@ -100,6 +121,7 @@ impl BasicPaintSpecEditor {
             name_entry,
             notes_entry,
             colour_editor,
+            finish_entry,
             buttons,
             current_spec: RefCell::new(None),
             add_callbacks: RefCell::new(Vec::new()),
