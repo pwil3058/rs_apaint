@@ -9,6 +9,7 @@ use apaint_boilerplate::Characteristic;
 pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd + Default {
     const NAME: &'static str;
     const PROMPT: &'static str;
+    const LIST_HEADER_NAME: &'static str;
 
     fn str_values() -> Vec<&'static str>;
 
@@ -87,6 +88,16 @@ impl CharacteristicType {
             CharacteristicType::Permanence => Permanence::PROMPT,
             CharacteristicType::Fluorescence => Fluorescence::PROMPT,
             CharacteristicType::Metallicness => Metallicness::PROMPT,
+        }
+    }
+
+    pub fn list_header_name(&self) -> &'static str {
+        match *self {
+            CharacteristicType::Finish => Finish::LIST_HEADER_NAME,
+            CharacteristicType::Transparency => Transparency::LIST_HEADER_NAME,
+            CharacteristicType::Permanence => Permanence::LIST_HEADER_NAME,
+            CharacteristicType::Fluorescence => Fluorescence::LIST_HEADER_NAME,
+            CharacteristicType::Metallicness => Metallicness::LIST_HEADER_NAME,
         }
     }
 

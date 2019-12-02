@@ -244,7 +244,7 @@ impl PaintListHelper {
 
         for characteristic in self.characteristics.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
-                .title(&characteristic.to_string())
+                .title(&characteristic.list_header_name())
                 .sort_column_id(index)
                 .sort_indicator(true)
                 .build();
@@ -254,7 +254,7 @@ impl PaintListHelper {
             col.add_attribute(&cell, "background", 1);
             col.add_attribute(&cell, "foreground", 2);
             cols.push(col);
-            index += 3;
+            index += 1;
         }
 
         cols

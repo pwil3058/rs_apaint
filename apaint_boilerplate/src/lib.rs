@@ -18,12 +18,26 @@ fn acronym(input: &str) -> String {
     output
 }
 
+fn abbreviate(input: &str, n: usize) -> String {
+    let mut output = String::new();
+    for (i, char) in input.chars().enumerate() {
+        if i < n {
+            output.push(char);
+        } else {
+            break;
+        }
+    }
+    output.push('.');
+    output
+}
+
 #[proc_macro_derive(Characteristic, attributes(default))]
 pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
     let enum_name = parsed_input.ident;
     let name = enum_name.to_string();
     let prompt = enum_name.to_string() + ":";
+    let list_header_name = abbreviate(&enum_name.to_string(), 2);
     let mut abbrev_tokens = vec![];
     let mut full_tokens = vec![];
     let mut from_tokens = vec![];
@@ -74,6 +88,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
         impl CharacteristicIfce for #enum_name {
             const NAME: &'static str = #name;
             const PROMPT: &'static str = #prompt;
+            const LIST_HEADER_NAME: &'static str = #list_header_name;
 
             fn str_values() -> Vec<&'static str> {
                 vec![#(#value_tokens)*]

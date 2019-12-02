@@ -52,22 +52,25 @@ pub mod characteristics {
             ce
         }
 
-        pub fn label() -> gtk::Label {
+        pub fn label(&self) -> gtk::Label {
             gtk::Label::new(Some(C::NAME))
         }
 
-        pub fn prompt() -> gtk::Label {
-            gtk::Label::new(Some(C::PROMPT))
+        pub fn prompt(&self, align: gtk::Align) -> gtk::Label {
+            gtk::LabelBuilder::new()
+                .label(C::PROMPT)
+                .halign(align)
+                .build()
         }
 
-        pub fn value(&self) -> Option<C> {
+        pub fn value(&self) -> C {
             if let Some(text) = self.combo_box_text.get_active_text() {
                 match C::from_str(&text) {
-                    Ok(c) => Some(c),
+                    Ok(c) => c,
                     Err(_) => panic!("all strings should be valid"),
                 }
             } else {
-                None
+                C::default()
             }
         }
 

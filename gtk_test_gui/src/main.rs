@@ -6,11 +6,10 @@ use gtk::{BoxExt, ContainerExt, WidgetExt};
 use pw_gix::recollections;
 use pw_gix::wrapper::*;
 
-use apaint::{basic_paint::BasicPaint, characteristics::CharacteristicIfce};
+use apaint::basic_paint::BasicPaint;
 
 use apaint::characteristics::CharacteristicType;
 use apaint_gtk::{
-    characteristics::FinishEntry,
     colour::{ScalarAttribute, RGB},
     factory::BasicPaintFactory,
     hue_wheel::GtkHueWheel,
@@ -32,7 +31,12 @@ fn main() {
                 ScalarAttribute::Greyness,
                 //ScalarAttribute::Chroma,
             ],
-            &[CharacteristicType::Finish],
+            &[
+                CharacteristicType::Finish,
+                CharacteristicType::Transparency,
+                CharacteristicType::Fluorescence,
+                CharacteristicType::Metallicness,
+            ],
         )
         .pwo(),
         false,

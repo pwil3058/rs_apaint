@@ -13,9 +13,11 @@ use apaint::BasicPaintSpec;
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
-use crate::characteristics::{CharacteristicIfce, CharacteristicType, Finish, FinishEntry};
+use crate::characteristics::{
+    CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
+    TransparencyEntry,
+};
 use crate::colour_edit::ColourEditor;
-use gdk::enums::key::ch;
 
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintSpecEditor {
@@ -25,7 +27,10 @@ pub struct BasicPaintSpecEditor {
     notes_entry: gtk::Entry,
     colour_editor: Rc<ColourEditor>,
     finish_entry: Rc<FinishEntry>,
-
+    transparency_entry: Rc<TransparencyEntry>,
+    permanence_entry: Rc<PermanenceEntry>,
+    fluorescence_entry: Rc<FluorescenceEntry>,
+    metallicness_entry: Rc<MetallicnessEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
     add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
@@ -45,10 +50,21 @@ impl BasicPaintSpecEditor {
     pub const SAV_NOTES_CHANGED: u64 = 1 << 8;
     pub const SAV_RGB_CHANGED: u64 = 1 << 9;
 
+    pub const SAV_FINISH_CHANGED: u64 = 1 << 10;
+    pub const SAV_PERMANENCE_CHANGED: u64 = 1 << 11;
+    pub const SAV_TRANSPARENCY_CHANGED: u64 = 1 << 12;
+    pub const SAV_FLUORESCENCE_CHANGED: u64 = 1 << 13;
+    pub const SAV_METALLICNESS_CHANGED: u64 = 1 << 14;
+
     pub const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
         + Self::SAV_NAME_CHANGED
         + Self::SAV_NOTES_CHANGED
-        + Self::SAV_RGB_CHANGED;
+        + Self::SAV_RGB_CHANGED
+        + Self::SAV_FINISH_CHANGED
+        + Self::SAV_PERMANENCE_CHANGED
+        + Self::SAV_TRANSPARENCY_CHANGED
+        + Self::SAV_FLUORESCENCE_CHANGED
+        + Self::SAV_METALLICNESS_CHANGED;
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         println!("characteristics: {:?}", characteristics);
@@ -78,19 +94,34 @@ impl BasicPaintSpecEditor {
         grid.attach(&notes_entry, 1, 2, 1, 1);
 
         let finish_entry = FinishEntry::new();
+        let transparency_entry = TransparencyEntry::new();
+        let permanence_entry = PermanenceEntry::new();
+        let fluorescence_entry = FluorescenceEntry::new();
+        let metallicness_entry = MetallicnessEntry::new();
 
         let mut row: i32 = 3;
         for characteristic in characteristics.iter() {
             match *characteristic {
                 CharacteristicType::Finish => {
-                    let label = gtk::LabelBuilder::new()
-                        .label(Finish::PROMPT)
-                        .halign(gtk::Align::End)
-                        .build();
-                    grid.attach(&label, 0, row, 1, 1);
+                    grid.attach(&finish_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(&finish_entry.pwo(), 1, row, 1, 1);
                 }
-                _ => (),
+                CharacteristicType::Transparency => {
+                    grid.attach(&transparency_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(&transparency_entry.pwo(), 1, row, 1, 1);
+                }
+                CharacteristicType::Permanence => {
+                    grid.attach(&permanence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(&permanence_entry.pwo(), 1, row, 1, 1);
+                }
+                CharacteristicType::Fluorescence => {
+                    grid.attach(&fluorescence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(&fluorescence_entry.pwo(), 1, row, 1, 1);
+                }
+                CharacteristicType::Metallicness => {
+                    grid.attach(&metallicness_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(&metallicness_entry.pwo(), 1, row, 1, 1);
+                }
             };
             row += 1;
         }
@@ -122,6 +153,10 @@ impl BasicPaintSpecEditor {
             notes_entry,
             colour_editor,
             finish_entry,
+            transparency_entry,
+            permanence_entry,
+            fluorescence_entry,
+            metallicness_entry,
             buttons,
             current_spec: RefCell::new(None),
             add_callbacks: RefCell::new(Vec::new()),
@@ -211,6 +246,86 @@ impl BasicPaintSpecEditor {
             bpe_c.inform_changed();
         });
 
+        let bpe_c = Rc::clone(&bpe);
+        bpe.finish_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_FINISH_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.finish != entry.value() {
+                    masked_condns.condns += Self::SAV_FINISH_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.permanence_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_PERMANENCE_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.permanence != entry.value() {
+                    masked_condns.condns += Self::SAV_PERMANENCE_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.transparency_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_TRANSPARENCY_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.transparency != entry.value() {
+                    masked_condns.condns += Self::SAV_TRANSPARENCY_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.fluorescence_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_FLUORESCENCE_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.fluorescence != entry.value() {
+                    masked_condns.condns += Self::SAV_FLUORESCENCE_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.metallicness_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_METALLICNESS_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.metallicness != entry.value() {
+                    masked_condns.condns += Self::SAV_METALLICNESS_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
         // NB: needed to correctly set the current state
         bpe.set_current_spec(None);
         bpe.update_has_changes();
@@ -233,7 +348,7 @@ impl BasicPaintSpecEditor {
         self.buttons.update_condns(masked_condns);
     }
 
-    fn process_add_action(&self) {
+    fn spec_from_entries(&self) -> BasicPaintSpec<f64> {
         let id = self
             .id_entry
             .get_text()
@@ -246,6 +361,16 @@ impl BasicPaintSpecEditor {
         if let Some(notes) = self.notes_entry.get_text() {
             paint_spec.notes = notes.to_string();
         }
+        paint_spec.finish = self.finish_entry.value();
+        paint_spec.permanence = self.permanence_entry.value();
+        paint_spec.transparency = self.transparency_entry.value();
+        paint_spec.fluorescence = self.fluorescence_entry.value();
+        paint_spec.metallicness = self.metallicness_entry.value();
+        paint_spec
+    }
+
+    fn process_add_action(&self) {
+        let paint_spec = self.spec_from_entries();
         self.set_current_spec(Some(&paint_spec));
         self.update_has_changes();
         for callback in self.add_callbacks.borrow().iter() {
@@ -259,18 +384,7 @@ impl BasicPaintSpecEditor {
             .borrow()
             .clone()
             .expect("programming error");
-        let id = self
-            .id_entry
-            .get_text()
-            .expect("shouldn't be called otherwise");
-        let rgb = self.colour_editor.rgb();
-        let mut paint_spec = BasicPaintSpec::new(rgb, &id);
-        if let Some(name) = self.name_entry.get_text() {
-            paint_spec.name = name.to_string();
-        }
-        if let Some(notes) = self.notes_entry.get_text() {
-            paint_spec.notes = notes.to_string();
-        }
+        let paint_spec = self.spec_from_entries();
         self.set_current_spec(Some(&paint_spec));
         self.update_has_changes();
         for callback in self.accept_callbacks.borrow().iter() {
@@ -339,6 +453,11 @@ impl BasicPaintSpecEditor {
         self.name_entry.set_text(&spec.name);
         self.notes_entry.set_text(&spec.notes);
         self.colour_editor.set_rgb(spec.rgb);
+        self.finish_entry.set_value(Some(spec.finish));
+        self.permanence_entry.set_value(Some(spec.permanence));
+        self.transparency_entry.set_value(Some(spec.transparency));
+        self.fluorescence_entry.set_value(Some(spec.fluorescence));
+        self.metallicness_entry.set_value(Some(spec.metallicness));
         self.update_has_changes();
     }
 
@@ -378,7 +497,11 @@ impl BasicPaintSpecEditor {
         self.id_entry.set_text("");
         self.name_entry.set_text("");
         self.notes_entry.set_text("");
-        // TODO: reset characteristics
+        self.finish_entry.set_value(None);
+        self.permanence_entry.set_value(None);
+        self.transparency_entry.set_value(None);
+        self.fluorescence_entry.set_value(None);
+        self.metallicness_entry.set_value(None);
         self.colour_editor.reset();
         self.update_has_changes();
     }
