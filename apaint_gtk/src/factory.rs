@@ -423,10 +423,12 @@ where
     }
 
     fn remove_paint(&self, id: &str) {
-        // TODO: put in a "confirm remove" dialog here
-        self.do_remove_paint_work(id).expect("should be successful");
-        self.paint_editor.un_edit(id);
-        self.update_series_needs_saving();
+        let question = format!("Confirm remove '{}'?", id);
+        if self.ask_confirm_action(&question, None) {
+            self.do_remove_paint_work(id).expect("should be successful");
+            self.paint_editor.un_edit(id);
+            self.update_series_needs_saving();
+        }
     }
 
     fn replace_paint(&self, id: &str, paint_spec: &BasicPaintSpec<f64>) {
