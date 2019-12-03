@@ -67,7 +67,6 @@ impl BasicPaintSpecEditor {
         + Self::SAV_METALLICNESS_CHANGED;
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        println!("characteristics: {:?}", characteristics);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
         vbox.pack_start(&grid, false, false, 0);

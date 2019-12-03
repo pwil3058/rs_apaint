@@ -26,6 +26,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
+use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::spec_edit::BasicPaintSpecEditor;
 use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
@@ -35,6 +36,7 @@ struct FactoryFileManager {
     hbox: gtk::Box,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     file_name_label: gtk::Label,
+    file_status_btn: gtk::Button,
     current_file_path: RefCell<Option<PathBuf>>,
 }
 
@@ -103,12 +105,22 @@ impl FactoryFileManager {
         file_name_label.set_widget_colour_rgb(RGB::WHITE);
         hbox.pack_start(&file_name_label, true, true, 1);
 
+        let file_status_btn = gtk::ButtonBuilder::new().sensitive(false).build();
+        file_status_btn.set_image(Some(&up_to_date_image(Self::BTN_IMAGE_SIZE)));
+        hbox.pack_start(&file_status_btn, false, false, 1);
+        buttons.add_widget(
+            "file_status",
+            &file_status_btn,
+            Self::SAV_SERIES_IS_SAVEABLE + Self::SAV_SERIES_NEEDS_SAVING,
+        );
+
         hbox.show_all();
 
         Self {
             hbox,
             buttons,
             file_name_label,
+            file_status_btn,
             current_file_path: RefCell::new(None),
         }
     }
@@ -126,6 +138,28 @@ impl FactoryFileManager {
             self.file_name_label.set_label("")
         }
         self.buttons.update_condns(MaskedCondns { condns, mask });
+    }
+
+    fn update_file_status_button(&self) {
+        let current_condns = self.buttons.current_condns();
+        if current_condns & Self::SAV_SERIES_NEEDS_SAVING != 0 {
+            if current_condns & Self::SAV_SERIES_IS_SAVEABLE != 0 {
+                self.file_status_btn
+                    .set_image(Some(&needs_save_ready_image(24)));
+                self.file_status_btn.set_tooltip_text(Some(
+                    "File Status: Needs Save (Ready)\nClick to save data to file",
+                ));
+            } else {
+                self.file_status_btn
+                    .set_image(Some(&needs_save_not_ready_image(24)));
+                self.file_status_btn
+                    .set_tooltip_text(Some("File Status: Needs Save (NOT Ready)"));
+            }
+        } else {
+            self.file_status_btn.set_image(Some(&up_to_date_image(24)));
+            self.file_status_btn
+                .set_tooltip_text(Some("File Status: Up To Date"));
+        }
     }
 }
 
@@ -301,6 +335,15 @@ where
             .unwrap()
             .connect_clicked(move |_| bpf_c.save_as());
 
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager.file_status_btn.connect_clicked(move |_| {
+            if bpf_c.file_manager.current_file_path.borrow().is_some() {
+                bpf_c.save()
+            } else {
+                bpf_c.save_as()
+            }
+        });
+
         bpf
     }
 
@@ -322,6 +365,7 @@ where
         self.file_manager
             .buttons
             .update_condns(MaskedCondns { condns, mask });
+        self.file_manager.update_file_status_button();
     }
 
     fn update_series_needs_saving(&self) {
@@ -334,6 +378,7 @@ where
         self.file_manager
             .buttons
             .update_condns(MaskedCondns { condns, mask });
+        self.file_manager.update_file_status_button();
     }
 
     fn update_editor_needs_saving(&self) {
@@ -351,6 +396,7 @@ where
         self.file_manager
             .buttons
             .update_condns(MaskedCondns { condns, mask });
+        self.file_manager.update_file_status_button();
     }
 
     fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec<f64>) {
