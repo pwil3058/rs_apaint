@@ -11,6 +11,7 @@ use serde::Serialize;
 use gtk::prelude::*;
 use pw_gix::wrapper::*;
 
+use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::paned::RememberPosition;
 use pw_gix::sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled};
 
@@ -23,6 +24,7 @@ use apaint::{
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
+use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::spec_edit::BasicPaintSpecEditor;
@@ -32,6 +34,7 @@ use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
 struct FactoryFileManager {
     hbox: gtk::Box,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
+    file_name_label: gtk::Label,
     current_file_path: RefCell<Option<PathBuf>>,
 }
 
@@ -92,11 +95,20 @@ impl FactoryFileManager {
         );
         hbox.pack_start(&save_as_colln_btn, false, false, 0);
 
+        hbox.pack_start(&gtk::Label::new(Some("Current File:")), false, false, 1);
+        let file_name_label = gtk::LabelBuilder::new()
+            .justify(gtk::Justification::Left)
+            .xalign(0.01)
+            .build();
+        file_name_label.set_widget_colour_rgb(RGB::WHITE);
+        hbox.pack_start(&file_name_label, true, true, 1);
+
         hbox.show_all();
 
         Self {
             hbox,
             buttons,
+            file_name_label,
             current_file_path: RefCell::new(None),
         }
     }
@@ -106,10 +118,12 @@ impl FactoryFileManager {
         let mask: u64 = Self::SAV_HAS_CURRENT_FILE;
         if let Some(path) = path {
             let path: PathBuf = path.as_ref().to_path_buf();
+            self.file_name_label.set_label(&path.to_string_lossy());
             *self.current_file_path.borrow_mut() = Some(path);
             condns = Self::SAV_HAS_CURRENT_FILE;
         } else {
             *self.current_file_path.borrow_mut() = None;
+            self.file_name_label.set_label("")
         }
         self.buttons.update_condns(MaskedCondns { condns, mask });
     }
