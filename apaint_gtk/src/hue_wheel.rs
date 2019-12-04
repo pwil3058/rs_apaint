@@ -286,6 +286,10 @@ impl GtkHueWheel {
         self.drawing_area.queue_draw();
     }
 
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        self.coloured_items.borrow_mut().set_target_rgb(rgb);
+    }
+
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {
         self.callbacks
             .borrow_mut()

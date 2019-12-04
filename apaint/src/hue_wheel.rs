@@ -308,6 +308,16 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
     pub fn remove_all(&mut self) {
         self.shapes.clear();
     }
+
+    pub fn set_target_rgb(&mut self, rgb: Option<&RGB<F>>) {
+        if let Some(rgb) = rgb {
+            let target =
+                ColouredShape::new(*rgb, "###target###", "Target Colour", Shape::BackSight);
+            self.target = Some(target);
+        } else {
+            self.target = None;
+        }
+    }
 }
 
 impl ShapeConsts for f64 {

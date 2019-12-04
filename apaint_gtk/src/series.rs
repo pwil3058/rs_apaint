@@ -15,7 +15,7 @@ use apaint::{
 };
 
 use crate::{
-    colour::ScalarAttribute,
+    colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
     list::{ColouredItemListView, PaintListHelper},
 };
@@ -27,6 +27,7 @@ where
 {
     paned: gtk::Paned,
     paint_series: PaintSeries<f64, P>,
+    hue_wheel: Rc<GtkHueWheel>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
 }
 
@@ -60,12 +61,13 @@ where
         let sp = Rc::new(Self {
             paned,
             paint_series,
+            hue_wheel,
             callbacks: RefCell::new(HashMap::new()),
         });
         for menu_item in menu_items.iter() {
             let sp_c = Rc::clone(&sp);
             let item_name = menu_item.0;
-            hue_wheel.connect_popup_menu_item(item_name, move |id| {
+            sp.hue_wheel.connect_popup_menu_item(item_name, move |id| {
                 sp_c.pass_on_callback_invocation(item_name, id)
             });
             let sp_c = Rc::clone(&sp);
@@ -105,5 +107,9 @@ where
                 callback(sid, paint)
             }
         }
+    }
+
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        self.hue_wheel.set_target_rgb(rgb);
     }
 }
