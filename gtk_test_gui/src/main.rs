@@ -9,12 +9,10 @@ use pw_gix::wrapper::*;
 use apaint::basic_paint::BasicPaint;
 
 use apaint::characteristics::CharacteristicType;
-use apaint_gtk::{
-    colour::{ScalarAttribute, RGB},
-    factory::BasicPaintFactory,
-    hue_wheel::GtkHueWheel,
-    SAV_HAS_CHOSEN_ITEM,
-};
+use apaint::series::PaintSeries;
+use apaint_gtk::series::SeriesPage;
+use apaint_gtk::{colour::ScalarAttribute, factory::BasicPaintFactory};
+use std::fs::File;
 
 fn main() {
     recollections::init("./.recollections");
@@ -43,30 +41,21 @@ fn main() {
         false,
         0,
     );
-    let graticule = GtkHueWheel::new(
-        &[(
-            "add",
-            "Add",
-            None,
-            "Add the selected colour to the colour mixer",
-            SAV_HAS_CHOSEN_ITEM,
-        )],
+    let mut file = File::open("./test_saved_file.json").unwrap();
+    let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
+    let page = SeriesPage::new(
+        paint_series,
+        &[("test", "Test", None, "testing", 0)],
+        &[ScalarAttribute::Value, ScalarAttribute::Greyness],
         &[
-            ScalarAttribute::Value,
-            ScalarAttribute::Chroma,
-            ScalarAttribute::Warmth,
+            CharacteristicType::Finish,
+            CharacteristicType::Transparency,
+            CharacteristicType::Fluorescence,
+            CharacteristicType::Metallicness,
         ],
     );
-    for rgb in RGB::PRIMARIES.iter() {
-        graticule.add_item(rgb.into());
-    }
-    for rgb in RGB::SECONDARIES.iter() {
-        graticule.add_item(rgb.into());
-    }
-    for rgb in RGB::GREYS.iter() {
-        graticule.add_item(rgb.into());
-    }
-    vbox.pack_start(&graticule.pwo(), true, true, 0);
+    page.connect_popup_menu_item("test", |sid, id| println!("{:?}:{:?}", sid, id));
+    vbox.pack_start(&page.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());
