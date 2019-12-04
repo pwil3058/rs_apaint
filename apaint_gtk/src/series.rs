@@ -113,3 +113,29 @@ where
         self.hue_wheel.set_target_rgb(rgb);
     }
 }
+
+#[derive(PWO, Wrapper)]
+pub struct SeriesBinder<P>
+where
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+{
+    notebook: gtk::Notebook,
+    pages: RefCell<Vec<SeriesPage<P>>>,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
+}
+
+impl<P> SeriesBinder<P>
+where
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+{
+    pub fn new() -> Rc<Self> {
+        let notebook = gtk::NotebookBuilder::new().build();
+        let pages = RefCell::new(vec![]);
+        let callbacks = RefCell::new(HashMap::new());
+        Rc::new(Self {
+            notebook,
+            pages,
+            callbacks,
+        })
+    }
+}
