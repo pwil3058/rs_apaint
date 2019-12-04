@@ -68,11 +68,11 @@ where
             let sp_c = Rc::clone(&sp);
             let item_name = menu_item.0;
             sp.hue_wheel.connect_popup_menu_item(item_name, move |id| {
-                sp_c.pass_on_callback_invocation(item_name, id)
+                sp_c.invoke_named_callback(item_name, id)
             });
             let sp_c = Rc::clone(&sp);
             list_view.connect_popup_menu_item(item_name, move |id| {
-                sp_c.pass_on_callback_invocation(item_name, id)
+                sp_c.invoke_named_callback(item_name, id)
             });
             sp.callbacks
                 .borrow_mut()
@@ -94,7 +94,7 @@ where
             .push(Box::new(callback));
     }
 
-    pub fn pass_on_callback_invocation(&self, item: &str, id: &str) {
+    pub fn invoke_named_callback(&self, item: &str, id: &str) {
         if let Some(paint) = self.paint_series.find(id) {
             let sid = self.paint_series.series_id();
             for callback in self
@@ -121,6 +121,9 @@ where
 {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<SeriesPage<P>>>,
+    //menu_items: Vec<(&str, &str, Option<&gtk::Image>, &str, u64)>,
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
 }
 
@@ -128,14 +131,52 @@ impl<P> SeriesBinder<P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
-    pub fn new() -> Rc<Self> {
+    pub fn new(
+        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
+        attributes: &[ScalarAttribute],
+        characteristics: &[CharacteristicType],
+    ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().build();
         let pages = RefCell::new(vec![]);
-        let callbacks = RefCell::new(HashMap::new());
+        let mut hash_map: HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>> = HashMap::new();
+        for menu_item in menu_items.iter() {
+            let item_name = menu_item.0;
+            hash_map.insert(item_name.to_string(), vec![]);
+        }
+        let callbacks = RefCell::new(hash_map);
         Rc::new(Self {
             notebook,
             pages,
+            //menu_items: menu_items.to_vec(),
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
             callbacks,
         })
+    }
+
+    pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
+        self.callbacks
+            .borrow_mut()
+            .get_mut(name)
+            .expect("invalid name")
+            .push(Box::new(callback));
+    }
+
+    pub fn invoke_named_callback(&self, item: &str, sid: &SeriesId, paint: &P) {
+        for callback in self
+            .callbacks
+            .borrow()
+            .get(item)
+            .expect("invalid name")
+            .iter()
+        {
+            callback(sid, paint)
+        }
+    }
+
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        for page in self.pages.borrow().iter() {
+            page.set_target_rgb(rgb);
+        }
     }
 }
