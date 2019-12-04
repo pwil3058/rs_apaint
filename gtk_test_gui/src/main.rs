@@ -11,7 +11,7 @@ use apaint::basic_paint::BasicPaint;
 use apaint::characteristics::CharacteristicType;
 use apaint::series::PaintSeries;
 use apaint_gtk::colour::RGB;
-use apaint_gtk::series::SeriesPage;
+use apaint_gtk::series::{SeriesBinder, SeriesPage};
 use apaint_gtk::{colour::ScalarAttribute, factory::BasicPaintFactory};
 use std::fs::File;
 
@@ -58,6 +58,17 @@ fn main() {
     page.connect_popup_menu_item("test", |sid, id| println!("{:?}:{:?}", sid, id));
     page.set_target_rgb(Some(&RGB::GREEN));
     vbox.pack_start(&page.pwo(), true, true, 0);
+    let binder = SeriesBinder::<BasicPaint<f64>>::new(
+        &[("test", "Test", None, "testing", 0)],
+        &[ScalarAttribute::Value, ScalarAttribute::Greyness],
+        &[
+            CharacteristicType::Finish,
+            CharacteristicType::Transparency,
+            CharacteristicType::Fluorescence,
+            CharacteristicType::Metallicness,
+        ],
+    );
+    vbox.pack_start(&binder.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

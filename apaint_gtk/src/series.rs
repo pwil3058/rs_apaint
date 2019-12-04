@@ -115,19 +115,19 @@ where
 }
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesBinder<P>
+pub struct SeriesBinder<'a, P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<SeriesPage<P>>>,
-    //menu_items: Vec<(&str, &str, Option<&gtk::Image>, &str, u64)>,
+    menu_items: Vec<(&'a str, &'a str, Option<&'a gtk::Image>, &'a str, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
 }
 
-impl<P> SeriesBinder<P>
+impl<'a, P> SeriesBinder<'a, P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
@@ -147,7 +147,7 @@ where
         Rc::new(Self {
             notebook,
             pages,
-            //menu_items: menu_items.to_vec(),
+            menu_items: menu_items.to_vec(),
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
             callbacks,
