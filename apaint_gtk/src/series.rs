@@ -166,7 +166,45 @@ where
             .binary_search_by_key(&sid, |page| page.series_id())
     }
 
-    pub fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error> {
+    pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
+        self.callbacks
+            .borrow_mut()
+            .get_mut(name)
+            .expect("invalid name")
+            .push(Box::new(callback));
+    }
+
+    pub fn invoke_named_callback(&self, item: &str, sid: &SeriesId, paint: &P) {
+        for callback in self
+            .callbacks
+            .borrow()
+            .get(item)
+            .expect("invalid name")
+            .iter()
+        {
+            callback(sid, paint)
+        }
+    }
+
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        for page in self.pages.borrow().iter() {
+            page.set_target_rgb(rgb);
+        }
+    }
+}
+
+pub trait RcSeriesBinder<P>
+where
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+{
+    fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error>;
+}
+
+impl<P> RcSeriesBinder<P> for Rc<SeriesBinder<P>>
+where
+    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
+{
+    fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error> {
         match self.binary_search_series_id(new_series.series_id()) {
             Ok(_) => Err(crate::Error::GeneralError(
                 "Series already in binder".to_string(),
@@ -196,6 +234,13 @@ where
                     &self.attributes,
                     &self.characteristics,
                 );
+                for menu_item in self.menu_items.iter() {
+                    let self_c = Rc::clone(self);
+                    let item_name_c = menu_item.name().to_string();
+                    new_page.connect_popup_menu_item(menu_item.name(), move |sid, paint| {
+                        self_c.invoke_named_callback(&item_name_c, sid, paint)
+                    });
+                }
                 self.notebook.insert_page_menu(
                     &new_page.pwo(),
                     Some(&label.pwo()),
@@ -205,32 +250,6 @@ where
                 self.pages.borrow_mut().insert(index, new_page);
                 Ok(())
             }
-        }
-    }
-
-    pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
-        self.callbacks
-            .borrow_mut()
-            .get_mut(name)
-            .expect("invalid name")
-            .push(Box::new(callback));
-    }
-
-    pub fn invoke_named_callback(&self, item: &str, sid: &SeriesId, paint: &P) {
-        for callback in self
-            .callbacks
-            .borrow()
-            .get(item)
-            .expect("invalid name")
-            .iter()
-        {
-            callback(sid, paint)
-        }
-    }
-
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
-        for page in self.pages.borrow().iter() {
-            page.set_target_rgb(rgb);
         }
     }
 }

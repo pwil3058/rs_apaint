@@ -11,7 +11,7 @@ use apaint::basic_paint::BasicPaint;
 use apaint::characteristics::CharacteristicType;
 use apaint::series::PaintSeries;
 use apaint_gtk::colour::RGB;
-use apaint_gtk::series::{SeriesBinder, SeriesPage};
+use apaint_gtk::series::{RcSeriesBinder, SeriesBinder, SeriesPage};
 use apaint_gtk::{colour::ScalarAttribute, factory::BasicPaintFactory};
 use std::fs::File;
 
@@ -68,6 +68,7 @@ fn main() {
             CharacteristicType::Metallicness,
         ],
     );
+    binder.connect_popup_menu_item("test", |sid, id| println!("{:?}:{:?}", sid, id));
     let mut file = File::open("./test_saved_file.json").unwrap();
     let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
     binder.add_series(paint_series).expect("should be OK");
