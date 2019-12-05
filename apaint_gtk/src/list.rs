@@ -94,7 +94,7 @@ impl ColouredItemListView {
                         let value = list_store.get_value(&iter, 0);
                         if let Some(string) = value.get() {
                             *self.selected_id.borrow_mut() = Some(string);
-                            self.popup_menu.update_condns(hover_masked_conditions(true));
+                            self.popup_menu.update_hover_condns(true);
                             return;
                         }
                     }
@@ -102,8 +102,7 @@ impl ColouredItemListView {
             }
         };
         *self.selected_id.borrow_mut() = None;
-        self.popup_menu
-            .update_condns(hover_masked_conditions(false));
+        self.popup_menu.update_hover_condns(false);
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

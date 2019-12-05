@@ -162,14 +162,10 @@ impl GtkHueWheel {
                             gtk_graticule_c.attribute.get(),
                         ) {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id().to_string());
-                            gtk_graticule_c
-                                .popup_menu
-                                .update_condns(hover_masked_conditions(true));
+                            gtk_graticule_c.popup_menu.update_hover_condns(true);
                         } else {
                             *gtk_graticule_c.chosen_item.borrow_mut() = None;
-                            gtk_graticule_c
-                                .popup_menu
-                                .update_condns(hover_masked_conditions(false));
+                            gtk_graticule_c.popup_menu.update_hover_condns(false);
                         };
                         gtk_graticule_c.popup_menu.popup_at_event(event);
                         gtk::Inhibit(true)
