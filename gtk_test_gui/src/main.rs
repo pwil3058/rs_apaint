@@ -68,6 +68,9 @@ fn main() {
             CharacteristicType::Metallicness,
         ],
     );
+    let mut file = File::open("./test_saved_file.json").unwrap();
+    let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
+    binder.add_series(paint_series);
     vbox.pack_start(&binder.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);

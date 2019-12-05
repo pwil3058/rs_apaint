@@ -1,5 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+use std::{error, fmt};
+
 pub const SAV_HAS_CHOSEN_ITEM: u64 = 1 << 0;
 
 pub mod angles {
@@ -126,3 +128,33 @@ pub mod icon_image;
 pub mod list;
 pub mod series;
 pub mod spec_edit;
+
+#[derive(Debug)]
+pub enum Error {
+    APaintError(apaint::Error),
+    GeneralError(String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::APaintError(err) => write!(f, "Error: {}.", err),
+            Error::GeneralError(string) => write!(f, "Error: {}.", string),
+        }
+    }
+}
+
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::APaintError(err) => Some(err),
+            _ => None,
+        }
+    }
+}
+
+impl From<apaint::Error> for Error {
+    fn from(err: apaint::Error) -> Self {
+        Error::APaintError(err)
+    }
+}

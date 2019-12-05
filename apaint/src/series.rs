@@ -10,7 +10,7 @@ use colour_math::ColourComponent;
 use crate::BasicPaintIfce;
 use std::io::Write;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub struct SeriesId {
     proprietor: String,
     series_name: String,

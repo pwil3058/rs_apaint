@@ -3,7 +3,10 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use gtk::prelude::*;
 
-use pw_gix::wrapper::*;
+use pw_gix::{
+    gtkx::notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+    wrapper::*,
+};
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
@@ -120,7 +123,7 @@ where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
     notebook: gtk::Notebook,
-    pages: RefCell<Vec<SeriesPage<P>>>,
+    pages: RefCell<Vec<Rc<SeriesPage<P>>>>,
     menu_items: Vec<(&'a str, &'a str, Option<&'a gtk::Image>, &'a str, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -152,6 +155,50 @@ where
             characteristics: characteristics.to_vec(),
             callbacks,
         })
+    }
+
+    fn binary_search_series_id(&self, sid: &SeriesId) -> Result<usize, usize> {
+        self.pages
+            .borrow()
+            .binary_search_by_key(&sid, |page| page.series_id())
+    }
+
+    pub fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error> {
+        match self.binary_search_series_id(new_series.series_id()) {
+            Ok(_) => Err(crate::Error::GeneralError(
+                "Series already in binder".to_string(),
+            )),
+            Err(index) => {
+                let l_text = format!(
+                    "{}\n{}",
+                    new_series.series_id().series_name(),
+                    new_series.series_id().proprietor(),
+                );
+                let tt_text = format!(
+                    "Remove {} ({}) from the tool kit",
+                    new_series.series_id().series_name(),
+                    new_series.series_id().proprietor(),
+                );
+                let label = TabRemoveLabel::create(Some(l_text.as_str()), Some(&tt_text.as_str()));
+                // TODO: make connections for page removal
+                let l_text = format!(
+                    "{} ({})",
+                    new_series.series_id().series_name(),
+                    new_series.series_id().proprietor(),
+                );
+                let menu_label = gtk::Label::new(Some(l_text.as_str()));
+                let new_page =
+                    SeriesPage::new(new_series, &[], &self.attributes, &self.characteristics);
+                self.notebook.insert_page_menu(
+                    &new_page.pwo(),
+                    Some(&label.pwo()),
+                    Some(&menu_label),
+                    Some(index as u32),
+                );
+                self.pages.borrow_mut().insert(index, new_page);
+                Ok(())
+            }
+        }
     }
 
     pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
