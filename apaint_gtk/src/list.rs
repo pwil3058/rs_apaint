@@ -17,6 +17,7 @@ use apaint::BasicPaintIfce;
 use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 use crate::colour::{ColourInterface, ScalarAttribute};
+use crate::managed_menu::MenuItemSpec;
 use crate::SAV_HAS_CHOSEN_ITEM;
 
 #[derive(PWO)]
@@ -32,7 +33,7 @@ impl ColouredItemListView {
     pub fn new(
         column_types: &[gtk::Type],
         columns: &[gtk::TreeViewColumn],
-        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
+        menu_items: &[MenuItemSpec],
     ) -> Rc<Self> {
         let list_store = gtk::ListStore::new(column_types);
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
@@ -51,16 +52,23 @@ impl ColouredItemListView {
             callbacks: RefCell::new(HashMap::new()),
         });
 
-        for &(name, label_text, image, tooltip_text, condns) in menu_items.iter() {
+        for spec in menu_items.iter() {
             let rgb_l_v_c = Rc::clone(&rgb_l_v);
+            let name_c = spec.name().to_string();
             rgb_l_v
                 .popup_menu
-                .append_item(name, label_text, image, tooltip_text, condns)
-                .connect_activate(move |_| rgb_l_v_c.menu_item_selected(name));
+                .append_item(
+                    spec.name(),
+                    spec.label(),
+                    spec.image(),
+                    spec.tooltip(),
+                    spec.condns(),
+                )
+                .connect_activate(move |_| rgb_l_v_c.menu_item_selected(&name_c));
             rgb_l_v
                 .callbacks
                 .borrow_mut()
-                .insert(name.to_string(), vec![]);
+                .insert(spec.name().to_string(), vec![]);
         }
 
         let rgb_l_v_c = Rc::clone(&rgb_l_v);

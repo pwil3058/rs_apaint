@@ -171,8 +171,6 @@ pub mod managed_menu {
     #[cfg(test)]
     mod test {
         use crate::managed_menu::MenuItemSpec;
-        use pw_gix::gtkx::menu::*;
-        use pw_gix::sav_state::WidgetStatesControlled;
 
         #[test]
         fn test_list_initialization() {
@@ -180,17 +178,7 @@ pub mod managed_menu {
                 ("test", "Test", None, "testing", 0).into(),
                 ("test1", "Test1", None, "testing", 0).into(),
             ];
-            let _menu = ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, &[]);
-            for spec in list.iter() {
-                _menu.append_item(
-                    spec.name(),
-                    spec.label(),
-                    spec.image(),
-                    spec.tooltip(),
-                    spec.condns(),
-                );
-            }
-            let v: Vec<MenuItemSpec> = list.to_vec();
+            let _v: Vec<MenuItemSpec> = list.to_vec();
         }
     }
 }

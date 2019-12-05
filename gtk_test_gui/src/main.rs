@@ -46,7 +46,7 @@ fn main() {
     let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
     let page = SeriesPage::new(
         paint_series,
-        &[("test", "Test", None, "testing", 0)],
+        &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
         &[
             CharacteristicType::Finish,
@@ -59,7 +59,7 @@ fn main() {
     page.set_target_rgb(Some(&RGB::GREEN));
     vbox.pack_start(&page.pwo(), true, true, 0);
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
-        &[("test", "Test", None, "testing", 0)],
+        &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
         &[
             CharacteristicType::Finish,

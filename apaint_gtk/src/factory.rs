@@ -28,6 +28,7 @@ use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
 use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
 use crate::list::{ColouredItemListView, PaintListHelper};
+use crate::managed_menu::MenuItemSpec;
 use crate::spec_edit::BasicPaintSpecEditor;
 use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
 
@@ -191,21 +192,23 @@ where
         + 'static,
 {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        let menu_items: &[(&str, &str, Option<&gtk::Image>, &str, u64)] = &[
+        let menu_items: &[MenuItemSpec] = &[
             (
                 "edit",
                 "Edit",
                 None,
                 "Edit the indicated paint",
                 SAV_HAS_CHOSEN_ITEM,
-            ),
+            )
+                .into(),
             (
                 "remove",
                 "Remove",
                 None,
                 "Remove the indicated paint from the series.",
                 SAV_HAS_CHOSEN_ITEM,
-            ),
+            )
+                .into(),
         ];
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();

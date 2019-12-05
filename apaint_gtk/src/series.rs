@@ -17,6 +17,7 @@ use apaint::{
     BasicPaintIfce, FromSpec,
 };
 
+use crate::managed_menu::MenuItemSpec;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
@@ -40,7 +41,7 @@ where
 {
     pub fn new(
         paint_series: PaintSeries<f64, P>,
-        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
+        menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Rc<Self> {
@@ -69,17 +70,19 @@ where
         });
         for menu_item in menu_items.iter() {
             let sp_c = Rc::clone(&sp);
-            let item_name = menu_item.0;
-            sp.hue_wheel.connect_popup_menu_item(item_name, move |id| {
-                sp_c.invoke_named_callback(item_name, id)
-            });
+            let item_name_c = menu_item.name().to_string();
+            sp.hue_wheel
+                .connect_popup_menu_item(menu_item.name(), move |id| {
+                    sp_c.invoke_named_callback(&item_name_c, id)
+                });
             let sp_c = Rc::clone(&sp);
-            list_view.connect_popup_menu_item(item_name, move |id| {
-                sp_c.invoke_named_callback(item_name, id)
+            let item_name_c = menu_item.name().to_string();
+            list_view.connect_popup_menu_item(menu_item.name(), move |id| {
+                sp_c.invoke_named_callback(&item_name_c, id)
             });
             sp.callbacks
                 .borrow_mut()
-                .insert(item_name.to_string(), vec![]);
+                .insert(menu_item.name().to_string(), vec![]);
         }
 
         sp
@@ -118,24 +121,24 @@ where
 }
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesBinder<'a, P>
+pub struct SeriesBinder<P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<Rc<SeriesPage<P>>>>,
-    menu_items: Vec<(&'a str, &'a str, Option<&'a gtk::Image>, &'a str, u64)>,
+    menu_items: Vec<MenuItemSpec>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
 }
 
-impl<'a, P> SeriesBinder<'a, P>
+impl<P> SeriesBinder<P>
 where
     P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
 {
     pub fn new(
-        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
+        menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Rc<Self> {
@@ -143,7 +146,7 @@ where
         let pages = RefCell::new(vec![]);
         let mut hash_map: HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>> = HashMap::new();
         for menu_item in menu_items.iter() {
-            let item_name = menu_item.0;
+            let item_name = menu_item.name();
             hash_map.insert(item_name.to_string(), vec![]);
         }
         let callbacks = RefCell::new(hash_map);
@@ -187,8 +190,12 @@ where
                     new_series.series_id().proprietor(),
                 );
                 let menu_label = gtk::Label::new(Some(l_text.as_str()));
-                let new_page =
-                    SeriesPage::new(new_series, &[], &self.attributes, &self.characteristics);
+                let new_page = SeriesPage::new(
+                    new_series,
+                    &self.menu_items,
+                    &self.attributes,
+                    &self.characteristics,
+                );
                 self.notebook.insert_page_menu(
                     &new_page.pwo(),
                     Some(&label.pwo()),

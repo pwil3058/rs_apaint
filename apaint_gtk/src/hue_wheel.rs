@@ -20,6 +20,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
 
 use crate::attributes::AttributeSelectorRadioButtons;
+use crate::managed_menu::MenuItemSpec;
 use crate::SAV_HAS_CHOSEN_ITEM;
 
 #[derive(PWO, Wrapper)]
@@ -38,10 +39,7 @@ pub struct GtkHueWheel {
 }
 
 impl GtkHueWheel {
-    pub fn new(
-        menu_items: &'static [(&str, &str, Option<&gtk::Image>, &str, u64)],
-        attributes: &[ScalarAttribute],
-    ) -> Rc<Self> {
+    pub fn new(menu_items: &[MenuItemSpec], attributes: &[ScalarAttribute]) -> Rc<Self> {
         let gtk_graticule = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             drawing_area: gtk::DrawingArea::new(),
@@ -59,16 +57,23 @@ impl GtkHueWheel {
             last_xy: Cell::new(None),
         });
 
-        for &(name, label_text, image, tooltip_text, condns) in menu_items.iter() {
+        for spec in menu_items.iter() {
             let gtk_graticule_c = Rc::clone(&gtk_graticule);
+            let name_c = spec.name().to_string();
             gtk_graticule
                 .popup_menu
-                .append_item(name, label_text, image, tooltip_text, condns)
-                .connect_activate(move |_| gtk_graticule_c.menu_item_selected(name));
+                .append_item(
+                    spec.name(),
+                    spec.label(),
+                    spec.image(),
+                    spec.tooltip(),
+                    spec.condns(),
+                )
+                .connect_activate(move |_| gtk_graticule_c.menu_item_selected(&name_c));
             gtk_graticule
                 .callbacks
                 .borrow_mut()
-                .insert(name.to_string(), vec![]);
+                .insert(spec.name().to_string(), vec![]);
         }
 
         gtk_graticule.drawing_area.set_size_request(200, 200);
