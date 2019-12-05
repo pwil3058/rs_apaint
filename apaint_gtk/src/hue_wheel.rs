@@ -21,7 +21,7 @@ use colour_math::ScalarAttribute;
 
 use crate::attributes::AttributeSelectorRadioButtons;
 use crate::managed_menu::MenuItemSpec;
-use crate::SAV_HAS_CHOSEN_ITEM;
+use pw_gix::sav_state::hover_masked_conditions;
 
 #[derive(PWO, Wrapper)]
 pub struct GtkHueWheel {
@@ -162,16 +162,14 @@ impl GtkHueWheel {
                             gtk_graticule_c.attribute.get(),
                         ) {
                             *gtk_graticule_c.chosen_item.borrow_mut() = Some(item.id().to_string());
-                            gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
-                                condns: SAV_HAS_CHOSEN_ITEM,
-                                mask: SAV_HAS_CHOSEN_ITEM,
-                            });
+                            gtk_graticule_c
+                                .popup_menu
+                                .update_condns(hover_masked_conditions(true));
                         } else {
                             *gtk_graticule_c.chosen_item.borrow_mut() = None;
-                            gtk_graticule_c.popup_menu.update_condns(MaskedCondns {
-                                condns: 0,
-                                mask: SAV_HAS_CHOSEN_ITEM,
-                            });
+                            gtk_graticule_c
+                                .popup_menu
+                                .update_condns(hover_masked_conditions(false));
                         };
                         gtk_graticule_c.popup_menu.popup_at_event(event);
                         gtk::Inhibit(true)

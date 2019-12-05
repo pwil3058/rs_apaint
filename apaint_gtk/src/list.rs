@@ -18,7 +18,7 @@ use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 use crate::colour::{ColourInterface, ScalarAttribute};
 use crate::managed_menu::MenuItemSpec;
-use crate::SAV_HAS_CHOSEN_ITEM;
+use pw_gix::sav_state::hover_masked_conditions;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -94,10 +94,7 @@ impl ColouredItemListView {
                         let value = list_store.get_value(&iter, 0);
                         if let Some(string) = value.get() {
                             *self.selected_id.borrow_mut() = Some(string);
-                            self.popup_menu.update_condns(MaskedCondns {
-                                condns: SAV_HAS_CHOSEN_ITEM,
-                                mask: SAV_HAS_CHOSEN_ITEM,
-                            });
+                            self.popup_menu.update_condns(hover_masked_conditions(true));
                             return;
                         }
                     }
@@ -105,10 +102,8 @@ impl ColouredItemListView {
             }
         };
         *self.selected_id.borrow_mut() = None;
-        self.popup_menu.update_condns(MaskedCondns {
-            condns: 0,
-            mask: SAV_HAS_CHOSEN_ITEM,
-        });
+        self.popup_menu
+            .update_condns(hover_masked_conditions(false));
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

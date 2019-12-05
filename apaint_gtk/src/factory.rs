@@ -13,7 +13,9 @@ use pw_gix::wrapper::*;
 
 use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::paned::RememberPosition;
-use pw_gix::sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled};
+use pw_gix::sav_state::{
+    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK,
+};
 
 use colour_math::ScalarAttribute;
 
@@ -26,11 +28,11 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
+use crate::icon_image;
 use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::managed_menu::MenuItemSpec;
 use crate::spec_edit::BasicPaintSpecEditor;
-use crate::{icon_image, SAV_HAS_CHOSEN_ITEM};
 
 #[derive(PWO)]
 struct FactoryFileManager {
@@ -198,7 +200,7 @@ where
                 "Edit",
                 None,
                 "Edit the indicated paint",
-                SAV_HAS_CHOSEN_ITEM,
+                SAV_HOVER_OK,
             )
                 .into(),
             (
@@ -206,7 +208,7 @@ where
                 "Remove",
                 None,
                 "Remove the indicated paint from the series.",
-                SAV_HAS_CHOSEN_ITEM,
+                SAV_HOVER_OK,
             )
                 .into(),
         ];

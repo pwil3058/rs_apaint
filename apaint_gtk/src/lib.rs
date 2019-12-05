@@ -2,8 +2,6 @@
 
 use std::{error, fmt};
 
-pub const SAV_HAS_CHOSEN_ITEM: u64 = 1 << 0;
-
 pub mod angles {
     pub use normalised_angles;
 
