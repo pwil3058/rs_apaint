@@ -14,7 +14,7 @@ use pw_gix::wrapper::*;
 use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::paned::RememberPosition;
 use pw_gix::sav_state::{
-    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK,
+    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
 };
 
 use colour_math::ScalarAttribute;
@@ -44,11 +44,11 @@ struct FactoryFileManager {
 }
 
 impl FactoryFileManager {
-    const SAV_HAS_CURRENT_FILE: u64 = 1 << 0;
-    const SAV_IS_SAVEABLE: u64 = 1 << 1;
-    const SAV_EDITOR_NEEDS_SAVING: u64 = 1 << 2;
-    const SAV_SERIES_NEEDS_SAVING: u64 = 1 << 3;
-    const SAV_SERIES_IS_SAVEABLE: u64 = 1 << 4;
+    const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
+    const SAV_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 1;
+    const SAV_EDITOR_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
+    const SAV_SERIES_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 3;
+    const SAV_SERIES_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 4;
 
     const BTN_IMAGE_SIZE: i32 = 24;
 

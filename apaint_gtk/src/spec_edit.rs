@@ -4,7 +4,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use gtk::prelude::*;
-use pw_gix::sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled};
+use pw_gix::sav_state::{
+    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN,
+};
 use pw_gix::wrapper::*;
 
 use colour_math::ScalarAttribute;
@@ -39,22 +41,22 @@ pub struct BasicPaintSpecEditor {
 }
 
 impl BasicPaintSpecEditor {
-    pub const SAV_EDITING: u64 = 1 << 0;
-    pub const SAV_NOT_EDITING: u64 = 1 << 1;
-    pub const SAV_ID_READY: u64 = 1 << 2;
-    pub const SAV_NAME_READY: u64 = 1 << 3;
-    pub const SAV_NOTES_READY: u64 = 1 << 4;
-    pub const SAV_HAS_CHANGES: u64 = 1 << 5;
-    pub const SAV_ID_CHANGED: u64 = 1 << 6;
-    pub const SAV_NAME_CHANGED: u64 = 1 << 7;
-    pub const SAV_NOTES_CHANGED: u64 = 1 << 8;
-    pub const SAV_RGB_CHANGED: u64 = 1 << 9;
+    pub const SAV_EDITING: u64 = SAV_NEXT_CONDN << 0;
+    pub const SAV_NOT_EDITING: u64 = SAV_NEXT_CONDN << 1;
+    pub const SAV_ID_READY: u64 = SAV_NEXT_CONDN << 2;
+    pub const SAV_NAME_READY: u64 = SAV_NEXT_CONDN << 3;
+    pub const SAV_NOTES_READY: u64 = SAV_NEXT_CONDN << 4;
+    pub const SAV_HAS_CHANGES: u64 = SAV_NEXT_CONDN << 5;
+    pub const SAV_ID_CHANGED: u64 = SAV_NEXT_CONDN << 6;
+    pub const SAV_NAME_CHANGED: u64 = SAV_NEXT_CONDN << 7;
+    pub const SAV_NOTES_CHANGED: u64 = SAV_NEXT_CONDN << 8;
+    pub const SAV_RGB_CHANGED: u64 = SAV_NEXT_CONDN << 9;
 
-    pub const SAV_FINISH_CHANGED: u64 = 1 << 10;
-    pub const SAV_PERMANENCE_CHANGED: u64 = 1 << 11;
-    pub const SAV_TRANSPARENCY_CHANGED: u64 = 1 << 12;
-    pub const SAV_FLUORESCENCE_CHANGED: u64 = 1 << 13;
-    pub const SAV_METALLICNESS_CHANGED: u64 = 1 << 14;
+    pub const SAV_FINISH_CHANGED: u64 = SAV_NEXT_CONDN << 10;
+    pub const SAV_PERMANENCE_CHANGED: u64 = SAV_NEXT_CONDN << 11;
+    pub const SAV_TRANSPARENCY_CHANGED: u64 = SAV_NEXT_CONDN << 12;
+    pub const SAV_FLUORESCENCE_CHANGED: u64 = SAV_NEXT_CONDN << 13;
+    pub const SAV_METALLICNESS_CHANGED: u64 = SAV_NEXT_CONDN << 14;
 
     pub const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
         + Self::SAV_NAME_CHANGED
