@@ -8,11 +8,7 @@ use std::{
 
 use gtk::prelude::*;
 
-use pw_gix::{
-    gtkx::menu::ManagedMenu,
-    sav_state::{MaskedCondns, WidgetStatesControlled},
-    wrapper::*,
-};
+use pw_gix::{gtkx::menu::ManagedMenu, sav_state::WidgetStatesControlled, wrapper::*};
 
 use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
@@ -21,7 +17,6 @@ use colour_math::ScalarAttribute;
 
 use crate::attributes::AttributeSelectorRadioButtons;
 use crate::managed_menu::MenuItemSpec;
-use pw_gix::sav_state::hover_masked_conditions;
 
 #[derive(PWO, Wrapper)]
 pub struct GtkHueWheel {

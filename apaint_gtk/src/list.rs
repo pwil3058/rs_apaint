@@ -7,7 +7,6 @@ use gtk::prelude::*;
 use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
     gtkx::{list_store::ListRowOps, menu::ManagedMenu},
-    sav_state::MaskedCondns,
     sav_state::WidgetStatesControlled,
     wrapper::PackableWidgetObject,
 };
@@ -18,7 +17,6 @@ use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 use crate::colour::{ColourInterface, ScalarAttribute};
 use crate::managed_menu::MenuItemSpec;
-use pw_gix::sav_state::hover_masked_conditions;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
