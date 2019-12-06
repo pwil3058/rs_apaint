@@ -1,4 +1,5 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
+use std::fs::File;
 
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
@@ -6,14 +7,37 @@ use gtk::{BoxExt, ContainerExt, WidgetExt};
 use pw_gix::recollections;
 use pw_gix::wrapper::*;
 
-use apaint::basic_paint::BasicPaint;
+use apaint::{
+    basic_paint::BasicPaint, characteristics::CharacteristicType, series::PaintSeries, LabelText,
+    TooltipText,
+};
 
-use apaint::characteristics::CharacteristicType;
-use apaint::series::PaintSeries;
-use apaint_gtk::colour::RGB;
-use apaint_gtk::series::{RcSeriesBinder, SeriesBinder, SeriesPage};
-use apaint_gtk::{colour::ScalarAttribute, factory::BasicPaintFactory};
-use std::fs::File;
+use apaint_boilerplate::Colour;
+
+use apaint_gtk::mixer::component::PartsSpinButton;
+use apaint_gtk::{
+    colour::*,
+    factory::BasicPaintFactory,
+    series::{RcSeriesBinder, SeriesBinder, SeriesPage},
+};
+
+#[derive(Colour, Clone, Debug)]
+#[component = "f64"]
+struct Dummy {
+    rgb: RGB,
+}
+
+impl TooltipText for Dummy {
+    fn tooltip_text(&self) -> String {
+        "tooltip text".to_string()
+    }
+}
+
+impl LabelText for Dummy {
+    fn label_text(&self) -> String {
+        "dummy paint".to_string()
+    }
+}
 
 fn main() {
     recollections::init("./.recollections");
@@ -42,22 +66,11 @@ fn main() {
         false,
         0,
     );
+    let dummy = Dummy { rgb: RGB::CYAN };
+    let spinner = PartsSpinButton::new(&dummy, true);
+    vbox.pack_start(&spinner.pwo(), false, false, 0);
     let mut file = File::open("./test_saved_file.json").unwrap();
     let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
-    let page = SeriesPage::new(
-        paint_series,
-        &[("test", "Test", None, "testing", 0).into()],
-        &[ScalarAttribute::Value, ScalarAttribute::Greyness],
-        &[
-            CharacteristicType::Finish,
-            CharacteristicType::Transparency,
-            CharacteristicType::Fluorescence,
-            CharacteristicType::Metallicness,
-        ],
-    );
-    page.connect_popup_menu_item("test", |sid, id| println!("{:?}:{:?}", sid, id));
-    page.set_target_rgb(Some(&RGB::GREEN));
-    vbox.pack_start(&page.pwo(), true, true, 0);
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],

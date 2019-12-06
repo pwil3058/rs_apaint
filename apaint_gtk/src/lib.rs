@@ -101,11 +101,15 @@ pub mod colour {
         ColourInterface, ScalarAttribute,
     };
     use gdk;
+    pub use normalised_angles;
 
     pub type Colour = colour_math::Colour<f64>;
     pub type Hue = colour_math::hue::Hue<f64>;
     pub type RGB = colour_math::rgb::RGB<f64>;
     pub type RGBManipulator = colour_math::manipulator::RGBManipulator<f64>;
+    pub type Degrees = normalised_angles::Degrees<f64>;
+    pub type Radians = normalised_angles::Radians<f64>;
+    pub type Angle = normalised_angles::Angle<f64>;
 
     pub trait GdkConvert {
         fn into_gdk_rgba(&self) -> gdk::RGBA;
