@@ -21,6 +21,14 @@ pub use normalised_angles::*;
 
 use crate::characteristics::*;
 
+pub trait TooltipText {
+    fn tooltip_text(&self) -> String;
+}
+
+pub trait LabelText {
+    fn label_text(&self) -> String;
+}
+
 pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
     fn id(&self) -> &str;
 

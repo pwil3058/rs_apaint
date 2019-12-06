@@ -187,6 +187,7 @@ pub mod factory;
 pub mod hue_wheel;
 pub mod icon_image;
 pub mod list;
+pub mod mixer;
 pub mod series;
 pub mod spec_edit;
 
