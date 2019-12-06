@@ -171,8 +171,8 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
         }
     }
     let tokens = quote! {
-        impl #impl_generics ColourInterface<#component> for #struct_name #ty_generics #where_clause {
-            fn rgb(&self) -> RGB<#component> {
+        impl #impl_generics colour_math::ColourInterface<#component> for #struct_name #ty_generics #where_clause {
+            fn rgb(&self) -> colour_math::RGB<#component> {
                 self.#colour.rgb()
             }
 
@@ -180,11 +180,11 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
                 self.#colour.rgba(alpha)
             }
 
-            fn hue(&self) -> Option<Hue<#component>> {
+            fn hue(&self) -> Option<colour_math::Hue<#component>> {
                 self.#colour.hue()
             }
 
-            fn hue_angle(&self) -> Option<Degrees<#component>> {
+            fn hue_angle(&self) -> Option<colour_math::Degrees<#component>> {
                 self.#colour.hue_angle()
             }
 
@@ -208,19 +208,19 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
                 self.#colour.warmth()
             }
 
-            fn best_foreground_rgb(&self) -> RGB<#component> {
+            fn best_foreground_rgb(&self) -> colour_math::RGB<#component> {
                 self.#colour.best_foreground_rgb()
             }
 
-            fn monochrome_rgb(&self) -> RGB<#component> {
+            fn monochrome_rgb(&self) -> colour_math::RGB<#component> {
                 self.#colour.monochrome_rgb()
             }
 
-            fn max_chroma_rgb(&self) -> RGB<#component> {
+            fn max_chroma_rgb(&self) -> colour_math::RGB<#component> {
                 self.#colour.max_chroma_rgb()
             }
 
-            fn warmth_rgb(&self) -> RGB<#component> {
+            fn warmth_rgb(&self) -> colour_math::RGB<#component> {
                 self.#colour.warmth_rgb()
             }
 
@@ -228,7 +228,7 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
                 self.#colour.scalar_attribute(attr)
             }
 
-            fn scalar_attribute_rgb(&self, attr: ScalarAttribute) -> RGB<#component> {
+            fn scalar_attribute_rgb(&self, attr: ScalarAttribute) -> colour_math::RGB<#component> {
                 self.#colour.scalar_attribute_rgb(attr)
             }
         }
