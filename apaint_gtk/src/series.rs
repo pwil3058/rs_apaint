@@ -142,7 +142,7 @@ where
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Rc<Self> {
-        let notebook = gtk::NotebookBuilder::new().build();
+        let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
         let mut hash_map: HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>> = HashMap::new();
         for menu_item in menu_items.iter() {
@@ -191,6 +191,23 @@ where
             page.set_target_rgb(rgb);
         }
     }
+
+    fn remove_series_at_index(&self, index: usize) {
+        let page = self.pages.borrow_mut().remove(index);
+        let page_num = self.notebook.page_num(&page.pwo());
+        self.notebook.remove_page(page_num);
+    }
+
+    fn remove_series(&self, series_id: &SeriesId) {
+        let question = format!("Confirm remove '{}'?", series_id);
+        if self.ask_confirm_action(&question, None) {
+            if let Ok(index) = self.binary_search_series_id(series_id) {
+                self.remove_series_at_index(index)
+            } else {
+                panic!("attempt to remove non existent series")
+            }
+        }
+    }
 }
 
 pub trait RcSeriesBinder<P>
@@ -221,7 +238,9 @@ where
                     new_series.series_id().proprietor(),
                 );
                 let label = TabRemoveLabel::create(Some(l_text.as_str()), Some(&tt_text.as_str()));
-                // TODO: make connections for page removal
+                let self_c = Rc::clone(self);
+                let sid = new_series.series_id().clone();
+                label.connect_remove_page(move || self_c.remove_series(&sid));
                 let l_text = format!(
                     "{} ({})",
                     new_series.series_id().series_name(),

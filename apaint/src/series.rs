@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{io::Read, marker::PhantomData};
+use std::{fmt, io::Read, marker::PhantomData};
 
 use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
@@ -10,7 +10,7 @@ use colour_math::ColourComponent;
 use crate::BasicPaintIfce;
 use std::io::Write;
 
-#[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
 pub struct SeriesId {
     proprietor: String,
     series_name: String,
@@ -23,6 +23,12 @@ impl SeriesId {
 
     pub fn series_name(&self) -> &str {
         &self.series_name
+    }
+}
+
+impl fmt::Display for SeriesId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}:({})", self.series_name, self.proprietor)
     }
 }
 
