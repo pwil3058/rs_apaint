@@ -117,9 +117,8 @@ impl<F: ColourComponent + ShapeConsts> ColouredShape<F> {
     fn proximity_to(&self, point: Point<F>, scalar_attribute: ScalarAttribute) -> Proximity<F> {
         let delta = self.xy(scalar_attribute) - point;
         let distance = delta.hypot();
-        // TODO: finish implementing enclosed component of proximity_to()
         match self.shape {
-            Shape::Circle => {
+            Shape::Circle | Shape::BackSight => {
                 if distance < F::SHAPE_RADIUS {
                     Proximity::Enclosed(distance)
                 } else {
@@ -145,7 +144,6 @@ impl<F: ColourComponent + ShapeConsts> ColouredShape<F> {
                     Proximity::NotEnclosed(distance)
                 }
             }
-            _ => Proximity::NotEnclosed(distance),
         }
     }
 }
