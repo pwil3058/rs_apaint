@@ -8,7 +8,10 @@ use std::{
 use gtk::prelude::*;
 
 use apaint_gtk_boilerplate::PWO;
-use pw_gix::{gtkx::coloured::Colourable, wrapper::*};
+use pw_gix::{
+    gtkx::{coloured::Colourable, menu::WrappedMenu},
+    wrapper::*,
+};
 
 use apaint::{LabelText, TooltipText};
 
@@ -21,8 +24,10 @@ where
 {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
+    popup_menu: WrappedMenu,
     paint: P,
     changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
+    remove_me_callbacks: RefCell<Vec<Box<dyn Fn(&P)>>>,
 }
 
 impl<P> PartsSpinButton<P>
@@ -52,13 +57,38 @@ where
         let psb = Rc::new(Self {
             event_box,
             spin_button,
+            popup_menu: WrappedMenu::new(&[]),
             paint: paint.clone(),
             changed_callbacks: RefCell::new(vec![]),
+            remove_me_callbacks: RefCell::new(vec![]),
         });
 
         let psb_c = Rc::clone(&psb);
         psb.spin_button
             .connect_value_changed(move |_| psb_c.inform_changed());
+
+        let psb_c = Rc::clone(&psb);
+        psb.popup_menu
+            .append_item(
+                "remove",
+                "Remove Me",
+                "Remove this paint form the palette/mixer",
+            )
+            .connect_activate(move |_| psb_c.inform_remove_me());
+
+        let psb_c = Rc::clone(&psb);
+        psb.event_box.connect_button_press_event(move |_, event| {
+            if event.get_event_type() == gdk::EventType::ButtonPress {
+                if event.get_button() == 3 {
+                    psb_c
+                        .popup_menu
+                        .set_sensitivities(psb_c.parts() == 0, &["remove"]);
+                    psb_c.popup_menu.popup_at_event(event);
+                    return Inhibit(true);
+                }
+            };
+            gtk::Inhibit(false)
+        });
 
         psb
     }
@@ -84,6 +114,18 @@ where
             callback();
         }
     }
+
+    pub fn connect_remove_me<F: Fn(&P) + 'static>(&self, callback: F) {
+        self.remove_me_callbacks
+            .borrow_mut()
+            .push(Box::new(callback));
+    }
+
+    fn inform_remove_me(&self) {
+        for callback in self.remove_me_callbacks.borrow().iter() {
+            callback(&self.paint)
+        }
+    }
 }
 
 #[derive(PWO)]
@@ -99,6 +141,7 @@ where
     count: Cell<u32>,
     n_cols: Cell<u32>,
     contributions_changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
+    removal_requested_callbacks: RefCell<Vec<Box<dyn Fn(&P)>>>,
 }
 
 impl<P> PartsSpinButtonBox<P>
@@ -118,6 +161,7 @@ where
             count: Cell::new(0),
             n_cols: Cell::new(n_cols),
             contributions_changed_callbacks: RefCell::new(vec![]),
+            removal_requested_callbacks: RefCell::new(vec![]),
         })
     }
 
@@ -154,6 +198,18 @@ where
             callback();
         }
     }
+
+    pub fn connect_removal_requested<F: Fn(&P) + 'static>(&self, callback: F) {
+        self.removal_requested_callbacks
+            .borrow_mut()
+            .push(Box::new(callback));
+    }
+
+    fn inform_removal_requested(&self, paint: &P) {
+        for callback in self.removal_requested_callbacks.borrow().iter() {
+            callback(paint);
+        }
+    }
 }
 
 pub trait RcPartsSpinButtonBox<P>
@@ -172,6 +228,8 @@ where
         self.pack_append(&spinner.pwo());
         let self_c = Rc::clone(self);
         spinner.connect_changed(move || self_c.inform_contributions_changed());
+        let self_c = Rc::clone(self);
+        spinner.connect_remove_me(move |paint| self_c.inform_removal_requested(paint));
         self.spinners.borrow_mut().push(spinner);
         self.frame.show_all();
     }

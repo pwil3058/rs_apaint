@@ -76,6 +76,7 @@ fn main() {
     spinners.connect_contributions_changed(move || {
         println!("changed: {:?}", spinners_c.rgb_contributions())
     });
+    spinners.connect_removal_requested(move |paint| println!("removal requested: {:?}", paint));
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
