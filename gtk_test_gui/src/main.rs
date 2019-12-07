@@ -21,7 +21,7 @@ use apaint_gtk::{
     series::{RcSeriesBinder, SeriesBinder},
 };
 
-#[derive(Colour, Clone, Debug)]
+#[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[component = "f64"]
 struct Dummy {
     rgb: RGB,
@@ -76,7 +76,8 @@ fn main() {
     spinners.connect_contributions_changed(move || {
         println!("changed: {:?}", spinners_c.rgb_contributions())
     });
-    spinners.connect_removal_requested(move |paint| println!("removal requested: {:?}", paint));
+    let spinners_c = Rc::clone(&spinners);
+    spinners.connect_removal_requested(move |paint| spinners_c.remove_paint(paint));
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
