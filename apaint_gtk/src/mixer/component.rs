@@ -13,7 +13,6 @@ use pw_gix::{gtkx::coloured::Colourable, wrapper::*};
 use apaint::{LabelText, TooltipText};
 
 use crate::colour::{ColourInterface, RGB};
-use std::cell::Ref;
 
 #[derive(PWO)]
 pub struct PartsSpinButton<P>
@@ -68,6 +67,10 @@ where
         self.spin_button.get_value_as_int() as u64
     }
 
+    pub fn set_parts(&self, parts: u64) {
+        self.spin_button.set_value(parts as f64);
+    }
+
     pub fn rgb_parts(&self) -> (RGB, u64) {
         (self.paint.rgb(), self.parts())
     }
@@ -95,6 +98,7 @@ where
     sensitive: Cell<bool>,
     count: Cell<u32>,
     n_cols: Cell<u32>,
+    contributions_changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
 }
 
 impl<P> PartsSpinButtonBox<P>
@@ -113,6 +117,7 @@ where
             sensitive: Cell::new(sensitive),
             count: Cell::new(0),
             n_cols: Cell::new(n_cols),
+            contributions_changed_callbacks: RefCell::new(vec![]),
         })
     }
 
@@ -137,6 +142,18 @@ where
         self.rows.borrow()[last_index].pack_start(widget, true, true, 0);
         self.count.set(self.count.get() + 1);
     }
+
+    pub fn connect_contributions_changed<F: Fn() + 'static>(&self, callback: F) {
+        self.contributions_changed_callbacks
+            .borrow_mut()
+            .push(Box::new(callback));
+    }
+
+    fn inform_contributions_changed(&self) {
+        for callback in self.contributions_changed_callbacks.borrow().iter() {
+            callback();
+        }
+    }
 }
 
 pub trait RcPartsSpinButtonBox<P>
@@ -146,13 +163,15 @@ where
     fn add_paint(&self, paint: &P);
 }
 
-impl<P> RcPartsSpinButtonBox<P> for PartsSpinButtonBox<P>
+impl<P> RcPartsSpinButtonBox<P> for Rc<PartsSpinButtonBox<P>>
 where
     P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
 {
     fn add_paint(&self, paint: &P) {
         let spinner = PartsSpinButton::new(paint, self.sensitive.get());
         self.pack_append(&spinner.pwo());
+        let self_c = Rc::clone(self);
+        spinner.connect_changed(move || self_c.inform_contributions_changed());
         self.spinners.borrow_mut().push(spinner);
         self.frame.show_all();
     }

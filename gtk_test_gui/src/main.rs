@@ -72,8 +72,10 @@ fn main() {
     let dummy = Dummy { rgb: RGB::YELLOW };
     spinners.add_paint(&dummy);
     vbox.pack_start(&spinners.pwo(), false, false, 0);
-    //let spinners_c = Rc::clone(&spinner);
-    //spinner.connect_changed(move || println!("changed: {:?}", spinner_c.rgb_parts()));
+    let spinners_c = Rc::clone(&spinners);
+    spinners.connect_contributions_changed(move || {
+        println!("changed: {:?}", spinners_c.rgb_contributions())
+    });
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
