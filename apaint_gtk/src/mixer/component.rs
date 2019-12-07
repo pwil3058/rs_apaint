@@ -1,28 +1,34 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::rc::Rc;
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+};
 
 use gtk::prelude::*;
 
 use apaint_gtk_boilerplate::PWO;
 use pw_gix::{gtkx::coloured::Colourable, wrapper::*};
 
-use apaint::{BasicPaintIfce, LabelText, TooltipText};
-use colour_math::ColourInterface;
+use apaint::{LabelText, TooltipText};
+
+use crate::colour::{ColourInterface, RGB};
+use std::cell::Ref;
 
 #[derive(PWO)]
 pub struct PartsSpinButton<P>
 where
-    P: ColourInterface<f64>,
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
 {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
     paint: P,
+    changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
 }
 
 impl<P> PartsSpinButton<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone,
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
 {
     pub fn new(paint: &P, sensitive: bool) -> Rc<Self> {
         let event_box = gtk::EventBoxBuilder::new()
@@ -44,10 +50,110 @@ where
         let frame = gtk::FrameBuilder::new().build();
         frame.add(&hbox);
         event_box.add(&frame);
-        Rc::new(Self {
+        let psb = Rc::new(Self {
             event_box,
             spin_button,
             paint: paint.clone(),
+            changed_callbacks: RefCell::new(vec![]),
+        });
+
+        let psb_c = Rc::clone(&psb);
+        psb.spin_button
+            .connect_value_changed(move |_| psb_c.inform_changed());
+
+        psb
+    }
+
+    fn parts(&self) -> u64 {
+        self.spin_button.get_value_as_int() as u64
+    }
+
+    pub fn rgb_parts(&self) -> (RGB, u64) {
+        (self.paint.rgb(), self.parts())
+    }
+
+    pub fn connect_changed<F: Fn() + 'static>(&self, callback: F) {
+        self.changed_callbacks.borrow_mut().push(Box::new(callback));
+    }
+
+    fn inform_changed(&self) {
+        for callback in self.changed_callbacks.borrow().iter() {
+            callback();
+        }
+    }
+}
+
+#[derive(PWO)]
+pub struct PartsSpinButtonBox<P>
+where
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
+{
+    frame: gtk::Frame,
+    vbox: gtk::Box,
+    rows: RefCell<Vec<gtk::Box>>,
+    spinners: RefCell<Vec<Rc<PartsSpinButton<P>>>>,
+    sensitive: Cell<bool>,
+    count: Cell<u32>,
+    n_cols: Cell<u32>,
+}
+
+impl<P> PartsSpinButtonBox<P>
+where
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
+{
+    pub fn new(title: &str, n_cols: u32, sensitive: bool) -> Rc<Self> {
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let frame = gtk::FrameBuilder::new().label(title).build();
+        frame.add(&vbox);
+        Rc::new(Self {
+            frame,
+            vbox,
+            rows: RefCell::new(vec![]),
+            spinners: RefCell::new(vec![]),
+            sensitive: Cell::new(sensitive),
+            count: Cell::new(0),
+            n_cols: Cell::new(n_cols),
         })
+    }
+
+    pub fn rgb_contributions(&self) -> Vec<(RGB, u64)> {
+        let mut v = vec![];
+        for spinner in self.spinners.borrow().iter() {
+            let (rgb, parts) = spinner.rgb_parts();
+            if parts > 0 {
+                v.push((rgb, parts));
+            }
+        }
+        v
+    }
+
+    fn pack_append<W: IsA<gtk::Widget>>(&self, widget: &W) {
+        if self.count.get() % self.n_cols.get() == 0 {
+            let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 1);
+            self.vbox.pack_start(&hbox, false, false, 0);
+            self.rows.borrow_mut().push(hbox);
+        };
+        let last_index = self.rows.borrow().len() - 1;
+        self.rows.borrow()[last_index].pack_start(widget, true, true, 0);
+        self.count.set(self.count.get() + 1);
+    }
+}
+
+pub trait RcPartsSpinButtonBox<P>
+where
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
+{
+    fn add_paint(&self, paint: &P);
+}
+
+impl<P> RcPartsSpinButtonBox<P> for PartsSpinButtonBox<P>
+where
+    P: ColourInterface<f64> + TooltipText + LabelText + Clone + 'static,
+{
+    fn add_paint(&self, paint: &P) {
+        let spinner = PartsSpinButton::new(paint, self.sensitive.get());
+        self.pack_append(&spinner.pwo());
+        self.spinners.borrow_mut().push(spinner);
+        self.frame.show_all();
     }
 }

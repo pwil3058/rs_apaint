@@ -1,5 +1,5 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::fs::File;
+use std::{fs::File, rc::Rc};
 
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
@@ -14,11 +14,11 @@ use apaint::{
 
 use apaint_boilerplate::Colour;
 
-use apaint_gtk::mixer::component::PartsSpinButton;
 use apaint_gtk::{
     colour::*,
     factory::BasicPaintFactory,
-    series::{RcSeriesBinder, SeriesBinder, SeriesPage},
+    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+    series::{RcSeriesBinder, SeriesBinder},
 };
 
 #[derive(Colour, Clone, Debug)]
@@ -66,11 +66,14 @@ fn main() {
         false,
         0,
     );
+    let spinners = PartsSpinButtonBox::new("Paints", 4, true);
     let dummy = Dummy { rgb: RGB::CYAN };
-    let spinner = PartsSpinButton::new(&dummy, true);
-    vbox.pack_start(&spinner.pwo(), false, false, 0);
-    let mut file = File::open("./test_saved_file.json").unwrap();
-    let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
+    spinners.add_paint(&dummy);
+    let dummy = Dummy { rgb: RGB::YELLOW };
+    spinners.add_paint(&dummy);
+    vbox.pack_start(&spinners.pwo(), false, false, 0);
+    //let spinners_c = Rc::clone(&spinner);
+    //spinner.connect_changed(move || println!("changed: {:?}", spinner_c.rgb_parts()));
     let binder = SeriesBinder::<BasicPaint<f64>>::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
