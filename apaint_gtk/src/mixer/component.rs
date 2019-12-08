@@ -5,6 +5,8 @@ use std::{
     rc::Rc,
 };
 
+use num::Integer;
+
 use gtk::{prelude::*, ContainerExt, WidgetExt};
 
 use apaint_gtk_boilerplate::PWO;
@@ -99,6 +101,10 @@ where
 
     pub fn set_parts(&self, parts: u64) {
         self.spin_button.set_value(parts as f64);
+    }
+
+    pub fn divide_parts_by(&self, divisor: u64) {
+        self.set_parts(self.parts() / divisor);
     }
 
     pub fn rgb_parts(&self) -> (RGB, u64) {
@@ -232,6 +238,32 @@ where
         for callback in self.removal_requested_callbacks.borrow().iter() {
             callback(paint);
         }
+    }
+
+    pub fn parts_gcd(&self) -> u64 {
+        self.spinners
+            .borrow()
+            .iter()
+            .fold(0, |gcd, s| gcd.gcd(&s.parts()))
+    }
+
+    pub fn zero_all_parts(&self) {
+        for spinner in self.spinners.borrow().iter() {
+            spinner.set_parts(0);
+        }
+    }
+
+    pub fn div_all_parts_by(&self, divisor: u64) {
+        if divisor > 0 {
+            for spinner in self.spinners.borrow().iter() {
+                spinner.divide_parts_by(divisor);
+            }
+        }
+    }
+
+    // TODO: is has_contributions() really needed
+    pub fn has_contributions(&self) -> bool {
+        self.spinners.borrow().iter().any(|s| s.parts() > 0)
     }
 }
 
