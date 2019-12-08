@@ -110,6 +110,11 @@ impl<'a> drawing::Draw<f64> for Drawer<'a> {
         self.cairo_context.show_text(&text);
     }
 
+    fn set_background_colour(&self, rgb: RGB) {
+        self.set_colour(rgb);
+        self.cairo_context.paint();
+    }
+
     fn set_line_width(&self, width: f64) {
         self.cairo_context.set_line_width(width);
     }
