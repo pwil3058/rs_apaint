@@ -1,14 +1,25 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{fmt, io::Read, marker::PhantomData};
+use std::{
+    fmt,
+    io::{Read, Write},
+    marker::PhantomData,
+    rc::Rc,
+};
 
 use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
 
-use colour_math::ColourComponent;
+use apaint_boilerplate::Colour;
 
-use crate::BasicPaintIfce;
-use std::io::Write;
+use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
+
+use crate::hue_wheel::{MakeColouredShape, ShapeConsts};
+use crate::{
+    characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    hue_wheel::{ColouredShape, Shape},
+    BasicPaintIfce, LabelText, TooltipText,
+};
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
 pub struct SeriesId {
@@ -153,5 +164,112 @@ where
         let json_text = serde_json::to_string(self)?;
         hasher.write_all(json_text.as_bytes())?;
         Ok(hasher.finish())
+    }
+}
+
+#[derive(Debug, Colour, Clone)]
+pub struct SeriesPaint<F: ColourComponent> {
+    rgb: RGB<F>,
+    id: String,
+    name: String,
+    notes: String,
+    finish: Finish,
+    transparency: Transparency,
+    permanence: Permanence,
+    fluorescence: Fluorescence,
+    metallicness: Metallicness,
+    series_id: Rc<SeriesId>,
+}
+
+impl<F: ColourComponent> SeriesPaint<F> {
+    pub fn seried_id(&self) -> &Rc<SeriesId> {
+        &self.series_id
+    }
+}
+
+impl<F: ColourComponent> BasicPaintIfce<F> for SeriesPaint<F> {
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn name(&self) -> Option<&str> {
+        if self.name.len() == 0 {
+            None
+        } else {
+            Some(&self.name)
+        }
+    }
+
+    fn notes(&self) -> Option<&str> {
+        if self.notes.len() == 0 {
+            None
+        } else {
+            Some(&self.notes)
+        }
+    }
+
+    fn finish(&self) -> Finish {
+        self.finish
+    }
+
+    fn transparency(&self) -> Transparency {
+        self.transparency
+    }
+
+    fn fluorescence(&self) -> Fluorescence {
+        self.fluorescence
+    }
+
+    fn permanence(&self) -> Permanence {
+        self.permanence
+    }
+
+    fn metallicness(&self) -> Metallicness {
+        self.metallicness
+    }
+}
+
+impl<F: ColourComponent> TooltipText for SeriesPaint<F> {
+    fn tooltip_text(&self) -> String {
+        let mut string = self.label_text();
+        if let Some(notes) = self.notes() {
+            string.push('\n');
+            string.push_str(notes);
+        };
+        string.push('\n');
+        string.push_str(self.series_id.series_name());
+        string.push('\n');
+        string.push_str(self.series_id.proprietor());
+
+        string
+    }
+}
+
+impl<F: ColourComponent> LabelText for SeriesPaint<F> {
+    fn label_text(&self) -> String {
+        if let Some(name) = self.name() {
+            format!("{}: {}", self.id, name)
+        } else if let Some(notes) = self.notes() {
+            format!("{}: {}", self.id, notes)
+        } else {
+            format!("{}: {}", self.id, self.rgb().pango_string())
+        }
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for SeriesPaint<F> {
+    fn coloured_shape(&self) -> ColouredShape<F> {
+        let tooltip_text = if let Some(name) = self.name() {
+            if let Some(notes) = self.notes() {
+                format!("{}: {}\n{}", self.id, name, notes)
+            } else {
+                format!("{}: {}", self.id, name)
+            }
+        } else if let Some(notes) = self.notes() {
+            format!("{}: {}", self.id, notes)
+        } else {
+            format!("{}: {}", self.id, self.rgb().pango_string())
+        };
+        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
     }
 }
