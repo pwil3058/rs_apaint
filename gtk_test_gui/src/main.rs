@@ -71,6 +71,15 @@ fn main() {
     spinners.add_paint(&dummy);
     let dummy = Dummy { rgb: RGB::YELLOW };
     spinners.add_paint(&dummy);
+    for rgb in RGB::PRIMARIES.iter() {
+        spinners.add_paint(&Dummy { rgb: *rgb });
+    }
+    for rgb in RGB::SECONDARIES.iter() {
+        spinners.add_paint(&Dummy { rgb: *rgb });
+    }
+    for rgb in RGB::GREYS.iter() {
+        spinners.add_paint(&Dummy { rgb: *rgb });
+    }
     vbox.pack_start(&spinners.pwo(), false, false, 0);
     let spinners_c = Rc::clone(&spinners);
     spinners.connect_contributions_changed(move || {

@@ -1,8 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use apaint_boilerplate::Colour;
-use colour_math::{ColourComponent, ColourInterface, Hue, ScalarAttribute, RGB};
-use normalised_angles::*;
+use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
 use crate::characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency};
 use crate::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts};
