@@ -13,6 +13,7 @@ pub mod colour_mix;
 pub mod drawing;
 pub mod hue_wheel;
 pub mod series;
+pub mod spec;
 pub mod xpm;
 
 pub use colour_math::*;
@@ -71,37 +72,8 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct BasicPaintSpec<F: ColourComponent> {
-    pub rgb: RGB<F>,
-    pub id: String,
-    pub name: String,
-    pub notes: String,
-    pub finish: Finish,
-    pub transparency: Transparency,
-    pub permanence: Permanence,
-    pub fluorescence: Fluorescence,
-    pub metallicness: Metallicness,
-}
-
-impl<F: ColourComponent> BasicPaintSpec<F> {
-    pub fn new(rgb: RGB<F>, id: &str) -> Self {
-        Self {
-            rgb,
-            id: id.to_string(),
-            name: String::new(),
-            notes: String::new(),
-            finish: Finish::default(),
-            transparency: Transparency::default(),
-            permanence: Permanence::default(),
-            fluorescence: Fluorescence::default(),
-            metallicness: Metallicness::default(),
-        }
-    }
-}
-
 pub trait FromSpec<F: ColourComponent> {
-    fn from_spec(spec: &BasicPaintSpec<F>) -> Self;
+    fn from_spec(spec: &spec::BasicPaintSpec<F>) -> Self;
 }
 
 #[derive(Debug)]

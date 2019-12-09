@@ -10,7 +10,7 @@ use std::{
 use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
 
-use apaint_boilerplate::Colour;
+use apaint_boilerplate::{BasicPaint, Colour};
 
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
@@ -23,8 +23,8 @@ use crate::{
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
 pub struct SeriesId {
-    proprietor: String,
-    series_name: String,
+    pub(crate) proprietor: String,
+    pub(crate) series_name: String,
 }
 
 impl SeriesId {
@@ -167,7 +167,7 @@ where
     }
 }
 
-#[derive(Debug, Colour, Clone)]
+#[derive(Debug, Colour, BasicPaint, Clone)]
 pub struct SeriesPaint<F: ColourComponent> {
     rgb: RGB<F>,
     id: String,
@@ -184,48 +184,6 @@ pub struct SeriesPaint<F: ColourComponent> {
 impl<F: ColourComponent> SeriesPaint<F> {
     pub fn seried_id(&self) -> &Rc<SeriesId> {
         &self.series_id
-    }
-}
-
-impl<F: ColourComponent> BasicPaintIfce<F> for SeriesPaint<F> {
-    fn id(&self) -> &str {
-        &self.id
-    }
-
-    fn name(&self) -> Option<&str> {
-        if self.name.len() == 0 {
-            None
-        } else {
-            Some(&self.name)
-        }
-    }
-
-    fn notes(&self) -> Option<&str> {
-        if self.notes.len() == 0 {
-            None
-        } else {
-            Some(&self.notes)
-        }
-    }
-
-    fn finish(&self) -> Finish {
-        self.finish
-    }
-
-    fn transparency(&self) -> Transparency {
-        self.transparency
-    }
-
-    fn fluorescence(&self) -> Fluorescence {
-        self.fluorescence
-    }
-
-    fn permanence(&self) -> Permanence {
-        self.permanence
-    }
-
-    fn metallicness(&self) -> Metallicness {
-        self.metallicness
     }
 }
 

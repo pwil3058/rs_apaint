@@ -21,7 +21,7 @@ use colour_math::ScalarAttribute;
 
 use apaint::{
     characteristics::CharacteristicType, hue_wheel::MakeColouredShape, series::PaintSeries,
-    BasicPaintIfce, BasicPaintSpec, FromSpec,
+    spec::BasicPaintSpec, BasicPaintIfce, FromSpec,
 };
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};

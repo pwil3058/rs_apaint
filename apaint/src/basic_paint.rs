@@ -5,7 +5,7 @@ use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
 use crate::characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency};
 use crate::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts};
-use crate::{BasicPaintIfce, BasicPaintSpec, FromSpec};
+use crate::{spec::BasicPaintSpec, BasicPaintIfce, FromSpec};
 
 #[derive(Debug, Deserialize, Serialize, Colour, Clone)]
 pub struct BasicPaint<F: ColourComponent> {
