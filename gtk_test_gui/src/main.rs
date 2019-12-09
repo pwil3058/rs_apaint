@@ -48,7 +48,7 @@ fn main() {
     let win = gtk::Window::new(gtk::WindowType::Toplevel);
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(
-        &BasicPaintFactory::<BasicPaint<f64>>::new(
+        &BasicPaintFactory::new(
             &[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,

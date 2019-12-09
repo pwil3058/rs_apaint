@@ -8,12 +8,13 @@ use std::{
 use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
 
-use colour_math::{ColourComponent, ScalarAttribute, RGB};
+use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
     series::SeriesId,
     BasicPaintIfce,
 };
@@ -44,6 +45,23 @@ impl<F: ColourComponent> BasicPaintSpec<F> {
             fluorescence: Fluorescence::default(),
             metallicness: Metallicness::default(),
         }
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for BasicPaintSpec<F> {
+    fn coloured_shape(&self) -> ColouredShape<F> {
+        let tooltip_text = if let Some(name) = self.name() {
+            if let Some(notes) = self.notes() {
+                format!("{}: {}\n{}", self.id, name, notes)
+            } else {
+                format!("{}: {}", self.id, name)
+            }
+        } else if let Some(notes) = self.notes() {
+            format!("{}: {}", self.id, notes)
+        } else {
+            format!("{}: {}", self.id, self.rgb().pango_string())
+        };
+        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
     }
 }
 

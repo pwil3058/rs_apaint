@@ -17,7 +17,7 @@ use pw_gix::sav_state::{
     ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
 };
 
-use colour_math::ScalarAttribute;
+use colour_math::{ColourInterface, ScalarAttribute};
 
 use apaint::{
     characteristics::CharacteristicType, hue_wheel::MakeColouredShape, series::PaintSeries,
@@ -33,6 +33,7 @@ use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_t
 use crate::list::{ColouredItemListView, PaintListHelper};
 use crate::managed_menu::MenuItemSpec;
 use crate::spec_edit::BasicPaintSpecEditor;
+use apaint::spec::BasicPaintSeriesSpec;
 
 #[derive(PWO)]
 struct FactoryFileManager {
@@ -167,32 +168,20 @@ impl FactoryFileManager {
 }
 
 #[derive(PWO, Wrapper)]
-pub struct BasicPaintFactory<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + Serialize + 'static,
-{
+pub struct BasicPaintFactory {
     vbox: gtk::Box,
     file_manager: FactoryFileManager,
     paint_editor: Rc<BasicPaintSpecEditor>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
     paint_list_helper: PaintListHelper,
-    paint_series: RefCell<PaintSeries<f64, P>>,
+    paint_series: RefCell<BasicPaintSeriesSpec<f64>>,
     saved_series_digest: RefCell<Vec<u8>>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
 }
 
-impl<P> BasicPaintFactory<P>
-where
-    P: BasicPaintIfce<f64>
-        + FromSpec<f64>
-        + MakeColouredShape<f64>
-        + Clone
-        + Serialize
-        + DeserializeOwned
-        + 'static,
-{
+impl BasicPaintFactory {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let menu_items: &[MenuItemSpec] = &[
             (
@@ -260,7 +249,7 @@ where
             hue_wheel,
             list_view,
             paint_list_helper,
-            paint_series: RefCell::new(PaintSeries::default()),
+            paint_series: RefCell::new(BasicPaintSeriesSpec::default()),
             saved_series_digest: RefCell::new(vec![]),
             proprietor_entry,
             series_name_entry,
@@ -405,13 +394,12 @@ where
     }
 
     fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec<f64>) {
-        let paint = P::from_spec(paint_spec);
-        if let Some(old_paint) = self.paint_series.borrow_mut().add(&paint) {
+        if let Some(old_paint) = self.paint_series.borrow_mut().add(paint_spec) {
             self.hue_wheel.remove_item(old_paint.id());
             self.list_view.remove_row(old_paint.id());
         }
-        self.hue_wheel.add_item(paint.coloured_shape());
-        let row = self.paint_list_helper.row(&paint);
+        self.hue_wheel.add_item(paint_spec.coloured_shape());
+        let row = self.paint_list_helper.row(paint_spec);
         self.list_view.add_row(&row);
     }
 
@@ -579,7 +567,7 @@ where
     fn load(&self) {
         if let Some(path) = self.ask_file_path(Some("Load from: "), None, true) {
             match File::open(&path) {
-                Ok(mut file) => match PaintSeries::<f64, P>::read(&mut file) {
+                Ok(mut file) => match BasicPaintSeriesSpec::<f64>::read(&mut file) {
                     Ok(new_series) => {
                         if self.ok_to_reset() {
                             self.unguarded_reset();
