@@ -236,3 +236,70 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
 
     proc_macro::TokenStream::from(tokens)
 }
+
+#[proc_macro_derive(BasicPaint, attributes(colour, component))]
+pub fn basic_paint_interface_derive(input: TokenStream) -> TokenStream {
+    let parsed_input: DeriveInput = parse_macro_input!(input);
+    let struct_name = parsed_input.ident;
+    let (impl_generics, ty_generics, where_clause) = parsed_input.generics.split_for_impl();
+    let mut component = { Ident::new("F", struct_name.span()) };
+    for attr in parsed_input.attrs.iter() {
+        if attr.path.is_ident("component") {
+            if let Ok(meta) = attr.parse_meta() {
+                match meta {
+                    syn::Meta::NameValue(nv) => {
+                        if let syn::Lit::Str(lit_str) = &nv.lit {
+                            component = Ident::new(&lit_str.value(), nv.span());
+                        }
+                    }
+                    _ => panic!("expected 'component = name'"),
+                }
+            }
+        }
+    }
+    let tokens = quote! {
+        impl #impl_generics crate::BasicPaintIfce<#component> for #struct_name #ty_generics #where_clause {
+            fn id(&self) -> &str {
+                &self.id
+            }
+
+            fn name(&self) -> Option<&str> {
+                if self.name.len() == 0 {
+                    None
+                } else {
+                    Some(&self.name)
+                }
+            }
+
+            fn notes(&self) -> Option<&str> {
+                if self.notes.len() == 0 {
+                    None
+                } else {
+                    Some(&self.notes)
+                }
+            }
+
+            fn finish(&self) -> Finish {
+                self.finish
+            }
+
+            fn transparency(&self) -> Transparency {
+                self.transparency
+            }
+
+            fn fluorescence(&self) -> Fluorescence {
+                self.fluorescence
+            }
+
+            fn permanence(&self) -> Permanence {
+                self.permanence
+            }
+
+            fn metallicness(&self) -> Metallicness {
+                self.metallicness
+            }
+        }
+    };
+
+    proc_macro::TokenStream::from(tokens)
+}
