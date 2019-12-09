@@ -6,35 +6,12 @@ use apaint_boilerplate::{BasicPaint, Colour};
 
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
 
-use crate::hue_wheel::{MakeColouredShape, ShapeConsts};
-use crate::spec::{BasicPaintSeriesSpec, BasicPaintSpec};
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
-    hue_wheel::{ColouredShape, Shape},
+    hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
+    spec::{BasicPaintSeriesSpec, BasicPaintSpec, SeriesId},
     BasicPaintIfce, LabelText, TooltipText,
 };
-
-#[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
-pub struct SeriesId {
-    pub(crate) proprietor: String,
-    pub(crate) series_name: String,
-}
-
-impl SeriesId {
-    pub fn proprietor(&self) -> &str {
-        &self.proprietor
-    }
-
-    pub fn series_name(&self) -> &str {
-        &self.series_name
-    }
-}
-
-impl fmt::Display for SeriesId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}:({})", self.series_name, self.proprietor)
-    }
-}
 
 #[derive(Debug, Colour, BasicPaint)]
 pub struct SeriesPaint<F: ColourComponent> {

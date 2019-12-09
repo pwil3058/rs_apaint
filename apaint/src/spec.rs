@@ -1,6 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use std::{
+    fmt,
     io::{Read, Write},
     string::ToString,
 };
@@ -15,7 +16,6 @@ use apaint_boilerplate::{BasicPaint, Colour};
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    series::SeriesId,
     BasicPaintIfce,
 };
 
@@ -62,6 +62,28 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for BasicPaintSpec<F
             format!("{}: {}", self.id, self.rgb().pango_string())
         };
         ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
+pub struct SeriesId {
+    proprietor: String,
+    series_name: String,
+}
+
+impl SeriesId {
+    pub fn proprietor(&self) -> &str {
+        &self.proprietor
+    }
+
+    pub fn series_name(&self) -> &str {
+        &self.series_name
+    }
+}
+
+impl fmt::Display for SeriesId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}:({})", self.series_name, self.proprietor)
     }
 }
 
