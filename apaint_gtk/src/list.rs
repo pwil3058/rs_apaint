@@ -17,6 +17,7 @@ use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 use crate::colour::{ColourInterface, ScalarAttribute};
 use crate::managed_menu::MenuItemSpec;
+use apaint::series::SeriesPaint;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -261,6 +262,36 @@ impl PaintListHelper {
     }
 
     pub fn row<P: BasicPaintIfce<f64>>(&self, paint: &P) -> Vec<gtk::Value> {
+        let ha = if let Some(angle) = paint.hue_angle() {
+            angle.degrees()
+        } else {
+            -181.0 + paint.value()
+        };
+        let mut row: Vec<gtk::Value> = vec![
+            paint.id().to_value(),
+            paint.rgb().pango_string().to_value(),
+            paint.best_foreground_rgb().pango_string().to_value(),
+            paint.name().or(Some("")).unwrap().to_value(),
+            paint.notes().or(Some("")).unwrap().to_value(),
+            paint.max_chroma_rgb().pango_string().to_value(),
+            ha.to_value(),
+        ];
+        for attr in self.attributes.iter() {
+            let string = format!("{:5.4}", paint.scalar_attribute(*attr));
+            let attr_rgb = paint.scalar_attribute_rgb(*attr);
+            row.push(string.to_value());
+            row.push(attr_rgb.pango_string().to_value());
+            row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
+        }
+        for characteristic in self.characteristics.iter() {
+            let string = paint.characteristic_abbrev(*characteristic);
+            row.push(string.to_value());
+        }
+        row
+    }
+
+    // TODO: get rid of need for rc_row()
+    pub fn rc_row(&self, paint: &Rc<SeriesPaint<f64>>) -> Vec<gtk::Value> {
         let ha = if let Some(angle) = paint.hue_angle() {
             angle.degrees()
         } else {

@@ -167,7 +167,7 @@ where
     }
 }
 
-#[derive(Debug, Colour, BasicPaint, Clone)]
+#[derive(Debug, Colour, BasicPaint)]
 pub struct SeriesPaint<F: ColourComponent> {
     rgb: RGB<F>,
     id: String,
@@ -229,5 +229,44 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for SeriesPaint<F> {
             format!("{}: {}", self.id, self.rgb().pango_string())
         };
         ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
+    }
+}
+
+#[derive(Debug)]
+pub struct SeriesPaintSeries<F>
+where
+    F: ColourComponent,
+{
+    series_id: Rc<SeriesId>,
+    paint_list: Vec<Rc<SeriesPaint<F>>>,
+}
+
+impl<F> SeriesPaintSeries<F>
+where
+    F: ColourComponent,
+{
+    pub fn series_id(&self) -> &Rc<SeriesId> {
+        &self.series_id
+    }
+
+    pub fn find(&self, id: &str) -> Option<&Rc<SeriesPaint<F>>> {
+        debug_assert!(self.is_sorted_unique());
+        match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
+            Ok(index) => self.paint_list.get(index),
+            Err(_) => None,
+        }
+    }
+
+    pub fn paints(&self) -> impl Iterator<Item = &Rc<SeriesPaint<F>>> {
+        self.paint_list.iter()
+    }
+
+    fn is_sorted_unique(&self) -> bool {
+        for i in 1..self.paint_list.len() {
+            if self.paint_list[i].id() <= self.paint_list[i - 1].id() {
+                return false;
+            }
+        }
+        true
     }
 }

@@ -23,24 +23,19 @@ use crate::{
     hue_wheel::GtkHueWheel,
     list::{ColouredItemListView, PaintListHelper},
 };
+use apaint::series::{SeriesPaint, SeriesPaintSeries};
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesPage<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
+pub struct SeriesPage {
     paned: gtk::Paned,
-    paint_series: PaintSeries<f64, P>,
+    paint_series: SeriesPaintSeries<f64>,
     hue_wheel: Rc<GtkHueWheel>,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
 }
 
-impl<P> SeriesPage<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
+impl SeriesPage {
     pub fn new(
-        paint_series: PaintSeries<f64, P>,
+        paint_series: SeriesPaintSeries<f64>,
         menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
@@ -55,7 +50,7 @@ where
         );
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
-            let row = list_helper.row(paint);
+            let row = list_helper.rc_row(paint);
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
@@ -88,11 +83,15 @@ where
         sp
     }
 
-    pub fn series_id(&self) -> &SeriesId {
+    pub fn series_id(&self) -> &Rc<SeriesId> {
         self.paint_series.series_id()
     }
 
-    pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
+    pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+        &self,
+        name: &str,
+        callback: F,
+    ) {
         self.callbacks
             .borrow_mut()
             .get_mut(name)
@@ -102,7 +101,6 @@ where
 
     pub fn invoke_named_callback(&self, item: &str, id: &str) {
         if let Some(paint) = self.paint_series.find(id) {
-            let sid = self.paint_series.series_id();
             for callback in self
                 .callbacks
                 .borrow()
@@ -110,7 +108,7 @@ where
                 .expect("invalid name")
                 .iter()
             {
-                callback(sid, paint)
+                callback(Rc::clone(paint))
             }
         }
     }
@@ -121,22 +119,16 @@ where
 }
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesBinder<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
+pub struct SeriesBinder {
     notebook: gtk::Notebook,
-    pages: RefCell<Vec<Rc<SeriesPage<P>>>>,
+    pages: RefCell<Vec<Rc<SeriesPage>>>,
     menu_items: Vec<MenuItemSpec>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
 }
 
-impl<P> SeriesBinder<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
+impl SeriesBinder {
     pub fn new(
         menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
@@ -144,7 +136,7 @@ where
     ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
-        let mut hash_map: HashMap<String, Vec<Box<dyn Fn(&SeriesId, &P)>>> = HashMap::new();
+        let mut hash_map: HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>> = HashMap::new();
         for menu_item in menu_items.iter() {
             let item_name = menu_item.name();
             hash_map.insert(item_name.to_string(), vec![]);
@@ -160,13 +152,17 @@ where
         })
     }
 
-    fn binary_search_series_id(&self, sid: &SeriesId) -> Result<usize, usize> {
+    fn binary_search_series_id(&self, sid: &Rc<SeriesId>) -> Result<usize, usize> {
         self.pages
             .borrow()
             .binary_search_by_key(&sid, |page| page.series_id())
     }
 
-    pub fn connect_popup_menu_item<F: Fn(&SeriesId, &P) + 'static>(&self, name: &str, callback: F) {
+    pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+        &self,
+        name: &str,
+        callback: F,
+    ) {
         self.callbacks
             .borrow_mut()
             .get_mut(name)
@@ -174,7 +170,7 @@ where
             .push(Box::new(callback));
     }
 
-    pub fn invoke_named_callback(&self, item: &str, sid: &SeriesId, paint: &P) {
+    pub fn invoke_named_callback(&self, item: &str, paint: Rc<SeriesPaint<f64>>) {
         for callback in self
             .callbacks
             .borrow()
@@ -182,7 +178,7 @@ where
             .expect("invalid name")
             .iter()
         {
-            callback(sid, paint)
+            callback(Rc::clone(&paint))
         }
     }
 
@@ -198,10 +194,10 @@ where
         self.notebook.remove_page(page_num);
     }
 
-    fn remove_series(&self, series_id: &SeriesId) {
+    fn remove_series(&self, series_id: &Rc<SeriesId>) {
         let question = format!("Confirm remove '{}'?", series_id);
         if self.ask_confirm_action(&question, None) {
-            if let Ok(index) = self.binary_search_series_id(series_id) {
+            if let Ok(index) = self.binary_search_series_id(&series_id) {
                 self.remove_series_at_index(index)
             } else {
                 panic!("attempt to remove non existent series")
@@ -210,19 +206,13 @@ where
     }
 }
 
-pub trait RcSeriesBinder<P>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
-    fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error>;
+pub trait RcSeriesBinder {
+    fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error>;
 }
 
-impl<P> RcSeriesBinder<P> for Rc<SeriesBinder<P>>
-where
-    P: BasicPaintIfce<f64> + FromSpec<f64> + MakeColouredShape<f64> + Clone + 'static,
-{
-    fn add_series(&self, new_series: PaintSeries<f64, P>) -> Result<(), crate::Error> {
-        match self.binary_search_series_id(new_series.series_id()) {
+impl RcSeriesBinder for Rc<SeriesBinder> {
+    fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error> {
+        match self.binary_search_series_id(&new_series.series_id()) {
             Ok(_) => Err(crate::Error::GeneralError(
                 "Series already in binder".to_string(),
             )),
@@ -256,8 +246,8 @@ where
                 for menu_item in self.menu_items.iter() {
                     let self_c = Rc::clone(self);
                     let item_name_c = menu_item.name().to_string();
-                    new_page.connect_popup_menu_item(menu_item.name(), move |sid, paint| {
-                        self_c.invoke_named_callback(&item_name_c, sid, paint)
+                    new_page.connect_popup_menu_item(menu_item.name(), move |paint| {
+                        self_c.invoke_named_callback(&item_name_c, paint)
                     });
                 }
                 self.notebook.insert_page_menu(

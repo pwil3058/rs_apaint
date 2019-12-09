@@ -87,7 +87,7 @@ fn main() {
     });
     let spinners_c = Rc::clone(&spinners);
     spinners.connect_removal_requested(move |paint| spinners_c.remove_paint(paint));
-    let binder = SeriesBinder::<BasicPaint<f64>>::new(
+    let binder = SeriesBinder::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],
         &[
@@ -97,10 +97,10 @@ fn main() {
             CharacteristicType::Metallicness,
         ],
     );
-    binder.connect_popup_menu_item("test", |sid, id| println!("{:?}:{:?}", sid, id));
+    binder.connect_popup_menu_item("test", |paint| println!("{:?}", paint));
     let mut file = File::open("./test_saved_file.json").unwrap();
     let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
-    binder.add_series(paint_series).expect("should be OK");
+    // TODO: binder.add_series(paint_series).expect("should be OK");
     vbox.pack_start(&binder.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
