@@ -17,7 +17,9 @@ use pw_gix::sav_state::{
 use colour_math::{ColourInterface, ScalarAttribute};
 
 use apaint::{
-    characteristics::CharacteristicType, hue_wheel::MakeColouredShape, spec::BasicPaintSpec,
+    characteristics::CharacteristicType,
+    hue_wheel::MakeColouredShape,
+    spec::{BasicPaintSeriesSpec, BasicPaintSpec},
     BasicPaintIfce,
 };
 
@@ -27,10 +29,9 @@ use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
 use crate::icon_image;
 use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
-use crate::list::{ColouredItemListView, PaintListHelper};
+use crate::list::{ColouredItemListView, PaintListHelper, PaintListRow};
 use crate::managed_menu::MenuItemSpec;
 use crate::spec_edit::BasicPaintSpecEditor;
-use apaint::spec::BasicPaintSeriesSpec;
 
 #[derive(PWO)]
 struct FactoryFileManager {
@@ -396,7 +397,7 @@ impl BasicPaintFactory {
             self.list_view.remove_row(old_paint.id());
         }
         self.hue_wheel.add_item(paint_spec.coloured_shape());
-        let row = self.paint_list_helper.row(paint_spec);
+        let row = paint_spec.row(&self.paint_list_helper);
         self.list_view.add_row(&row);
     }
 
@@ -576,7 +577,7 @@ impl BasicPaintFactory {
                                 for paint in new_series.paints() {
                                     series.add(paint);
                                     self.hue_wheel.add_item(paint.coloured_shape());
-                                    let row = self.paint_list_helper.row(paint);
+                                    let row = paint.row(&self.paint_list_helper);
                                     self.list_view.add_row(&row);
                                 }
                             }

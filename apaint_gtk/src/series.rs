@@ -16,7 +16,7 @@ use crate::managed_menu::MenuItemSpec;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
-    list::{ColouredItemListView, PaintListHelper},
+    list::{ColouredItemListView, PaintListHelper, PaintListRow},
 };
 use apaint::series::{SeriesPaint, SeriesPaintSeries};
 
@@ -45,7 +45,8 @@ impl SeriesPage {
         );
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
-            let row = list_helper.rc_row(paint);
+            let row = paint.row(&list_helper);
+            //list_helper.rc_row(paint);
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();

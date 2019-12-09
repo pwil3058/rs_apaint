@@ -18,6 +18,7 @@ use pw_gix::gtkx::list_store::TreeModelRowOps;
 use crate::colour::{ColourInterface, ScalarAttribute};
 use crate::managed_menu::MenuItemSpec;
 use apaint::series::SeriesPaint;
+use apaint::spec::BasicPaintSpec;
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -260,72 +261,39 @@ impl PaintListHelper {
 
         cols
     }
+}
 
-    pub fn row<P: BasicPaintIfce<f64>>(&self, paint: &P) -> Vec<gtk::Value> {
-        let ha = if let Some(angle) = paint.hue_angle() {
+pub trait PaintListRow: BasicPaintIfce<f64> {
+    fn row(&self, helper: &PaintListHelper) -> Vec<gtk::Value> {
+        let ha = if let Some(angle) = self.hue_angle() {
             angle.degrees()
         } else {
-            -181.0 + paint.value()
+            -181.0 + self.value()
         };
         let mut row: Vec<gtk::Value> = vec![
-            paint.id().to_value(),
-            paint.rgb().pango_string().to_value(),
-            paint.best_foreground_rgb().pango_string().to_value(),
-            paint.name().or(Some("")).unwrap().to_value(),
-            paint.notes().or(Some("")).unwrap().to_value(),
-            paint.max_chroma_rgb().pango_string().to_value(),
+            self.id().to_value(),
+            self.rgb().pango_string().to_value(),
+            self.best_foreground_rgb().pango_string().to_value(),
+            self.name().or(Some("")).unwrap().to_value(),
+            self.notes().or(Some("")).unwrap().to_value(),
+            self.max_chroma_rgb().pango_string().to_value(),
             ha.to_value(),
         ];
-        for attr in self.attributes.iter() {
-            let string = format!("{:5.4}", paint.scalar_attribute(*attr));
-            let attr_rgb = paint.scalar_attribute_rgb(*attr);
+        for attr in helper.attributes.iter() {
+            let string = format!("{:5.4}", self.scalar_attribute(*attr));
+            let attr_rgb = self.scalar_attribute_rgb(*attr);
             row.push(string.to_value());
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
         }
-        for characteristic in self.characteristics.iter() {
-            let string = paint.characteristic_abbrev(*characteristic);
+        for characteristic in helper.characteristics.iter() {
+            let string = self.characteristic_abbrev(*characteristic);
             row.push(string.to_value());
         }
         row
-    }
-
-    // TODO: get rid of need for rc_row()
-    pub fn rc_row(&self, paint: &Rc<SeriesPaint<f64>>) -> Vec<gtk::Value> {
-        let ha = if let Some(angle) = paint.hue_angle() {
-            angle.degrees()
-        } else {
-            -181.0 + paint.value()
-        };
-        let mut row: Vec<gtk::Value> = vec![
-            paint.id().to_value(),
-            paint.rgb().pango_string().to_value(),
-            paint.best_foreground_rgb().pango_string().to_value(),
-            paint.name().or(Some("")).unwrap().to_value(),
-            paint.notes().or(Some("")).unwrap().to_value(),
-            paint.max_chroma_rgb().pango_string().to_value(),
-            ha.to_value(),
-        ];
-        for attr in self.attributes.iter() {
-            let string = format!("{:5.4}", paint.scalar_attribute(*attr));
-            let attr_rgb = paint.scalar_attribute_rgb(*attr);
-            row.push(string.to_value());
-            row.push(attr_rgb.pango_string().to_value());
-            row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
-        }
-        for characteristic in self.characteristics.iter() {
-            let string = paint.characteristic_abbrev(*characteristic);
-            row.push(string.to_value());
-        }
-        row
-    }
-
-    pub fn new_list_store<P: BasicPaintIfce<f64>>(&self, paints: &[P]) -> gtk::ListStore {
-        let list_store = gtk::ListStore::new(&self.column_types());
-        for paint in paints.iter() {
-            let row = self.row(paint);
-            list_store.append_row(&row);
-        }
-        list_store
     }
 }
+
+impl PaintListRow for SeriesPaint<f64> {}
+
+impl PaintListRow for BasicPaintSpec<f64> {}
