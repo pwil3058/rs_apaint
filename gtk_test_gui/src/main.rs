@@ -7,13 +7,11 @@ use gtk::{BoxExt, ContainerExt, WidgetExt};
 use pw_gix::recollections;
 use pw_gix::wrapper::*;
 
-use apaint::{
-    basic_paint::BasicPaint, characteristics::CharacteristicType, series::PaintSeries, LabelText,
-    TooltipText,
-};
+use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 
 use apaint_boilerplate::Colour;
 
+use apaint::spec::BasicPaintSeriesSpec;
 use apaint_gtk::{
     colour::*,
     factory::BasicPaintFactory,
@@ -99,8 +97,10 @@ fn main() {
     );
     binder.connect_popup_menu_item("test", |paint| println!("{:?}", paint));
     let mut file = File::open("./test_saved_file.json").unwrap();
-    let paint_series = PaintSeries::<f64, BasicPaint<f64>>::read(&mut file).unwrap();
-    // TODO: binder.add_series(paint_series).expect("should be OK");
+    let paint_series_spec = BasicPaintSeriesSpec::<f64>::read(&mut file).unwrap();
+    binder
+        .add_series((&paint_series_spec).into())
+        .expect("should be OK");
     vbox.pack_start(&binder.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);

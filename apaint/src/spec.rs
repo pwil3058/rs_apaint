@@ -142,7 +142,7 @@ where
         }
     }
 
-    fn is_sorted_unique(&self) -> bool {
+    pub fn is_sorted_unique(&self) -> bool {
         for i in 1..self.paint_list.len() {
             if self.paint_list[i].id() <= self.paint_list[i - 1].id() {
                 return false;

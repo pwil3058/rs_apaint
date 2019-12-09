@@ -5,9 +5,6 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-
 use gtk::prelude::*;
 use pw_gix::wrapper::*;
 
@@ -20,8 +17,8 @@ use pw_gix::sav_state::{
 use colour_math::{ColourInterface, ScalarAttribute};
 
 use apaint::{
-    characteristics::CharacteristicType, hue_wheel::MakeColouredShape, series::PaintSeries,
-    spec::BasicPaintSpec, BasicPaintIfce, FromSpec,
+    characteristics::CharacteristicType, hue_wheel::MakeColouredShape, spec::BasicPaintSpec,
+    BasicPaintIfce,
 };
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};

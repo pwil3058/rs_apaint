@@ -10,12 +10,7 @@ use pw_gix::{
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
-use apaint::{
-    characteristics::CharacteristicType,
-    hue_wheel::MakeColouredShape,
-    series::{PaintSeries, SeriesId},
-    BasicPaintIfce, FromSpec,
-};
+use apaint::{characteristics::CharacteristicType, hue_wheel::MakeColouredShape, series::SeriesId};
 
 use crate::managed_menu::MenuItemSpec;
 use crate::{
