@@ -93,7 +93,6 @@ impl TargetedPaintEntry {
     }
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
-        // TODO: find out why target color doesn't show up in cads
         if let Some(rgb) = rgb {
             *self.target_rgb.borrow_mut() = Some(*rgb);
             self.cads.set_target_colour(Some(rgb));

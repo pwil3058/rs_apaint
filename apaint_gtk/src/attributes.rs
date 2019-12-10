@@ -115,7 +115,7 @@ where
     }
 
     fn set_target_rgb(&self, rgb: Option<&RGB>) {
-        self.attribute.borrow_mut().set_colour(rgb);
+        self.attribute.borrow_mut().set_target_colour(rgb);
         self.drawing_area.queue_draw();
     }
 }
