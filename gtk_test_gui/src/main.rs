@@ -15,7 +15,10 @@ use apaint::spec::BasicPaintSeriesSpec;
 use apaint_gtk::{
     colour::*,
     factory::BasicPaintFactory,
-    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+    mixer::{
+        component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+        targeted::TargetedPaintEntry,
+    },
     series::{RcSeriesBinder, SeriesBinder},
 };
 
@@ -64,6 +67,12 @@ fn main() {
         false,
         0,
     );
+    let mp_entry = TargetedPaintEntry::new(&[
+        ScalarAttribute::Value,
+        ScalarAttribute::Greyness,
+        ScalarAttribute::Chroma,
+    ]);
+    vbox.pack_start(&mp_entry.pwo(), false, false, 0);
     let spinners = PartsSpinButtonBox::new("Paints", 4, true);
     let dummy = Dummy { rgb: RGB::CYAN };
     spinners.add_paint(&dummy);
