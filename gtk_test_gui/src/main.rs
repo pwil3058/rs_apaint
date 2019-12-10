@@ -73,6 +73,8 @@ fn main() {
         ScalarAttribute::Chroma,
     ]);
     vbox.pack_start(&mp_entry.pwo(), false, false, 0);
+    mp_entry.set_target_rgb(Some(&RGB::YELLOW));
+    mp_entry.set_mix_rgb(Some(&RGB::RED));
     let spinners = PartsSpinButtonBox::new("Paints", 4, true);
     let dummy = Dummy { rgb: RGB::CYAN };
     spinners.add_paint(&dummy);
