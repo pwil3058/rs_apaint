@@ -1,5 +1,5 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::{fs::File, rc::Rc};
+use std::fs::File;
 
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
@@ -12,13 +12,10 @@ use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 use apaint_boilerplate::Colour;
 
 use apaint::spec::BasicPaintSeriesSpec;
+use apaint_gtk::mixer::targeted::TargetedPaintMixer;
 use apaint_gtk::{
     colour::*,
     factory::BasicPaintFactory,
-    mixer::{
-        component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
-        targeted::TargetedPaintEntry,
-    },
     series::{RcSeriesBinder, SeriesBinder},
 };
 
@@ -67,35 +64,20 @@ fn main() {
         false,
         0,
     );
-    let mp_entry = TargetedPaintEntry::new(&[
-        ScalarAttribute::Value,
-        ScalarAttribute::Greyness,
-        ScalarAttribute::Chroma,
-    ]);
-    vbox.pack_start(&mp_entry.pwo(), false, false, 0);
-    mp_entry.set_target_rgb(Some(&RGB::YELLOW));
-    mp_entry.set_mix_rgb(Some(&RGB::RED));
-    let spinners = PartsSpinButtonBox::new("Paints", 4, true);
-    let dummy = Dummy { rgb: RGB::CYAN };
-    spinners.add_paint(&dummy);
-    let dummy = Dummy { rgb: RGB::YELLOW };
-    spinners.add_paint(&dummy);
-    for rgb in RGB::PRIMARIES.iter() {
-        spinners.add_paint(&Dummy { rgb: *rgb });
-    }
-    for rgb in RGB::SECONDARIES.iter() {
-        spinners.add_paint(&Dummy { rgb: *rgb });
-    }
-    for rgb in RGB::GREYS.iter() {
-        spinners.add_paint(&Dummy { rgb: *rgb });
-    }
-    vbox.pack_start(&spinners.pwo(), false, false, 0);
-    let spinners_c = Rc::clone(&spinners);
-    spinners.connect_contributions_changed(move || {
-        println!("changed: {:?}", spinners_c.rgb_contributions())
-    });
-    let spinners_c = Rc::clone(&spinners);
-    spinners.connect_removal_requested(move |paint| spinners_c.remove_paint(paint));
+    let mixer = TargetedPaintMixer::new(
+        &[
+            ScalarAttribute::Value,
+            ScalarAttribute::Greyness,
+            ScalarAttribute::Chroma,
+        ],
+        &[
+            CharacteristicType::Finish,
+            CharacteristicType::Transparency,
+            CharacteristicType::Fluorescence,
+            CharacteristicType::Metallicness,
+        ],
+    );
+    vbox.pack_start(&mixer.pwo(), false, false, 0);
     let binder = SeriesBinder::new(
         &[("test", "Test", None, "testing", 0).into()],
         &[ScalarAttribute::Value, ScalarAttribute::Greyness],

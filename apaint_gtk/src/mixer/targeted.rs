@@ -6,13 +6,22 @@ use gtk::prelude::*;
 
 use cairo;
 
-use pw_gix::{cairox::*, wrapper::*};
+use pw_gix::{cairox::*, gtkx::paned::RememberPosition, wrapper::*};
 
 use colour_math::ScalarAttribute;
 
 use apaint_gtk_boilerplate::PWO;
 
-use crate::{attributes::ColourAttributeDisplayStack, colour::RGB};
+use apaint::{characteristics::CharacteristicType, series::SeriesPaint};
+
+use crate::{
+    attributes::ColourAttributeDisplayStack,
+    colour::RGB,
+    hue_wheel::GtkHueWheel,
+    list::{ColouredItemListView, PaintListHelper},
+    mixer::component::PartsSpinButtonBox,
+    series::PaintSeriesManagerWindow,
+};
 
 #[derive(PWO)]
 pub struct TargetedPaintEntry {
@@ -101,5 +110,46 @@ impl TargetedPaintEntry {
             self.cads.set_target_colour(Option::<&RGB>::None);
         }
         self.drawing_area.queue_draw()
+    }
+}
+
+#[derive(PWO)]
+pub struct TargetedPaintMixer {
+    vbox: gtk::Box,
+    hue_wheel: Rc<GtkHueWheel>,
+    list_view: Rc<ColouredItemListView>,
+    mix_entry: Rc<TargetedPaintEntry>,
+    series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
+    paint_series_manager: PaintSeriesManagerWindow,
+}
+
+impl TargetedPaintMixer {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let hue_wheel = GtkHueWheel::new(&[], attributes);
+        let helper = PaintListHelper::new(attributes, characteristics);
+        let list_view = ColouredItemListView::new(&helper.column_types(), &helper.columns(), &[]);
+        let mix_entry = TargetedPaintEntry::new(attributes);
+        let series_paint_spinner_box =
+            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, false);
+        let paint_series_manager = PaintSeriesManagerWindow::new(attributes, characteristics);
+
+        let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+        paned.add1(&hue_wheel.pwo());
+        paned.add2(&mix_entry.pwo());
+        paned.set_position_from_recollections("basic paint factory h paned position", 200);
+        vbox.pack_start(&paned, true, true, 0);
+        vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
+        vbox.pack_start(&list_view.pwo(), true, true, 0);
+        vbox.show_all();
+
+        Rc::new(Self {
+            vbox,
+            hue_wheel,
+            list_view,
+            mix_entry,
+            series_paint_spinner_box,
+            paint_series_manager,
+        })
     }
 }

@@ -8,7 +8,11 @@ use std::{
 
 use gtk::prelude::*;
 
-use pw_gix::{gtkx::menu::ManagedMenu, sav_state::WidgetStatesControlled, wrapper::*};
+use pw_gix::{
+    gtkx::menu::ManagedMenu,
+    sav_state::{MaskedCondns, WidgetStatesControlled},
+    wrapper::*,
+};
 
 use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
@@ -282,6 +286,10 @@ impl GtkHueWheel {
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.coloured_items.borrow_mut().set_target_rgb(rgb);
+    }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        self.popup_menu.update_condns(changed_condns)
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

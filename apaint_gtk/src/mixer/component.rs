@@ -22,21 +22,21 @@ use crate::colour::{ColourInterface, RGB};
 #[derive(PWO)]
 pub struct PartsSpinButton<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
     popup_menu: WrappedMenu,
-    paint: P,
+    paint: Rc<P>,
     changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
     remove_me_callbacks: RefCell<Vec<Box<dyn Fn(&P)>>>,
 }
 
 impl<P> PartsSpinButton<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
-    pub fn new(paint: &P, sensitive: bool) -> Rc<Self> {
+    pub fn new(paint: &Rc<P>, sensitive: bool) -> Rc<Self> {
         let event_box = gtk::EventBoxBuilder::new()
             .tooltip_text(&paint.tooltip_text())
             .events(gdk::EventMask::BUTTON_PRESS_MASK | gdk::EventMask::BUTTON_RELEASE_MASK)
@@ -60,7 +60,7 @@ where
             event_box,
             spin_button,
             popup_menu: WrappedMenu::new(&[]),
-            paint: paint.clone(),
+            paint: Rc::clone(paint),
             changed_callbacks: RefCell::new(vec![]),
             remove_me_callbacks: RefCell::new(vec![]),
         });
@@ -137,7 +137,7 @@ where
 #[derive(PWO)]
 pub struct PartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
     frame: gtk::Frame,
     vbox: gtk::Box,
@@ -150,7 +150,7 @@ where
 
 impl<P> PartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
     pub fn new(title: &str, n_cols: u32, sensitive: bool) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -269,16 +269,16 @@ where
 
 pub trait RcPartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
-    fn add_paint(&self, paint: &P);
+    fn add_paint(&self, paint: &Rc<P>);
 }
 
 impl<P> RcPartsSpinButtonBox<P> for Rc<PartsSpinButtonBox<P>>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Clone + Ord + 'static,
+    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
 {
-    fn add_paint(&self, paint: &P) {
+    fn add_paint(&self, paint: &Rc<P>) {
         if let Err(index) = self.binary_search_paint(paint) {
             let spinner = PartsSpinButton::new(paint, self.sensitive.get());
             let self_c = Rc::clone(self);

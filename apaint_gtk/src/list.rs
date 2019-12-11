@@ -7,7 +7,7 @@ use gtk::prelude::*;
 use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
     gtkx::{list_store::ListRowOps, menu::ManagedMenu},
-    sav_state::WidgetStatesControlled,
+    sav_state::{MaskedCondns, WidgetStatesControlled},
     wrapper::PackableWidgetObject,
 };
 
@@ -103,6 +103,10 @@ impl ColouredItemListView {
         };
         *self.selected_id.borrow_mut() = None;
         self.popup_menu.update_hover_condns(false);
+    }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        self.popup_menu.update_condns(changed_condns)
     }
 
     pub fn connect_popup_menu_item<F: Fn(&str) + 'static>(&self, name: &str, callback: F) {

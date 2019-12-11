@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{convert::From, fmt, rc::Rc};
+use std::{convert::From, rc::Rc};
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
@@ -12,6 +12,7 @@ use crate::{
     spec::{BasicPaintSeriesSpec, BasicPaintSpec, SeriesId},
     BasicPaintIfce, LabelText, TooltipText,
 };
+use std::cmp::Ordering;
 
 #[derive(Debug, Colour, BasicPaint)]
 pub struct SeriesPaint<F: ColourComponent> {
@@ -47,6 +48,34 @@ impl<F: ColourComponent> From<(&BasicPaintSpec<F>, &Rc<SeriesId>)> for SeriesPai
             metallicness: spec.0.metallicness,
             series_id: Rc::clone(spec.1),
         }
+    }
+}
+
+impl<F: ColourComponent> PartialEq for SeriesPaint<F> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.series_id == other.series_id {
+            self.id == other.id
+        } else {
+            false
+        }
+    }
+}
+
+impl<F: ColourComponent> Eq for SeriesPaint<F> {}
+
+impl<F: ColourComponent> PartialOrd for SeriesPaint<F> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.series_id.cmp(&other.series_id) {
+            Ordering::Less => Some(Ordering::Less),
+            Ordering::Greater => Some(Ordering::Greater),
+            Ordering::Equal => Some(self.id.cmp(&other.id)),
+        }
+    }
+}
+
+impl<F: ColourComponent> Ord for SeriesPaint<F> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 

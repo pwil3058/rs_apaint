@@ -4,27 +4,36 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+    gtkx::{
+        notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+        window::RememberGeometry,
+    },
+    sav_state::{MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
 };
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
-use apaint::{characteristics::CharacteristicType, hue_wheel::MakeColouredShape, spec::SeriesId};
+use apaint::{
+    characteristics::CharacteristicType,
+    hue_wheel::MakeColouredShape,
+    series::{SeriesPaint, SeriesPaintSeries},
+    spec::SeriesId,
+};
 
-use crate::managed_menu::MenuItemSpec;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
     list::{ColouredItemListView, PaintListHelper, PaintListRow},
+    managed_menu::MenuItemSpec,
 };
-use apaint::series::{SeriesPaint, SeriesPaintSeries};
 
 #[derive(PWO, Wrapper)]
 pub struct SeriesPage {
     paned: gtk::Paned,
     paint_series: SeriesPaintSeries<f64>,
     hue_wheel: Rc<GtkHueWheel>,
+    list_view: Rc<ColouredItemListView>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
 }
 
@@ -57,6 +66,7 @@ impl SeriesPage {
             paned,
             paint_series,
             hue_wheel,
+            list_view,
             callbacks: RefCell::new(HashMap::new()),
         });
         for menu_item in menu_items.iter() {
@@ -68,9 +78,10 @@ impl SeriesPage {
                 });
             let sp_c = Rc::clone(&sp);
             let item_name_c = menu_item.name().to_string();
-            list_view.connect_popup_menu_item(menu_item.name(), move |id| {
-                sp_c.invoke_named_callback(&item_name_c, id)
-            });
+            sp.list_view
+                .connect_popup_menu_item(menu_item.name(), move |id| {
+                    sp_c.invoke_named_callback(&item_name_c, id)
+                });
             sp.callbacks
                 .borrow_mut()
                 .insert(menu_item.name().to_string(), vec![]);
@@ -81,6 +92,11 @@ impl SeriesPage {
 
     pub fn series_id(&self) -> &Rc<SeriesId> {
         self.paint_series.series_id()
+    }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        self.hue_wheel.update_popup_condns(changed_condns);
+        self.list_view.update_popup_condns(changed_condns);
     }
 
     pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
@@ -152,6 +168,12 @@ impl SeriesBinder {
         self.pages
             .borrow()
             .binary_search_by_key(&sid, |page| page.series_id())
+    }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        for page in self.pages.borrow().iter() {
+            page.update_popup_condns(changed_condns)
+        }
     }
 
     pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
@@ -256,5 +278,43 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                 Ok(())
             }
         }
+    }
+}
+
+pub struct PaintSeriesManagerWindow {
+    window: gtk::Window,
+    binder: Rc<SeriesBinder>,
+}
+
+impl PaintSeriesManagerWindow {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
+        let menu_items = &[(
+            "add",
+            "Add",
+            None,
+            "Add the indicated paint to the mixer/palette",
+            SAV_HOVER_OK,
+        )
+            .into()];
+        let binder = SeriesBinder::new(menu_items, attributes, characteristics);
+        let window = gtk::WindowBuilder::new()
+            .destroy_with_parent(true)
+            .title("SeriesPaintManager")
+            .build();
+        window.set_geometry_from_recollections("series_paint_manager", (200, 300));
+        window.connect_delete_event(move |w, _| {
+            w.hide_on_delete();
+            gtk::Inhibit(true)
+        });
+        window.add(&binder.pwo());
+        Self { window, binder }
+    }
+
+    pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
+        self.binder.connect_popup_menu_item("add", callback);
+    }
+
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        self.binder.set_target_rgb(rgb);
     }
 }
