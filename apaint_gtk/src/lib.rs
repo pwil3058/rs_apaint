@@ -185,6 +185,83 @@ pub mod managed_menu {
     }
 }
 
+pub mod window {
+    use std::{cell::Cell, rc::Rc};
+
+    use gtk::prelude::*;
+
+    use pw_gix::wrapper::*;
+
+    use apaint_gtk_boilerplate::PWO;
+
+    #[derive(PWO)]
+    pub struct PersistentWindowButton {
+        button: gtk::Button,
+        window: gtk::Window,
+        is_iconified: Cell<bool>,
+    }
+
+    pub struct PersistentWindowButtonBuilder {
+        button: gtk::Button,
+        window: gtk::Window,
+        is_iconified: Cell<bool>,
+    }
+
+    impl PersistentWindowButtonBuilder {
+        pub fn new() -> Self {
+            Self {
+                button: gtk::ButtonBuilder::new().build(),
+                window: gtk::WindowBuilder::new().destroy_with_parent(true).build(),
+                is_iconified: Cell::new(false),
+            }
+        }
+
+        pub fn icon<P: IsA<gtk::Widget>>(self, image: &P) -> Self {
+            self.button.set_image(Some(image));
+            self
+        }
+
+        pub fn label(self, label: &str) -> Self {
+            self.button.set_label(label);
+            self
+        }
+
+        pub fn tooltip_text(self, text: &str) -> Self {
+            self.button.set_tooltip_text(Some(text));
+            self
+        }
+
+        pub fn build(self) -> Rc<PersistentWindowButton> {
+            let pwb = Rc::new(PersistentWindowButton {
+                button: self.button,
+                window: self.window,
+                is_iconified: self.is_iconified,
+            });
+
+            let pwb_c = Rc::clone(&pwb);
+            pwb.window.connect_window_state_event(move |_, event| {
+                let state = event.get_new_window_state();
+                pwb_c
+                    .is_iconified
+                    .set(state.contains(gdk::WindowState::ICONIFIED));
+                gtk::Inhibit(false)
+            });
+
+            let pwb_c = Rc::clone(&pwb);
+            pwb.button.connect_clicked(move |_| {
+                // NB: diconify() is unreliable due to window manager interference
+                if pwb_c.window.get_visible() && !pwb_c.is_iconified.get() {
+                    pwb_c.window.hide();
+                } else {
+                    pwb_c.window.present();
+                }
+            });
+
+            pwb
+        }
+    }
+}
+
 pub mod attributes;
 pub mod colour_edit;
 pub mod factory;
