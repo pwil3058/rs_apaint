@@ -7,7 +7,6 @@ use std::{error, fmt, io};
 use serde_json;
 
 pub mod attributes;
-pub mod basic_paint;
 pub mod characteristics;
 pub mod colour_mix;
 pub mod drawing;
@@ -70,10 +69,6 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
             CharacteristicType::Metallicness => self.metallicness().abbrev(),
         }
     }
-}
-
-pub trait FromSpec<F: ColourComponent> {
-    fn from_spec(spec: &spec::BasicPaintSpec<F>) -> Self;
 }
 
 #[derive(Debug)]
