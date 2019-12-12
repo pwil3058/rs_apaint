@@ -106,3 +106,18 @@ pub fn needs_save_not_ready_image(size: i32) -> gtk::Image {
         panic!("File: {:?} Line: {:?}", file!(), line!())
     }
 }
+
+// SERIES PAINT IMAGE
+pub fn series_paint_pixbuf() -> gdk_pixbuf::Pixbuf {
+    gdk_pixbuf::Pixbuf::new_from_xpm_data(SERIES_PAINT_XPM)
+}
+
+pub fn series_paint_image(size: i32) -> gtk::Image {
+    if let Some(pixbuf) =
+        series_paint_pixbuf().scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear)
+    {
+        gtk::Image::new_from_pixbuf(Some(&pixbuf))
+    } else {
+        panic!("File: {:?} Line: {:?}", file!(), line!())
+    }
+}

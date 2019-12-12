@@ -20,7 +20,7 @@ use crate::{
     hue_wheel::GtkHueWheel,
     list::{ColouredItemListView, PaintListHelper},
     mixer::component::PartsSpinButtonBox,
-    series::PaintSeriesManagerWindow,
+    series::{PaintSeriesManagerWindow, WindowPresentButton},
 };
 
 #[derive(PWO)]
@@ -120,7 +120,7 @@ pub struct TargetedPaintMixer {
     list_view: Rc<ColouredItemListView>,
     mix_entry: Rc<TargetedPaintEntry>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
-    paint_series_manager: PaintSeriesManagerWindow,
+    paint_series_manager: Rc<PaintSeriesManagerWindow>,
 }
 
 impl TargetedPaintMixer {
@@ -134,6 +134,14 @@ impl TargetedPaintMixer {
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, false);
         let paint_series_manager = PaintSeriesManagerWindow::new(attributes, characteristics);
 
+        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        button_box.pack_start(
+            &paint_series_manager.window_present_button(),
+            false,
+            false,
+            0,
+        );
+        vbox.pack_start(&button_box, false, false, 0);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         paned.add1(&hue_wheel.pwo());
         paned.add2(&mix_entry.pwo());

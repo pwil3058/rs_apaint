@@ -1,5 +1,9 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 use gtk::prelude::*;
 
@@ -24,6 +28,7 @@ use apaint::{
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
+    icon_image::series_paint_image,
     list::{ColouredItemListView, PaintListHelper, PaintListRow},
     managed_menu::MenuItemSpec,
 };
@@ -284,10 +289,11 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
 pub struct PaintSeriesManagerWindow {
     window: gtk::Window,
     binder: Rc<SeriesBinder>,
+    is_iconified: Cell<bool>,
 }
 
 impl PaintSeriesManagerWindow {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let menu_items = &[(
             "add",
             "Add",
@@ -307,7 +313,22 @@ impl PaintSeriesManagerWindow {
             gtk::Inhibit(true)
         });
         window.add(&binder.pwo());
-        Self { window, binder }
+
+        let psmw = Rc::new(Self {
+            window,
+            binder,
+            is_iconified: Cell::new(false),
+        });
+
+        let psmw_c = Rc::clone(&psmw);
+        psmw.window.connect_window_state_event(move |_, event| {
+            let state = event.get_new_window_state();
+            let is_iconified = state.contains(gdk::WindowState::ICONIFIED);
+            psmw_c.is_iconified.set(is_iconified);
+            gtk::Inhibit(false)
+        });
+
+        psmw
     }
 
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
@@ -316,5 +337,28 @@ impl PaintSeriesManagerWindow {
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.binder.set_target_rgb(rgb);
+    }
+}
+
+pub trait WindowPresentButton {
+    fn window_present_button(&self) -> gtk::Button;
+}
+
+impl WindowPresentButton for Rc<PaintSeriesManagerWindow> {
+    fn window_present_button(&self) -> gtk::Button {
+        let button = gtk::ButtonBuilder::new()
+            .image(&series_paint_image(24).upcast::<gtk::Widget>())
+            .tooltip_text("Open/raise Paint Series Manager.")
+            .build();
+        let self_c = Rc::clone(self);
+        button.connect_clicked(move |_| {
+            // NB: diconify() is unreliable due to window manager interference
+            if self_c.window.get_visible() && !self_c.is_iconified.get() {
+                self_c.window.hide();
+            } else {
+                self_c.window.present();
+            }
+        });
+        button
     }
 }
