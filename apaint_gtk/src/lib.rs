@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{error, fmt};
+use std::{error, fmt, io};
 
 pub mod angles {
     pub use normalised_angles;
@@ -312,6 +312,7 @@ pub mod spec_edit;
 #[derive(Debug)]
 pub enum Error {
     APaintError(apaint::Error),
+    IOError(io::Error),
     GeneralError(String),
 }
 
@@ -319,6 +320,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::APaintError(err) => write!(f, "Error: {}.", err),
+            Error::IOError(err) => write!(f, "Error: {}.", err),
             Error::GeneralError(string) => write!(f, "Error: {}.", string),
         }
     }
@@ -328,6 +330,7 @@ impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Error::APaintError(err) => Some(err),
+            Error::IOError(err) => Some(err),
             _ => None,
         }
     }
@@ -336,5 +339,11 @@ impl error::Error for Error {
 impl From<apaint::Error> for Error {
     fn from(err: apaint::Error) -> Self {
         Error::APaintError(err)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::IOError(err)
     }
 }

@@ -12,6 +12,7 @@ use pw_gix::{
         notebook::{TabRemoveLabel, TabRemoveLabelInterface},
         window::RememberGeometry,
     },
+    recollections::recall,
     sav_state::{MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
 };
@@ -287,7 +288,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
     }
 }
 
-#[derive(PWO)]
+#[derive(PWO, Wrapper)]
 pub struct PaintSeriesManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
@@ -315,9 +316,29 @@ impl PaintSeriesManager {
         vbox.pack_start(&binder.pwo(), true, true, 0);
         vbox.show_all();
 
-        let psmw = Rc::new(Self { vbox, binder });
+        let psm = Rc::new(Self { vbox, binder });
 
-        psmw
+        let psm_c = Rc::clone(&psm);
+        load_file_btn.connect_clicked(move |_| {
+            if let Err(err) = psm_c.load_series_from_file() {
+                psm_c.report_error("Load file failed.", &err);
+            }
+        });
+
+        psm
+    }
+
+    fn load_series_from_file(&self) -> Result<(), crate::Error> {
+        let last_file = recall("PaintSeriesManager::last_loaded_file");
+        let last_file = if let Some(ref text) = last_file {
+            Some(text.as_str())
+        } else {
+            None
+        };
+        if let Some(path) = self.ask_file_path(Some("Collection File Name:"), last_file, true) {
+            let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
+        };
+        Ok(())
     }
 
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
