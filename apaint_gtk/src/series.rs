@@ -25,6 +25,7 @@ use apaint::{
     spec::SeriesId,
 };
 
+use crate::icon_image::series_paint_load_image;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
@@ -286,13 +287,13 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
     }
 }
 
-pub struct PaintSeriesManagerWindow {
-    window: gtk::Window,
+#[derive(PWO)]
+pub struct PaintSeriesManager {
+    vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
-    is_iconified: Cell<bool>,
 }
 
-impl PaintSeriesManagerWindow {
+impl PaintSeriesManager {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let menu_items = &[(
             "add",
@@ -303,30 +304,18 @@ impl PaintSeriesManagerWindow {
         )
             .into()];
         let binder = SeriesBinder::new(menu_items, attributes, characteristics);
-        let window = gtk::WindowBuilder::new()
-            .destroy_with_parent(true)
-            .title("SeriesPaintManager")
+        let load_file_btn = gtk::ButtonBuilder::new()
+            .image(&series_paint_load_image(24).upcast::<gtk::Widget>())
+            .tooltip_text("Load a paint series from a file.")
             .build();
-        window.set_geometry_from_recollections("series_paint_manager", (200, 300));
-        window.connect_delete_event(move |w, _| {
-            w.hide_on_delete();
-            gtk::Inhibit(true)
-        });
-        window.add(&binder.pwo());
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&load_file_btn, false, false, 0);
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        vbox.pack_start(&binder.pwo(), true, true, 0);
+        vbox.show_all();
 
-        let psmw = Rc::new(Self {
-            window,
-            binder,
-            is_iconified: Cell::new(false),
-        });
-
-        let psmw_c = Rc::clone(&psmw);
-        psmw.window.connect_window_state_event(move |_, event| {
-            let state = event.get_new_window_state();
-            let is_iconified = state.contains(gdk::WindowState::ICONIFIED);
-            psmw_c.is_iconified.set(is_iconified);
-            gtk::Inhibit(false)
-        });
+        let psmw = Rc::new(Self { vbox, binder });
 
         psmw
     }
@@ -337,28 +326,5 @@ impl PaintSeriesManagerWindow {
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.binder.set_target_rgb(rgb);
-    }
-}
-
-pub trait WindowPresentButton {
-    fn window_present_button(&self) -> gtk::Button;
-}
-
-impl WindowPresentButton for Rc<PaintSeriesManagerWindow> {
-    fn window_present_button(&self) -> gtk::Button {
-        let button = gtk::ButtonBuilder::new()
-            .image(&series_paint_image(24).upcast::<gtk::Widget>())
-            .tooltip_text("Open/raise Paint Series Manager.")
-            .build();
-        let self_c = Rc::clone(self);
-        button.connect_clicked(move |_| {
-            // NB: diconify() is unreliable due to window manager interference
-            if self_c.window.get_visible() && !self_c.is_iconified.get() {
-                self_c.window.hide();
-            } else {
-                self_c.window.present();
-            }
-        });
-        button
     }
 }

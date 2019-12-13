@@ -193,6 +193,8 @@ pub mod window {
     use pw_gix::wrapper::*;
 
     use apaint_gtk_boilerplate::PWO;
+    use gdk::enums::key::s;
+    use pw_gix::gtkx::window::RememberGeometry;
 
     #[derive(PWO)]
     pub struct PersistentWindowButton {
@@ -231,11 +233,46 @@ pub mod window {
             self
         }
 
+        pub fn window_title(self, title: &str) -> Self {
+            self.window.set_title(title);
+            self
+        }
+
+        pub fn window_icon(self, icon: &gdk_pixbuf::Pixbuf) -> Self {
+            self.window.set_icon(Some(icon));
+            self
+        }
+
+        pub fn window_child<P: IsA<gtk::Widget>>(self, widget: &P) -> Self {
+            self.window.add(widget);
+            self
+        }
+
+        pub fn window_geometry(
+            self,
+            saved_geometry_key: Option<&str>,
+            default_size: (i32, i32),
+        ) -> Self {
+            if let Some(saved_geometry_key) = saved_geometry_key {
+                self.window
+                    .set_geometry_from_recollections(saved_geometry_key, default_size);
+            } else {
+                self.window
+                    .set_default_geometry(default_size.0, default_size.1);
+            }
+            self
+        }
+
         pub fn build(self) -> Rc<PersistentWindowButton> {
             let pwb = Rc::new(PersistentWindowButton {
                 button: self.button,
                 window: self.window,
                 is_iconified: self.is_iconified,
+            });
+
+            pwb.window.connect_delete_event(|w, _| {
+                w.hide_on_delete();
+                gtk::Inhibit(true)
             });
 
             let pwb_c = Rc::clone(&pwb);

@@ -14,13 +14,15 @@ use apaint_gtk_boilerplate::PWO;
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint};
 
+use crate::window::PersistentWindowButtonBuilder;
 use crate::{
     attributes::ColourAttributeDisplayStack,
     colour::RGB,
     hue_wheel::GtkHueWheel,
+    icon_image::series_paint_image,
     list::{ColouredItemListView, PaintListHelper},
     mixer::component::PartsSpinButtonBox,
-    series::{PaintSeriesManagerWindow, WindowPresentButton},
+    series::PaintSeriesManager,
 };
 
 #[derive(PWO)]
@@ -120,7 +122,7 @@ pub struct TargetedPaintMixer {
     list_view: Rc<ColouredItemListView>,
     mix_entry: Rc<TargetedPaintEntry>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
-    paint_series_manager: Rc<PaintSeriesManagerWindow>,
+    paint_series_manager: Rc<PaintSeriesManager>,
 }
 
 impl TargetedPaintMixer {
@@ -132,15 +134,15 @@ impl TargetedPaintMixer {
         let mix_entry = TargetedPaintEntry::new(attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, false);
-        let paint_series_manager = PaintSeriesManagerWindow::new(attributes, characteristics);
-
+        let paint_series_manager = PaintSeriesManager::new(attributes, characteristics);
+        let persistent_window_btn = PersistentWindowButtonBuilder::new()
+            .icon(&series_paint_image(24))
+            .window_child(&paint_series_manager.pwo())
+            .window_title("Paint Series Manager")
+            .window_geometry(Some("paint_series_manager"), (300, 200))
+            .build();
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        button_box.pack_start(
-            &paint_series_manager.window_present_button(),
-            false,
-            false,
-            0,
-        );
+        button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
         vbox.pack_start(&button_box, false, false, 0);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         paned.add1(&hue_wheel.pwo());
