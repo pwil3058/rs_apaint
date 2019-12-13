@@ -2,6 +2,8 @@
 use std::{
     cell::{Cell, RefCell},
     collections::HashMap,
+    fs::File,
+    path::Path,
     rc::Rc,
 };
 
@@ -23,7 +25,7 @@ use apaint::{
     characteristics::CharacteristicType,
     hue_wheel::MakeColouredShape,
     series::{SeriesPaint, SeriesPaintSeries},
-    spec::SeriesId,
+    spec::{BasicPaintSeriesSpec, SeriesId},
 };
 
 use crate::icon_image::series_paint_load_image;
@@ -144,6 +146,7 @@ pub struct SeriesBinder {
     menu_items: Vec<MenuItemSpec>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
+    target_rgb: RefCell<Option<RGB>>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
 }
 
@@ -167,6 +170,7 @@ impl SeriesBinder {
             menu_items: menu_items.to_vec(),
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
+            target_rgb: RefCell::new(None),
             callbacks,
         })
     }
@@ -208,8 +212,16 @@ impl SeriesBinder {
     }
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
-        for page in self.pages.borrow().iter() {
-            page.set_target_rgb(rgb);
+        if let Some(rgb) = rgb {
+            *self.target_rgb.borrow_mut() = Some(*rgb);
+            for page in self.pages.borrow().iter() {
+                page.set_target_rgb(Some(rgb));
+            }
+        } else {
+            *self.target_rgb.borrow_mut() = None;
+            for page in self.pages.borrow().iter() {
+                page.set_target_rgb(None);
+            }
         }
     }
 
@@ -233,6 +245,7 @@ impl SeriesBinder {
 
 pub trait RcSeriesBinder {
     fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error>;
+    fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error>;
 }
 
 impl RcSeriesBinder for Rc<SeriesBinder> {
@@ -268,6 +281,9 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     &self.attributes,
                     &self.characteristics,
                 );
+                if let Some(rgb) = &self.target_rgb.borrow().as_ref() {
+                    new_page.set_target_rgb(Some(rgb));
+                };
                 for menu_item in self.menu_items.iter() {
                     let self_c = Rc::clone(self);
                     let item_name_c = menu_item.name().to_string();
@@ -281,10 +297,20 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     Some(&menu_label),
                     Some(index as u32),
                 );
+                self.notebook.show_all();
                 self.pages.borrow_mut().insert(index, new_page);
                 Ok(())
             }
         }
+    }
+
+    fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error> {
+        // TODO: check for duplicate files
+        let mut file = File::open(path)?;
+        let new_series_spec = BasicPaintSeriesSpec::<f64>::read(&mut file)?;
+        self.add_series((&new_series_spec).into())?;
+        // TODO: adjust date for detecting duplicates
+        Ok(())
     }
 }
 
@@ -337,6 +363,7 @@ impl PaintSeriesManager {
         };
         if let Some(path) = self.ask_file_path(Some("Collection File Name:"), last_file, true) {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
+            self.binder.add_series_from_file(&abs_path)?;
         };
         Ok(())
     }

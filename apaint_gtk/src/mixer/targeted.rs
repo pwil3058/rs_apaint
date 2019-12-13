@@ -21,9 +21,11 @@ use crate::{
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
     list::{ColouredItemListView, PaintListHelper},
-    mixer::component::PartsSpinButtonBox,
+    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
     series::PaintSeriesManager,
 };
+use apaint::colour_mix::ColourMixer;
+use apaint::hue_wheel::MakeColouredShape;
 
 #[derive(PWO)]
 pub struct TargetedPaintEntry {
@@ -133,7 +135,7 @@ impl TargetedPaintMixer {
         let list_view = ColouredItemListView::new(&helper.column_types(), &helper.columns(), &[]);
         let mix_entry = TargetedPaintEntry::new(attributes);
         let series_paint_spinner_box =
-            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, false);
+            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
         let paint_series_manager = PaintSeriesManager::new(attributes, characteristics);
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
             .icon(&series_paint_image(24))
@@ -153,13 +155,41 @@ impl TargetedPaintMixer {
         vbox.pack_start(&list_view.pwo(), true, true, 0);
         vbox.show_all();
 
-        Rc::new(Self {
+        let tpm = Rc::new(Self {
             vbox,
             hue_wheel,
             list_view,
             mix_entry,
             series_paint_spinner_box,
             paint_series_manager,
-        })
+        });
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.paint_series_manager
+            .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.series_paint_spinner_box
+            .connect_contributions_changed(move || tpm_c.contributions_changed());
+
+        tpm
+    }
+
+    fn add_series_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+        self.series_paint_spinner_box.add_paint(paint);
+        self.hue_wheel.add_item(paint.coloured_shape());
+    }
+
+    fn contributions_changed(&self) {
+        let contributions = self.series_paint_spinner_box.rgb_contributions();
+        let mut colour_mixer = ColourMixer::new();
+        for (rgb, parts) in contributions.iter() {
+            colour_mixer.add(rgb, *parts);
+        }
+        if let Some(rgb) = colour_mixer.mixture() {
+            self.mix_entry.set_mix_rgb(Some(&rgb));
+        } else {
+            self.mix_entry.set_mix_rgb(None);
+        }
     }
 }
