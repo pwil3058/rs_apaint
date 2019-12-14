@@ -1,19 +1,10 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::{
-    cell::{Cell, RefCell},
-    collections::HashMap,
-    fs::File,
-    path::Path,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, fs::File, path::Path, rc::Rc};
 
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::{
-        notebook::{TabRemoveLabel, TabRemoveLabelInterface},
-        window::RememberGeometry,
-    },
+    gtkx::notebook::{TabRemoveLabel, TabRemoveLabelInterface},
     recollections::recall,
     sav_state::{MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
@@ -32,7 +23,6 @@ use crate::icon_image::series_paint_load_image;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
-    icon_image::series_paint_image,
     list::{ColouredItemListView, PaintListHelper, PaintListRow},
     managed_menu::MenuItemSpec,
 };

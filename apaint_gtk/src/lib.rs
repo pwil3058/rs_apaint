@@ -193,7 +193,6 @@ pub mod window {
     use pw_gix::wrapper::*;
 
     use apaint_gtk_boilerplate::PWO;
-    use gdk::enums::key::s;
     use pw_gix::gtkx::window::RememberGeometry;
 
     #[derive(PWO)]

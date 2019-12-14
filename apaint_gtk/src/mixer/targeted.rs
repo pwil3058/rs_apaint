@@ -181,10 +181,9 @@ impl TargetedPaintMixer {
     }
 
     fn contributions_changed(&self) {
-        let contributions = self.series_paint_spinner_box.rgb_contributions();
         let mut colour_mixer = ColourMixer::new();
-        for (rgb, parts) in contributions.iter() {
-            colour_mixer.add(rgb, *parts);
+        for (rgb, parts) in self.series_paint_spinner_box.rgb_contributions() {
+            colour_mixer.add(&rgb, parts);
         }
         if let Some(rgb) = colour_mixer.mixture() {
             self.mix_entry.set_mix_rgb(Some(&rgb));

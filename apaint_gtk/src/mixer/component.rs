@@ -168,14 +168,11 @@ where
     }
 
     pub fn rgb_contributions(&self) -> Vec<(RGB, u64)> {
-        let mut v = vec![];
-        for spinner in self.spinners.borrow().iter() {
-            let (rgb, parts) = spinner.rgb_parts();
-            if parts > 0 {
-                v.push((rgb, parts));
-            }
-        }
-        v
+        self.spinners
+            .borrow()
+            .iter()
+            .map(|s| s.rgb_parts())
+            .collect()
     }
 
     fn binary_search_paint(&self, paint: &P) -> Result<usize, usize> {

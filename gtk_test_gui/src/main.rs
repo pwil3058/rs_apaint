@@ -78,23 +78,6 @@ fn main() {
         ],
     );
     vbox.pack_start(&mixer.pwo(), false, false, 0);
-    let binder = SeriesBinder::new(
-        &[("test", "Test", None, "testing", 0).into()],
-        &[ScalarAttribute::Value, ScalarAttribute::Greyness],
-        &[
-            CharacteristicType::Finish,
-            CharacteristicType::Transparency,
-            CharacteristicType::Fluorescence,
-            CharacteristicType::Metallicness,
-        ],
-    );
-    binder.connect_popup_menu_item("test", |paint| println!("{:?}", paint));
-    let mut file = File::open("./test_saved_file.json").unwrap();
-    let paint_series_spec = BasicPaintSeriesSpec::<f64>::read(&mut file).unwrap();
-    binder
-        .add_series((&paint_series_spec).into())
-        .expect("should be OK");
-    vbox.pack_start(&binder.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());
