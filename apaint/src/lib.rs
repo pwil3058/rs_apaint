@@ -11,6 +11,7 @@ pub mod characteristics;
 pub mod colour_mix;
 pub mod drawing;
 pub mod hue_wheel;
+pub mod mixtures;
 pub mod series;
 pub mod spec;
 pub mod xpm;
