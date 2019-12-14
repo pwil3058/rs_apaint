@@ -17,6 +17,7 @@ use crate::{
 #[derive(Debug, Colour)]
 pub struct MixedPaint<F: ColourComponent> {
     rgb: RGB<F>,
+    targeted_rgb: Option<RGB<F>>,
     id: String,
     name: String,
     notes: String,
@@ -26,6 +27,16 @@ pub struct MixedPaint<F: ColourComponent> {
     fluorescence: f64,
     metallicness: f64,
     components: Vec<(Paint<F>, u64)>,
+}
+
+impl<F: ColourComponent> MixedPaint<F> {
+    pub fn targeted_rgb(&self) -> Option<&RGB<F>> {
+        if let Some(ref rgb) = self.targeted_rgb {
+            Some(rgb)
+        } else {
+            None
+        }
+    }
 }
 
 impl<F: ColourComponent> BasicPaintIfce<F> for MixedPaint<F> {
@@ -83,6 +94,7 @@ pub struct MixedPaintBuilder<F: ColourComponent> {
     notes: String,
     series_components: Vec<(Rc<SeriesPaint<F>>, u64)>,
     mixture_components: Vec<(Rc<MixedPaint<F>>, u64)>,
+    targeted_rgb: Option<RGB<F>>,
 }
 
 impl<F: ColourComponent> MixedPaintBuilder<F> {
@@ -93,6 +105,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
             notes: String::new(),
             series_components: vec![],
             mixture_components: vec![],
+            targeted_rgb: None,
         }
     }
 
@@ -155,6 +168,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
         let divisor = total_adjusted_parts as f64;
         let mp = MixedPaint::<F> {
             rgb: rgb_sum.into(),
+            targeted_rgb: self.targeted_rgb,
             id: self.id,
             name: self.name,
             notes: self.notes,
