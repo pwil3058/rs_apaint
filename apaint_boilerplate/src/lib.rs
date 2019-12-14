@@ -41,12 +41,15 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let mut abbrev_tokens = vec![];
     let mut full_tokens = vec![];
     let mut from_tokens = vec![];
+    let mut from_f64_tokens = vec![];
+    let mut to_f64_tokens = vec![];
     let mut value_tokens = vec![];
     let mut first: Option<Ident> = None;
     let mut default: Option<Ident> = None;
     let fmt_str = format!("\"{{}}\": Malformed '{}' value string", name);
     match parsed_input.data {
         Data::Enum(e) => {
+            let mut count: u64 = 1;
             for v in e.variants {
                 let v_name = v.ident.clone();
                 if first.is_none() {
@@ -75,6 +78,15 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
                     #v_abbrev | #v_full => Ok(#enum_name::#v_name),
                 };
                 from_tokens.push(from_token);
+                let from_f64_token = quote! {
+                    #count => #enum_name::#v_name,
+                };
+                from_f64_tokens.push(from_f64_token);
+                let to_f64_token = quote! {
+                    #enum_name::#v_name => #count as f64,
+                };
+                to_f64_tokens.push(to_f64_token);
+                count += 1;
             }
         }
         _ => panic!("'Characteristic' can only be derived for enums."),
@@ -114,6 +126,23 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
                 match string {
                     #(#from_tokens)*
                     _ => Err(format!(#fmt_str, string)),
+                }
+            }
+        }
+
+        impl std::convert::From<f64> for #enum_name {
+            fn from(float: f64) -> #enum_name {
+                match float.round() as u64 {
+                    #(#from_f64_tokens)*
+                    _ => panic!("u64: {} out of range for '{}'", float, #name),
+                }
+            }
+        }
+
+        impl std::convert::From<#enum_name> for f64 {
+            fn from(arg: #enum_name) -> f64 {
+                match arg {
+                    #(#to_f64_tokens)*
                 }
             }
         }
