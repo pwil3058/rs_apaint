@@ -4,14 +4,15 @@ use std::rc::Rc;
 
 use num::Integer;
 
-use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
+use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB};
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
     series::SeriesPaint,
-    BasicPaintIfce,
+    BasicPaintIfce, LabelText, TooltipText,
 };
 
 #[derive(Debug, Colour)]
@@ -81,10 +82,35 @@ impl<F: ColourComponent> BasicPaintIfce<F> for MixedPaint<F> {
     }
 }
 
-#[derive(Debug)]
-pub enum Paint<F: ColourComponent> {
-    Series(Rc<SeriesPaint<F>>),
-    Mixed(Rc<MixedPaint<F>>),
+impl<F: ColourComponent> TooltipText for MixedPaint<F> {
+    fn tooltip_text(&self) -> String {
+        let mut string = self.label_text();
+        if let Some(notes) = self.notes() {
+            string.push('\n');
+            string.push_str(notes);
+        };
+
+        string
+    }
+}
+
+impl<F: ColourComponent> LabelText for MixedPaint<F> {
+    fn label_text(&self) -> String {
+        if let Some(name) = self.name() {
+            format!("Mix {}: {}", self.id, name)
+        } else if let Some(notes) = self.notes() {
+            format!("Mix {}: {}", self.id, notes)
+        } else {
+            format!("Mix {}: {}", self.id, self.rgb().pango_string())
+        }
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for MixedPaint<F> {
+    fn coloured_shape(&self) -> ColouredShape<F> {
+        let tooltip_text = self.tooltip_text();
+        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Diamond)
+    }
 }
 
 #[derive(Debug)]
@@ -111,7 +137,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
 
     pub fn build(self) -> Rc<MixedPaint<F>> {
         debug_assert!((self.series_components.len() + self.mixture_components.len()) > 0);
-        let mut gcd: u64 = 1;
+        let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
             debug_assert!(*parts > 0);
             gcd = gcd.gcd(parts);
@@ -180,5 +206,171 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
             components,
         };
         Rc::new(mp)
+    }
+}
+
+#[derive(Debug)]
+pub enum Paint<F: ColourComponent> {
+    Series(Rc<SeriesPaint<F>>),
+    Mixed(Rc<MixedPaint<F>>),
+}
+
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Paint<F> {
+    fn coloured_shape(&self) -> ColouredShape<F> {
+        match self {
+            Paint::Series(paint) => paint.coloured_shape(),
+            Paint::Mixed(paint) => paint.coloured_shape(),
+        }
+    }
+}
+
+impl<F: ColourComponent> ColourInterface<F> for Paint<F> {
+    fn rgb(&self) -> RGB<F> {
+        match self {
+            Paint::Series(paint) => paint.rgb(),
+            Paint::Mixed(paint) => paint.rgb(),
+        }
+    }
+
+    fn rgba(&self, alpha: F) -> [F; 4] {
+        match self {
+            Paint::Series(paint) => paint.rgba(alpha),
+            Paint::Mixed(paint) => paint.rgba(alpha),
+        }
+    }
+
+    fn hue(&self) -> Option<Hue<F>> {
+        match self {
+            Paint::Series(paint) => paint.hue(),
+            Paint::Mixed(paint) => paint.hue(),
+        }
+    }
+
+    fn hue_angle(&self) -> Option<Degrees<F>> {
+        match self {
+            Paint::Series(paint) => paint.hue_angle(),
+            Paint::Mixed(paint) => paint.hue_angle(),
+        }
+    }
+
+    fn is_grey(&self) -> bool {
+        match self {
+            Paint::Series(paint) => paint.is_grey(),
+            Paint::Mixed(paint) => paint.is_grey(),
+        }
+    }
+
+    fn chroma(&self) -> F {
+        match self {
+            Paint::Series(paint) => paint.chroma(),
+            Paint::Mixed(paint) => paint.chroma(),
+        }
+    }
+
+    fn max_chroma_rgb(&self) -> RGB<F> {
+        match self {
+            Paint::Series(paint) => paint.max_chroma_rgb(),
+            Paint::Mixed(paint) => paint.max_chroma_rgb(),
+        }
+    }
+
+    fn greyness(&self) -> F {
+        match self {
+            Paint::Series(paint) => paint.greyness(),
+            Paint::Mixed(paint) => paint.greyness(),
+        }
+    }
+
+    fn value(&self) -> F {
+        match self {
+            Paint::Series(paint) => paint.value(),
+            Paint::Mixed(paint) => paint.value(),
+        }
+    }
+
+    fn monochrome_rgb(&self) -> RGB<F> {
+        match self {
+            Paint::Series(paint) => paint.monochrome_rgb(),
+            Paint::Mixed(paint) => paint.monochrome_rgb(),
+        }
+    }
+
+    fn warmth(&self) -> F {
+        match self {
+            Paint::Series(paint) => paint.warmth(),
+            Paint::Mixed(paint) => paint.warmth(),
+        }
+    }
+
+    fn warmth_rgb(&self) -> RGB<F> {
+        match self {
+            Paint::Series(paint) => paint.warmth_rgb(),
+            Paint::Mixed(paint) => paint.warmth_rgb(),
+        }
+    }
+
+    fn best_foreground_rgb(&self) -> RGB<F> {
+        match self {
+            Paint::Series(paint) => paint.best_foreground_rgb(),
+            Paint::Mixed(paint) => paint.best_foreground_rgb(),
+        }
+    }
+}
+
+impl<F: ColourComponent> BasicPaintIfce<F> for Paint<F> {
+    fn id(&self) -> &str {
+        match self {
+            Paint::Series(paint) => paint.id(),
+            Paint::Mixed(paint) => paint.id(),
+        }
+    }
+
+    fn name(&self) -> Option<&str> {
+        match self {
+            Paint::Series(paint) => paint.name(),
+            Paint::Mixed(paint) => paint.name(),
+        }
+    }
+
+    fn notes(&self) -> Option<&str> {
+        match self {
+            Paint::Series(paint) => paint.notes(),
+            Paint::Mixed(paint) => paint.notes(),
+        }
+    }
+
+    fn finish(&self) -> Finish {
+        match self {
+            Paint::Series(paint) => paint.finish(),
+            Paint::Mixed(paint) => paint.finish(),
+        }
+    }
+
+    fn transparency(&self) -> Transparency {
+        match self {
+            Paint::Series(paint) => paint.transparency(),
+            Paint::Mixed(paint) => paint.transparency(),
+        }
+    }
+
+    fn fluorescence(&self) -> Fluorescence {
+        match self {
+            Paint::Series(paint) => paint.fluorescence(),
+            Paint::Mixed(paint) => paint.fluorescence(),
+        }
+    }
+
+    fn permanence(&self) -> Permanence {
+        match self {
+            Paint::Series(paint) => paint.permanence(),
+            Paint::Mixed(paint) => paint.permanence(),
+        }
+    }
+
+    fn metallicness(&self) -> Metallicness {
+        match self {
+            Paint::Series(paint) => paint.metallicness(),
+            Paint::Mixed(paint) => paint.metallicness(),
+        }
     }
 }
