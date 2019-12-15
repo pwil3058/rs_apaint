@@ -15,7 +15,7 @@ use pw_gix::{
 
 use colour_math::ScalarAttribute;
 
-use apaint_gtk_boilerplate::PWO;
+use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use apaint::{
     characteristics::CharacteristicType, colour_mix::ColourMixer, hue_wheel::MakeColouredShape,
@@ -127,7 +127,7 @@ impl TargetedPaintEntry {
     }
 }
 
-#[derive(PWO)]
+#[derive(PWO, Wrapper)]
 pub struct TargetedPaintMixer {
     vbox: gtk::Box,
     hue_wheel: Rc<GtkHueWheel>,
@@ -136,6 +136,7 @@ pub struct TargetedPaintMixer {
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     paint_series_manager: Rc<PaintSeriesManager>,
+    attributes: Vec<ScalarAttribute>,
 }
 
 impl TargetedPaintMixer {
@@ -210,6 +211,7 @@ impl TargetedPaintMixer {
             buttons,
             series_paint_spinner_box,
             paint_series_manager,
+            attributes: attributes.to_vec(),
         });
 
         let buttons_c = Rc::clone(&tpm.buttons);
@@ -236,7 +238,7 @@ impl TargetedPaintMixer {
             .connect_contributions_changed(move || tpm_c.contributions_changed());
 
         let tpm_c = Rc::clone(&tpm);
-        new_mix_btn.connect_clicked(move |_| tpm_c.start_new_mixture());
+        new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
 
         tpm
     }
@@ -266,8 +268,29 @@ impl TargetedPaintMixer {
         }
     }
 
-    fn start_new_mixture(&self) {
-        println!("start mixing a new colour!!!")
+    fn ask_start_new_mixture(&self) {
+        let tpe = TargetPaintEntry::new(&self.attributes);
+        let dialog = self.new_dialog_with_buttons(
+            Some("New Mixed Paint Target Colour"),
+            gtk::DialogFlags::DESTROY_WITH_PARENT,
+            CANCEL_OK_BUTTONS,
+        );
+        dialog
+            .get_content_area()
+            .pack_start(&tpe.pwo(), true, true, 0);
+        if dialog.run() == gtk::ResponseType::Ok {
+            let rgb = tpe.colour_editor.rgb();
+            self.set_target_rgb(Some(&rgb));
+            if let Some(text) = tpe.name_entry.get_text() {
+                self.mix_entry.name_entry.set_text(&text);
+            };
+            if let Some(text) = tpe.notes_entry.get_text() {
+                self.mix_entry.notes_entry.set_text(&text);
+            };
+            dialog.destroy();
+        } else {
+            dialog.destroy();
+        }
     }
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
@@ -293,5 +316,31 @@ struct TargetPaintEntry {
     vbox: gtk::Box,
     name_entry: gtk::Entry,
     notes_entry: gtk::Entry,
-    colour_editor: ColourEdiror,
+    colour_editor: Rc<ColourEditor>,
+}
+
+impl TargetPaintEntry {
+    fn new(attributes: &[ScalarAttribute]) -> Self {
+        // TODO: remember auto match on paste value
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let name_entry = gtk::EntryBuilder::new().build();
+        let notes_entry = gtk::EntryBuilder::new().build();
+        let colour_editor = ColourEditor::new(attributes, &[]);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some(" Name:")), false, false, 0);
+        hbox.pack_start(&name_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
+        hbox.pack_start(&notes_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        vbox.pack_start(&colour_editor.pwo(), true, true, 0);
+        vbox.show_all();
+        Self {
+            vbox,
+            name_entry,
+            notes_entry,
+            colour_editor,
+        }
+    }
 }
