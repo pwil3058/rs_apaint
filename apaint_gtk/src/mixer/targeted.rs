@@ -9,7 +9,7 @@ use cairo;
 use pw_gix::{
     cairox::*,
     gtkx::paned::RememberPosition,
-    sav_state::{ConditionalWidgetGroups, WidgetStatesControlled, SAV_NEXT_CONDN},
+    sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
 };
 
@@ -25,6 +25,7 @@ use apaint::{
 use crate::{
     attributes::ColourAttributeDisplayStack,
     colour::RGB,
+    colour_edit::ColourEditor,
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
     list::{ColouredItemListView, PaintListHelper, PaintListRow},
@@ -32,7 +33,6 @@ use crate::{
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
 };
-use pw_gix::sav_state::MaskedCondns;
 
 // TODO: modify PaintListRow for MixedPaint to included target RGB
 impl PaintListRow for MixedPaint<f64> {}
@@ -173,14 +173,30 @@ impl TargetedPaintMixer {
             None,
             None,
         );
+        buttons.update_condns(MaskedCondns {
+            condns: Self::SAV_NOT_HAS_TARGET,
+            mask: Self::HAS_TARGET_MASK,
+        });
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
+
+        let new_mix_btn = gtk::ButtonBuilder::new()
+            .label("New")
+            .tooltip_text("Start mixing a new colour.")
+            .build();
+        buttons.add_widget("new_mix", &new_mix_btn, Self::SAV_NOT_HAS_TARGET);
+        button_box.pack_start(&new_mix_btn, true, true, 0);
+
+        let accept_btn = gtk::ButtonBuilder::new()
+            .label("Accept")
+            .tooltip_text("Accept the current mixture and add it to the list of mixtures.")
+            .build();
         buttons.add_widget(
             "accept",
             &accept_btn,
             Self::SAV_HAS_COLOUR + Self::SAV_HAS_TARGET + Self::SAV_HAS_NAME,
         );
         button_box.pack_start(&accept_btn, true, true, 0);
+
         vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
@@ -219,6 +235,9 @@ impl TargetedPaintMixer {
         tpm.series_paint_spinner_box
             .connect_contributions_changed(move || tpm_c.contributions_changed());
 
+        let tpm_c = Rc::clone(&tpm);
+        new_mix_btn.connect_clicked(move |_| tpm_c.start_new_mixture());
+
         tpm
     }
 
@@ -247,6 +266,10 @@ impl TargetedPaintMixer {
         }
     }
 
+    fn start_new_mixture(&self) {
+        println!("start mixing a new colour!!!")
+    }
+
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.hue_wheel.set_target_rgb(rgb);
         self.mix_entry.set_target_rgb(rgb);
@@ -263,4 +286,12 @@ impl TargetedPaintMixer {
             });
         }
     }
+}
+
+#[derive(PWO)]
+struct TargetPaintEntry {
+    vbox: gtk::Box,
+    name_entry: gtk::Entry,
+    notes_entry: gtk::Entry,
+    colour_editor: ColourEdiror,
 }
