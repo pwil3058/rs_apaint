@@ -6,26 +6,36 @@ use gtk::prelude::*;
 
 use cairo;
 
-use pw_gix::{cairox::*, gtkx::paned::RememberPosition, wrapper::*};
+use pw_gix::{
+    cairox::*,
+    gtkx::paned::RememberPosition,
+    sav_state::{ConditionalWidgetGroups, WidgetStatesControlled, SAV_NEXT_CONDN},
+    wrapper::*,
+};
 
 use colour_math::ScalarAttribute;
 
 use apaint_gtk_boilerplate::PWO;
 
-use apaint::{characteristics::CharacteristicType, series::SeriesPaint};
+use apaint::{
+    characteristics::CharacteristicType, colour_mix::ColourMixer, hue_wheel::MakeColouredShape,
+    mixtures::MixedPaint, series::SeriesPaint,
+};
 
-use crate::window::PersistentWindowButtonBuilder;
 use crate::{
     attributes::ColourAttributeDisplayStack,
     colour::RGB,
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
-    list::{ColouredItemListView, PaintListHelper},
+    list::{ColouredItemListView, PaintListHelper, PaintListRow},
     mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
     series::PaintSeriesManager,
+    window::PersistentWindowButtonBuilder,
 };
-use apaint::colour_mix::ColourMixer;
-use apaint::hue_wheel::MakeColouredShape;
+use pw_gix::sav_state::MaskedCondns;
+
+// TODO: modify PaintListRow for MixedPaint to included target RGB
+impl PaintListRow for MixedPaint<f64> {}
 
 #[derive(PWO)]
 pub struct TargetedPaintEntry {
@@ -123,11 +133,18 @@ pub struct TargetedPaintMixer {
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
     mix_entry: Rc<TargetedPaintEntry>,
+    buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     paint_series_manager: Rc<PaintSeriesManager>,
 }
 
 impl TargetedPaintMixer {
+    const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN << 0;
+    const SAV_HAS_TARGET: u64 = SAV_NEXT_CONDN << 1;
+    const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
+    const HAS_TARGET_MASK: u64 = Self::SAV_HAS_TARGET + Self::SAV_NOT_HAS_TARGET;
+    const SAV_HAS_NAME: u64 = SAV_NEXT_CONDN << 3;
+
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let hue_wheel = GtkHueWheel::new(&[], attributes);
@@ -151,6 +168,20 @@ impl TargetedPaintMixer {
         paned.add2(&mix_entry.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
         vbox.pack_start(&paned, true, true, 0);
+        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
+            WidgetStatesControlled::Sensitivity,
+            None,
+            None,
+        );
+        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
+        buttons.add_widget(
+            "accept",
+            &accept_btn,
+            Self::SAV_HAS_COLOUR + Self::SAV_HAS_TARGET + Self::SAV_HAS_NAME,
+        );
+        button_box.pack_start(&accept_btn, true, true, 0);
+        vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
         vbox.show_all();
@@ -160,8 +191,24 @@ impl TargetedPaintMixer {
             hue_wheel,
             list_view,
             mix_entry,
+            buttons,
             series_paint_spinner_box,
             paint_series_manager,
+        });
+
+        let buttons_c = Rc::clone(&tpm.buttons);
+        tpm.mix_entry.name_entry.connect_changed(move |entry| {
+            if entry.get_text_length() > 0 {
+                buttons_c.update_condns(MaskedCondns {
+                    condns: Self::SAV_HAS_NAME,
+                    mask: Self::SAV_HAS_NAME,
+                });
+            } else {
+                buttons_c.update_condns(MaskedCondns {
+                    condns: 0,
+                    mask: Self::SAV_HAS_NAME,
+                });
+            }
         });
 
         let tpm_c = Rc::clone(&tpm);
@@ -187,8 +234,33 @@ impl TargetedPaintMixer {
         }
         if let Some(rgb) = colour_mixer.mixture() {
             self.mix_entry.set_mix_rgb(Some(&rgb));
+            self.buttons.update_condns(MaskedCondns {
+                condns: Self::SAV_HAS_COLOUR,
+                mask: Self::SAV_HAS_COLOUR,
+            });
         } else {
             self.mix_entry.set_mix_rgb(None);
+            self.buttons.update_condns(MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_HAS_COLOUR,
+            });
+        }
+    }
+
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        self.hue_wheel.set_target_rgb(rgb);
+        self.mix_entry.set_target_rgb(rgb);
+        self.paint_series_manager.set_target_rgb(rgb);
+        if rgb.is_some() {
+            self.buttons.update_condns(MaskedCondns {
+                condns: Self::SAV_HAS_TARGET,
+                mask: Self::HAS_TARGET_MASK,
+            });
+        } else {
+            self.buttons.update_condns(MaskedCondns {
+                condns: Self::SAV_NOT_HAS_TARGET,
+                mask: Self::HAS_TARGET_MASK,
+            });
         }
     }
 }
