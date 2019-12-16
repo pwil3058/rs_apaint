@@ -114,6 +114,58 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for MixedPaint<F> {
 }
 
 #[derive(Debug)]
+pub struct MixingSession<F: ColourComponent> {
+    notes: String,
+    mixtures: Vec<Rc<MixedPaint<F>>>,
+}
+
+impl<F: ColourComponent> MixingSession<F> {
+    pub fn new() -> Self {
+        Self {
+            notes: String::new(),
+            mixtures: vec![],
+        }
+    }
+
+    pub fn notes(&self) -> &str {
+        &self.notes
+    }
+
+    pub fn set_notes(&mut self, notes: &str) {
+        self.notes = notes.to_string()
+    }
+
+    pub fn mixtures(&self) -> impl Iterator<Item = &Rc<MixedPaint<F>>> {
+        self.mixtures.iter()
+    }
+
+    pub fn add_mixture(&mut self, mixture: &Rc<MixedPaint<F>>) -> Option<Rc<MixedPaint<F>>> {
+        debug_assert!(self.is_sorted_unique());
+        match self.mixtures.binary_search_by(|p| p.id().cmp(mixture.id())) {
+            Ok(index) => {
+                self.mixtures.push(Rc::clone(mixture));
+                let old = self.mixtures.swap_remove(index);
+                debug_assert!(self.is_sorted_unique());
+                Some(old)
+            }
+            Err(index) => {
+                self.mixtures.insert(index, Rc::clone(mixture));
+                None
+            }
+        }
+    }
+
+    pub fn is_sorted_unique(&self) -> bool {
+        for i in 1..self.mixtures.len() {
+            if self.mixtures[i].id() <= self.mixtures[i - 1].id() {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+#[derive(Debug)]
 pub struct MixedPaintBuilder<F: ColourComponent> {
     id: String,
     name: String,
