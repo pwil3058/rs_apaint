@@ -21,8 +21,11 @@ use colour_math::ScalarAttribute;
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use apaint::{
-    characteristics::CharacteristicType, colour_mix::ColourMixer, hue_wheel::MakeColouredShape,
-    mixtures::MixedPaint, series::SeriesPaint,
+    characteristics::CharacteristicType,
+    colour_mix::ColourMixer,
+    hue_wheel::MakeColouredShape,
+    mixtures::{MixedPaint, MixedPaintBuilder},
+    series::SeriesPaint,
 };
 
 use crate::{
@@ -36,6 +39,8 @@ use crate::{
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
 };
+use apaint::mixtures::MixingSession;
+use std::borrow::BorrowMut;
 
 // TODO: modify PaintListRow for MixedPaint to included target RGB
 impl PaintListRow for MixedPaint<f64> {}
@@ -128,13 +133,24 @@ impl TargetedPaintEntry {
         }
         self.drawing_area.queue_draw()
     }
+
+    pub fn target_rgb(&self) -> Option<RGB> {
+        if let Some(rgb) = self.target_rgb.borrow().as_ref() {
+            Some(*rgb)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(PWO, Wrapper)]
 pub struct TargetedPaintMixer {
     vbox: gtk::Box,
+    mixing_session: RefCell<MixingSession<f64>>,
+    notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
+    list_view_helper: PaintListHelper,
     mix_entry: Rc<TargetedPaintEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
@@ -152,6 +168,7 @@ impl TargetedPaintMixer {
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], attributes);
         let helper = PaintListHelper::new(attributes, characteristics);
         let list_view = ColouredItemListView::new(&helper.column_types(), &helper.columns(), &[]);
@@ -168,6 +185,10 @@ impl TargetedPaintMixer {
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
         vbox.pack_start(&button_box, false, false, 0);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
+        hbox.pack_start(&notes_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         paned.add1(&hue_wheel.pwo());
         paned.add2(&mix_entry.pwo());
@@ -209,8 +230,11 @@ impl TargetedPaintMixer {
 
         let tpm = Rc::new(Self {
             vbox,
+            notes_entry,
+            mixing_session: RefCell::new(MixingSession::new()),
             hue_wheel,
             list_view,
+            list_view_helper: helper,
             mix_entry,
             buttons,
             series_paint_spinner_box,
@@ -244,6 +268,9 @@ impl TargetedPaintMixer {
 
         let tpm_c = Rc::clone(&tpm);
         new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
+
+        let tpm_c = Rc::clone(&tpm);
+        accept_btn.connect_clicked(move |_| tpm_c.accept_current_mixture());
 
         tpm
     }
@@ -301,7 +328,6 @@ impl TargetedPaintMixer {
     }
 
     pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
-        println!("'{:?}' '{:?}' {:?} ", name, notes, target_rgb);
         let target_id = self.next_mix_id();
         self.mix_entry.id_label.set_label(&target_id);
         self.mix_entry.name_entry.set_text(name);
@@ -324,6 +350,32 @@ impl TargetedPaintMixer {
                 mask: Self::HAS_TARGET_MASK,
             });
         }
+    }
+
+    pub fn accept_current_mixture(&self) {
+        let mix_id = self.mix_entry.id_label.get_text().unwrap().to_string();
+        let mixed_paint = MixedPaintBuilder::<f64>::new(&mix_id)
+            .name(&self.mix_entry.name_entry.get_text().unwrap_or("".into()))
+            .notes(&self.mix_entry.notes_entry.get_text().unwrap_or("".into()))
+            .targeted_rgb(
+                &self
+                    .mix_entry
+                    .target_rgb()
+                    .expect("should not be accepted without target"),
+            )
+            .series_paint_components(self.series_paint_spinner_box.paint_contributions())
+            .build();
+        self.hue_wheel.add_item(mixed_paint.coloured_shape());
+        self.hue_wheel.add_item(mixed_paint.targeted_rgb_shape());
+        self.list_view
+            .add_row(&mixed_paint.row(&self.list_view_helper));
+        self.mix_entry.id_label.set_label("MIX#???");
+        self.mix_entry.name_entry.set_text("");
+        self.mix_entry.notes_entry.set_text("");
+        self.set_target_rgb(None);
+        self.series_paint_spinner_box.zero_all_parts();
+        // TODO: handle case of duplicate mixed paint
+        self.mixing_session.borrow_mut().add_mixture(&mixed_paint);
     }
 }
 

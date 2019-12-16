@@ -111,6 +111,10 @@ where
         (self.paint.rgb(), self.parts())
     }
 
+    pub fn paint_parts(&self) -> (&Rc<P>, u64) {
+        (&self.paint, self.parts())
+    }
+
     pub fn connect_changed<F: Fn() + 'static>(&self, callback: F) {
         self.changed_callbacks.borrow_mut().push(Box::new(callback));
     }
@@ -172,6 +176,21 @@ where
             .borrow()
             .iter()
             .map(|s| s.rgb_parts())
+            .collect()
+    }
+
+    pub fn paint_contributions(&self) -> Vec<(Rc<P>, u64)> {
+        self.spinners
+            .borrow()
+            .iter()
+            .filter_map(|s| {
+                let (paint, parts) = s.paint_parts();
+                if parts > 0 {
+                    Some((Rc::clone(paint), parts))
+                } else {
+                    None
+                }
+            })
             .collect()
     }
 

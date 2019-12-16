@@ -30,13 +30,23 @@ pub struct MixedPaint<F: ColourComponent> {
     components: Vec<(Paint<F>, u64)>,
 }
 
-impl<F: ColourComponent> MixedPaint<F> {
+impl<F: ColourComponent + ShapeConsts> MixedPaint<F> {
     pub fn targeted_rgb(&self) -> Option<&RGB<F>> {
         if let Some(ref rgb) = self.targeted_rgb {
             Some(rgb)
         } else {
             None
         }
+    }
+    pub fn targeted_rgb_shape(&self) -> ColouredShape<F> {
+        let tooltip_text = format!("Target for: {}", self.tooltip_text());
+        let id = format!("TARGET({})", self.id);
+        ColouredShape::new(
+            self.targeted_rgb.unwrap(),
+            &id,
+            &tooltip_text,
+            Shape::Circle,
+        )
     }
 }
 
@@ -187,7 +197,30 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
         }
     }
 
-    pub fn build(self) -> Rc<MixedPaint<F>> {
+    pub fn name(&mut self, name: &str) -> &mut Self {
+        self.name = name.to_string();
+        self
+    }
+
+    pub fn notes(&mut self, notes: &str) -> &mut Self {
+        self.notes = notes.to_string();
+        self
+    }
+
+    pub fn targeted_rgb(&mut self, rgb: &RGB<F>) -> &mut Self {
+        self.targeted_rgb = Some(*rgb);
+        self
+    }
+
+    pub fn series_paint_components(
+        &mut self,
+        components: Vec<(Rc<SeriesPaint<F>>, u64)>,
+    ) -> &mut Self {
+        self.series_components = components;
+        self
+    }
+
+    pub fn build(&self) -> Rc<MixedPaint<F>> {
         debug_assert!((self.series_components.len() + self.mixture_components.len()) > 0);
         let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
@@ -247,9 +280,9 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
         let mp = MixedPaint::<F> {
             rgb: rgb_sum.into(),
             targeted_rgb: self.targeted_rgb,
-            id: self.id,
-            name: self.name,
-            notes: self.notes,
+            id: self.id.clone(),
+            name: self.name.clone(),
+            notes: self.notes.clone(),
             finish: finish / divisor,
             transparency: transparency / divisor,
             permanence: permanence / divisor,
