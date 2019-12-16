@@ -1,6 +1,9 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+};
 
 use gtk::prelude::*;
 
@@ -52,7 +55,7 @@ pub struct TargetedPaintEntry {
 impl TargetedPaintEntry {
     pub fn new(attributes: &[ScalarAttribute]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let id_label = gtk::LabelBuilder::new().label("#???").build();
+        let id_label = gtk::LabelBuilder::new().label("MIX#???").build();
         let name_entry = gtk::EntryBuilder::new().build();
         let notes_entry = gtk::EntryBuilder::new().build();
         let cads = ColourAttributeDisplayStack::new(attributes);
@@ -137,6 +140,7 @@ pub struct TargetedPaintMixer {
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     paint_series_manager: Rc<PaintSeriesManager>,
     attributes: Vec<ScalarAttribute>,
+    next_mix_id: Cell<u64>,
 }
 
 impl TargetedPaintMixer {
@@ -212,6 +216,7 @@ impl TargetedPaintMixer {
             series_paint_spinner_box,
             paint_series_manager,
             attributes: attributes.to_vec(),
+            next_mix_id: Cell::new(1),
         });
 
         let buttons_c = Rc::clone(&tpm.buttons);
@@ -241,6 +246,12 @@ impl TargetedPaintMixer {
         new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
 
         tpm
+    }
+
+    fn next_mix_id(&self) -> String {
+        let id = format!("MIX#{:03}", self.next_mix_id.get());
+        self.next_mix_id.set(self.next_mix_id.get() + 1);
+        id
     }
 
     fn add_series_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
@@ -279,18 +290,23 @@ impl TargetedPaintMixer {
             .get_content_area()
             .pack_start(&tpe.pwo(), true, true, 0);
         if dialog.run() == gtk::ResponseType::Ok {
-            let rgb = tpe.colour_editor.rgb();
-            self.set_target_rgb(Some(&rgb));
-            if let Some(text) = tpe.name_entry.get_text() {
-                self.mix_entry.name_entry.set_text(&text);
-            };
-            if let Some(text) = tpe.notes_entry.get_text() {
-                self.mix_entry.notes_entry.set_text(&text);
-            };
+            let rgb = tpe.rgb();
+            let name = tpe.name();
+            let notes = tpe.notes();
             dialog.destroy();
+            self.start_new_mixture(&name, &notes, &rgb);
         } else {
             dialog.destroy();
         }
+    }
+
+    pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
+        println!("'{:?}' '{:?}' {:?} ", name, notes, target_rgb);
+        let target_id = self.next_mix_id();
+        self.mix_entry.id_label.set_label(&target_id);
+        self.mix_entry.name_entry.set_text(name);
+        self.mix_entry.notes_entry.set_text(notes);
+        self.set_target_rgb(Some(target_rgb));
     }
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
@@ -323,8 +339,8 @@ impl TargetPaintEntry {
     fn new(attributes: &[ScalarAttribute]) -> Self {
         // TODO: remember auto match on paste value
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let name_entry = gtk::EntryBuilder::new().build();
-        let notes_entry = gtk::EntryBuilder::new().build();
+        let name_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
         let colour_editor = ColourEditor::new(attributes, &[]);
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&gtk::Label::new(Some(" Name:")), false, false, 0);
@@ -342,5 +358,17 @@ impl TargetPaintEntry {
             notes_entry,
             colour_editor,
         }
+    }
+
+    fn name(&self) -> String {
+        self.name_entry.get_text().unwrap_or("".into()).to_string()
+    }
+
+    fn notes(&self) -> String {
+        self.notes_entry.get_text().unwrap_or("".into()).to_string()
+    }
+
+    fn rgb(&self) -> RGB {
+        self.colour_editor.rgb()
     }
 }
