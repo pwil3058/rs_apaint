@@ -26,6 +26,7 @@ use apaint::{
     hue_wheel::MakeColouredShape,
     mixtures::{MixedPaint, MixedPaintBuilder},
     series::SeriesPaint,
+    BasicPaintIfce,
 };
 
 use crate::{
@@ -237,6 +238,13 @@ impl TargetedPaintMixer {
         buttons.add_widget("simplify", &simplify_btn, Self::SAV_HAS_COLOUR);
         button_box.pack_start(&simplify_btn, true, true, 0);
 
+        let zero_parts_btn = gtk::ButtonBuilder::new()
+            .label("Zero All Parts")
+            .tooltip_text("Set the parts for all paints to zero.")
+            .build();
+        buttons.add_widget("zero_parts", &zero_parts_btn, Self::SAV_HAS_COLOUR);
+        button_box.pack_start(&zero_parts_btn, true, true, 0);
+
         vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
@@ -281,6 +289,10 @@ impl TargetedPaintMixer {
             .connect_contributions_changed(move || tpm_c.contributions_changed());
 
         let tpm_c = Rc::clone(&tpm);
+        tpm.series_paint_spinner_box
+            .connect_removal_requested(move |p| tpm_c.process_removal_request(p));
+
+        let tpm_c = Rc::clone(&tpm);
         new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
 
         let tpm_c = Rc::clone(&tpm);
@@ -291,6 +303,9 @@ impl TargetedPaintMixer {
 
         let tpm_c = Rc::clone(&tpm);
         simplify_btn.connect_clicked(move |_| tpm_c.simplify_current_parts());
+
+        let tpm_c = Rc::clone(&tpm);
+        zero_parts_btn.connect_clicked(move |_| tpm_c.zero_all_parts());
 
         tpm
     }
@@ -306,6 +321,11 @@ impl TargetedPaintMixer {
     fn add_series_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
         self.series_paint_spinner_box.add_paint(paint);
         self.hue_wheel.add_item(paint.coloured_shape());
+    }
+
+    fn process_removal_request(&self, paint: &Rc<SeriesPaint<f64>>) {
+        self.series_paint_spinner_box.remove_paint(paint);
+        self.hue_wheel.remove_item(paint.id());
     }
 
     fn contributions_changed(&self) {
@@ -411,6 +431,10 @@ impl TargetedPaintMixer {
     pub fn simplify_current_parts(&self) {
         let gcd = self.series_paint_spinner_box.parts_gcd();
         self.series_paint_spinner_box.div_all_parts_by(gcd);
+    }
+
+    pub fn zero_all_parts(&self) {
+        self.series_paint_spinner_box.zero_all_parts();
     }
 }
 

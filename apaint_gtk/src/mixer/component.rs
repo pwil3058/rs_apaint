@@ -29,7 +29,7 @@ where
     popup_menu: WrappedMenu,
     paint: Rc<P>,
     changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
-    remove_me_callbacks: RefCell<Vec<Box<dyn Fn(&P)>>>,
+    remove_me_callbacks: RefCell<Vec<Box<dyn Fn(&Rc<P>)>>>,
 }
 
 impl<P> PartsSpinButton<P>
@@ -125,7 +125,7 @@ where
         }
     }
 
-    pub fn connect_remove_me<F: Fn(&P) + 'static>(&self, callback: F) {
+    pub fn connect_remove_me<F: Fn(&Rc<P>) + 'static>(&self, callback: F) {
         self.remove_me_callbacks
             .borrow_mut()
             .push(Box::new(callback));
@@ -149,7 +149,7 @@ where
     sensitive: Cell<bool>,
     n_cols: Cell<u32>,
     contributions_changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
-    removal_requested_callbacks: RefCell<Vec<Box<dyn Fn(&P)>>>,
+    removal_requested_callbacks: RefCell<Vec<Box<dyn Fn(&Rc<P>)>>>,
 }
 
 impl<P> PartsSpinButtonBox<P>
@@ -222,7 +222,7 @@ where
         self.frame.show_all()
     }
 
-    pub fn remove_paint(&self, paint: &P) {
+    pub fn remove_paint(&self, paint: &Rc<P>) {
         if let Ok(index) = self.binary_search_paint(paint) {
             let spinner = self.spinners.borrow_mut().remove(index);
             self.repack_all();
@@ -244,13 +244,13 @@ where
         }
     }
 
-    pub fn connect_removal_requested<F: Fn(&P) + 'static>(&self, callback: F) {
+    pub fn connect_removal_requested<F: Fn(&Rc<P>) + 'static>(&self, callback: F) {
         self.removal_requested_callbacks
             .borrow_mut()
             .push(Box::new(callback));
     }
 
-    fn inform_removal_requested(&self, paint: &P) {
+    fn inform_removal_requested(&self, paint: &Rc<P>) {
         for callback in self.removal_requested_callbacks.borrow().iter() {
             callback(paint);
         }
