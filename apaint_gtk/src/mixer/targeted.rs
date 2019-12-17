@@ -230,6 +230,13 @@ impl TargetedPaintMixer {
         buttons.add_widget("cancel", &cancel_btn, Self::SAV_HAS_TARGET);
         button_box.pack_start(&cancel_btn, true, true, 0);
 
+        let simplify_btn = gtk::ButtonBuilder::new()
+            .label("Simplify Parts")
+            .tooltip_text("Simplify the parts currently allocated to paints.")
+            .build();
+        buttons.add_widget("simplify", &simplify_btn, Self::SAV_HAS_COLOUR);
+        button_box.pack_start(&simplify_btn, true, true, 0);
+
         vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
@@ -281,6 +288,9 @@ impl TargetedPaintMixer {
 
         let tpm_c = Rc::clone(&tpm);
         cancel_btn.connect_clicked(move |_| tpm_c.cancel_current_mixture());
+
+        let tpm_c = Rc::clone(&tpm);
+        simplify_btn.connect_clicked(move |_| tpm_c.simplify_current_parts());
 
         tpm
     }
@@ -396,6 +406,11 @@ impl TargetedPaintMixer {
         self.mix_entry.notes_entry.set_text("");
         self.set_target_rgb(None);
         self.series_paint_spinner_box.zero_all_parts();
+    }
+
+    pub fn simplify_current_parts(&self) {
+        let gcd = self.series_paint_spinner_box.parts_gcd();
+        self.series_paint_spinner_box.div_all_parts_by(gcd);
     }
 }
 
