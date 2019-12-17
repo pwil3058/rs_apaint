@@ -223,6 +223,13 @@ impl TargetedPaintMixer {
         );
         button_box.pack_start(&accept_btn, true, true, 0);
 
+        let cancel_btn = gtk::ButtonBuilder::new()
+            .label("Cancel")
+            .tooltip_text("Cancel the current mixture.")
+            .build();
+        buttons.add_widget("cancel", &cancel_btn, Self::SAV_HAS_TARGET);
+        button_box.pack_start(&cancel_btn, true, true, 0);
+
         vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
@@ -272,13 +279,18 @@ impl TargetedPaintMixer {
         let tpm_c = Rc::clone(&tpm);
         accept_btn.connect_clicked(move |_| tpm_c.accept_current_mixture());
 
+        let tpm_c = Rc::clone(&tpm);
+        cancel_btn.connect_clicked(move |_| tpm_c.cancel_current_mixture());
+
         tpm
     }
 
-    fn next_mix_id(&self) -> String {
-        let id = format!("MIX#{:03}", self.next_mix_id.get());
+    fn format_mix_id(&self) -> String {
+        format!("MIX#{:03}", self.next_mix_id.get())
+    }
+
+    fn advance_mix_id(&self) {
         self.next_mix_id.set(self.next_mix_id.get() + 1);
-        id
     }
 
     fn add_series_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
@@ -328,8 +340,7 @@ impl TargetedPaintMixer {
     }
 
     pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
-        let target_id = self.next_mix_id();
-        self.mix_entry.id_label.set_label(&target_id);
+        self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text(name);
         self.mix_entry.notes_entry.set_text(notes);
         self.set_target_rgb(Some(target_rgb));
@@ -353,7 +364,8 @@ impl TargetedPaintMixer {
     }
 
     pub fn accept_current_mixture(&self) {
-        let mix_id = self.mix_entry.id_label.get_text().unwrap().to_string();
+        let mix_id = self.format_mix_id();
+        self.advance_mix_id();
         let mixed_paint = MixedPaintBuilder::<f64>::new(&mix_id)
             .name(&self.mix_entry.name_entry.get_text().unwrap_or("".into()))
             .notes(&self.mix_entry.notes_entry.get_text().unwrap_or("".into()))
@@ -376,6 +388,14 @@ impl TargetedPaintMixer {
         self.series_paint_spinner_box.zero_all_parts();
         // TODO: handle case of duplicate mixed paint
         self.mixing_session.borrow_mut().add_mixture(&mixed_paint);
+    }
+
+    pub fn cancel_current_mixture(&self) {
+        self.mix_entry.id_label.set_label("MIX#???");
+        self.mix_entry.name_entry.set_text("");
+        self.mix_entry.notes_entry.set_text("");
+        self.set_target_rgb(None);
+        self.series_paint_spinner_box.zero_all_parts();
     }
 }
 

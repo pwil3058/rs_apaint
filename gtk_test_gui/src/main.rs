@@ -1,6 +1,4 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::fs::File;
-
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
 
@@ -11,13 +9,8 @@ use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 
 use apaint_boilerplate::Colour;
 
-use apaint::spec::BasicPaintSeriesSpec;
 use apaint_gtk::mixer::targeted::TargetedPaintMixer;
-use apaint_gtk::{
-    colour::*,
-    factory::BasicPaintFactory,
-    series::{RcSeriesBinder, SeriesBinder},
-};
+use apaint_gtk::{colour::*, factory::BasicPaintFactory};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[component = "f64"]
