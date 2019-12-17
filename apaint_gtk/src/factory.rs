@@ -29,7 +29,7 @@ use crate::colour::RGB;
 use crate::hue_wheel::GtkHueWheel;
 use crate::icon_image;
 use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
-use crate::list::{ColouredItemListView, PaintListHelper, PaintListRow};
+use crate::list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow};
 use crate::managed_menu::MenuItemSpec;
 use crate::spec_edit::BasicPaintSpecEditor;
 
@@ -172,7 +172,8 @@ pub struct BasicPaintFactory {
     paint_editor: Rc<BasicPaintSpecEditor>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
-    paint_list_helper: PaintListHelper,
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
     paint_series: RefCell<BasicPaintSeriesSpec<f64>>,
     saved_series_digest: RefCell<Vec<u8>>,
     proprietor_entry: gtk::Entry,
@@ -219,12 +220,8 @@ impl BasicPaintFactory {
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         let paint_editor = BasicPaintSpecEditor::new(attributes, characteristics);
         let hue_wheel = GtkHueWheel::new(menu_items, attributes);
-        let paint_list_helper = PaintListHelper::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(
-            &paint_list_helper.column_types(),
-            &paint_list_helper.columns(),
-            menu_items,
-        );
+        let paint_list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
+        let list_view = ColouredItemListView::new(&paint_list_spec, menu_items);
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
         scrolled_window.add(&list_view.pwo());
         let notebook = gtk::NotebookBuilder::new().build();
@@ -246,7 +243,8 @@ impl BasicPaintFactory {
             paint_editor,
             hue_wheel,
             list_view,
-            paint_list_helper,
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
             paint_series: RefCell::new(BasicPaintSeriesSpec::default()),
             saved_series_digest: RefCell::new(vec![]),
             proprietor_entry,
@@ -397,7 +395,7 @@ impl BasicPaintFactory {
             self.list_view.remove_row(old_paint.id());
         }
         self.hue_wheel.add_item(paint_spec.coloured_shape());
-        let row = paint_spec.row(&self.paint_list_helper);
+        let row = paint_spec.row(&self.attributes, &self.characteristics);
         self.list_view.add_row(&row);
     }
 
@@ -577,7 +575,7 @@ impl BasicPaintFactory {
                                 for paint in new_series.paints() {
                                     series.add(paint);
                                     self.hue_wheel.add_item(paint.coloured_shape());
-                                    let row = paint.row(&self.paint_list_helper);
+                                    let row = paint.row(&self.attributes, &self.characteristics);
                                     self.list_view.add_row(&row);
                                 }
                             }

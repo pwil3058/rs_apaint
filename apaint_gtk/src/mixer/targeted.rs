@@ -34,7 +34,7 @@ use crate::{
     colour_edit::ColourEditor,
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
-    list::{ColouredItemListView, PaintListHelper, PaintListRow},
+    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
@@ -150,12 +150,12 @@ pub struct TargetedPaintMixer {
     notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
-    list_view_helper: PaintListHelper,
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
     mix_entry: Rc<TargetedPaintEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     paint_series_manager: Rc<PaintSeriesManager>,
-    attributes: Vec<ScalarAttribute>,
     next_mix_id: Cell<u64>,
 }
 
@@ -170,8 +170,8 @@ impl TargetedPaintMixer {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], attributes);
-        let helper = PaintListHelper::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(&helper.column_types(), &helper.columns(), &[]);
+        let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
+        let list_view = ColouredItemListView::new(&list_spec, &[]);
         let mix_entry = TargetedPaintEntry::new(attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
@@ -234,12 +234,12 @@ impl TargetedPaintMixer {
             mixing_session: RefCell::new(MixingSession::new()),
             hue_wheel,
             list_view,
-            list_view_helper: helper,
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
             mix_entry,
             buttons,
             series_paint_spinner_box,
             paint_series_manager,
-            attributes: attributes.to_vec(),
             next_mix_id: Cell::new(1),
         });
 
@@ -368,7 +368,7 @@ impl TargetedPaintMixer {
         self.hue_wheel.add_item(mixed_paint.coloured_shape());
         self.hue_wheel.add_item(mixed_paint.targeted_rgb_shape());
         self.list_view
-            .add_row(&mixed_paint.row(&self.list_view_helper));
+            .add_row(&mixed_paint.row(&self.attributes, &self.characteristics));
         self.mix_entry.id_label.set_label("MIX#???");
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");

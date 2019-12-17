@@ -29,19 +29,20 @@ pub struct ColouredItemListView {
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&str)>>>>,
 }
 
+pub trait ColouredItemListViewSpec {
+    fn column_types(&self) -> Vec<gtk::Type>;
+    fn columns(&self) -> Vec<gtk::TreeViewColumn>;
+}
+
 impl ColouredItemListView {
-    pub fn new(
-        column_types: &[gtk::Type],
-        columns: &[gtk::TreeViewColumn],
-        menu_items: &[MenuItemSpec],
-    ) -> Rc<Self> {
-        let list_store = gtk::ListStore::new(column_types);
+    pub fn new(spec: &impl ColouredItemListViewSpec, menu_items: &[MenuItemSpec]) -> Rc<Self> {
+        let list_store = gtk::ListStore::new(&spec.column_types());
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
         view.set_model(Some(&list_store));
         view.get_selection().set_mode(gtk::SelectionMode::None);
 
-        for col in columns.iter() {
-            view.append_column(col);
+        for col in spec.columns() {
+            view.append_column(&col);
         }
 
         let rgb_l_v = Rc::new(Self {
@@ -151,20 +152,22 @@ impl ColouredItemListView {
     }
 }
 
-pub struct PaintListHelper {
-    pub attributes: Vec<ScalarAttribute>,
-    pub characteristics: Vec<CharacteristicType>,
+pub struct BasicPaintListViewSpec {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
 }
 
-impl PaintListHelper {
+impl BasicPaintListViewSpec {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
         Self {
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
         }
     }
+}
 
-    pub fn column_types(&self) -> Vec<gtk::Type> {
+impl ColouredItemListViewSpec for BasicPaintListViewSpec {
+    fn column_types(&self) -> Vec<gtk::Type> {
         let mut column_types = vec![
             gtk::Type::String,
             gtk::Type::String,
@@ -180,7 +183,7 @@ impl PaintListHelper {
         column_types
     }
 
-    pub fn columns(&self) -> Vec<gtk::TreeViewColumn> {
+    fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
 
         let col = gtk::TreeViewColumnBuilder::new()
@@ -268,7 +271,11 @@ impl PaintListHelper {
 }
 
 pub trait PaintListRow: BasicPaintIfce<f64> {
-    fn row(&self, helper: &PaintListHelper) -> Vec<gtk::Value> {
+    fn row(
+        &self,
+        attributes: &[ScalarAttribute],
+        characteristics: &[CharacteristicType],
+    ) -> Vec<gtk::Value> {
         let ha = if let Some(angle) = self.hue_angle() {
             angle.degrees()
         } else {
@@ -283,14 +290,14 @@ pub trait PaintListRow: BasicPaintIfce<f64> {
             self.max_chroma_rgb().pango_string().to_value(),
             ha.to_value(),
         ];
-        for attr in helper.attributes.iter() {
+        for attr in attributes.iter() {
             let string = format!("{:5.4}", self.scalar_attribute(*attr));
             let attr_rgb = self.scalar_attribute_rgb(*attr);
             row.push(string.to_value());
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
         }
-        for characteristic in helper.characteristics.iter() {
+        for characteristic in characteristics.iter() {
             let string = self.characteristic_abbrev(*characteristic);
             row.push(string.to_value());
         }

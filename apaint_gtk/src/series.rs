@@ -23,7 +23,7 @@ use crate::icon_image::series_paint_load_image;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
-    list::{ColouredItemListView, PaintListHelper, PaintListRow},
+    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     managed_menu::MenuItemSpec,
 };
 
@@ -45,16 +45,11 @@ impl SeriesPage {
     ) -> Rc<Self> {
         let paned = gtk::PanedBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(menu_items, attributes);
-        let list_helper = PaintListHelper::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(
-            &list_helper.column_types(),
-            &list_helper.columns(),
-            menu_items,
-        );
+        let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
+        let list_view = ColouredItemListView::new(&list_spec, menu_items);
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
-            let row = paint.row(&list_helper);
-            //list_helper.rc_row(paint);
+            let row = paint.row(attributes, characteristics);
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
