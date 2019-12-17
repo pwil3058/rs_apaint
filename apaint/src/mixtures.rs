@@ -38,15 +38,20 @@ impl<F: ColourComponent + ShapeConsts> MixedPaint<F> {
             None
         }
     }
+
     pub fn targeted_rgb_shape(&self) -> ColouredShape<F> {
         let tooltip_text = format!("Target for: {}", self.tooltip_text());
-        let id = format!("TARGET({})", self.id);
+        let id = self.targeted_rgb_id();
         ColouredShape::new(
             self.targeted_rgb.unwrap(),
             &id,
             &tooltip_text,
             Shape::Circle,
         )
+    }
+
+    pub fn targeted_rgb_id(&self) -> String {
+        format!("TARGET({})", self.id)
     }
 }
 
