@@ -154,6 +154,24 @@ impl<F: ColourComponent> MixingSession<F> {
         self.mixtures.iter()
     }
 
+    pub fn series_paints(&self) -> Vec<Rc<SeriesPaint<F>>> {
+        let mut v = vec![];
+
+        for mixture in self.mixtures.iter() {
+            for (paint, parts) in mixture.components.iter() {
+                if let Paint::Series(series_paint) = paint {
+                    match v.binary_search_by(|p: &Rc<SeriesPaint<F>>| p.id().cmp(series_paint.id()))
+                    {
+                        Ok(_) => (),
+                        Err(index) => v.insert(index, Rc::clone(series_paint)),
+                    }
+                }
+            }
+        }
+
+        v
+    }
+
     pub fn add_mixture(&mut self, mixture: &Rc<MixedPaint<F>>) -> Option<Rc<MixedPaint<F>>> {
         debug_assert!(self.is_sorted_unique());
         match self.mixtures.binary_search_by(|p| p.id().cmp(mixture.id())) {
