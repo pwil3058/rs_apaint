@@ -1,5 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+use apaint::spec::SeriesId;
 use std::{error, fmt, io};
 
 pub mod angles {

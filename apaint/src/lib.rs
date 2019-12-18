@@ -77,6 +77,8 @@ pub enum Error {
     IOError(io::Error),
     SerdeJsonError(serde_json::Error),
     NotFound(String),
+    UnknownSeries(crate::spec::SeriesId),
+    UnknownSeriesPaint(crate::spec::SeriesId, String),
 }
 
 impl fmt::Display for Error {
@@ -85,6 +87,10 @@ impl fmt::Display for Error {
             Error::IOError(err) => write!(f, "IOError: {}", err),
             Error::SerdeJsonError(err) => write!(f, "Serde Json Error: {}", err),
             Error::NotFound(string) => write!(f, "{}: Not found.", string),
+            Error::UnknownSeries(series_id) => write!(f, "{}: unknown paint series", series_id),
+            Error::UnknownSeriesPaint(series_id, id) => {
+                write!(f, "{}:({}): unknown paint", id, series_id)
+            }
         }
     }
 }

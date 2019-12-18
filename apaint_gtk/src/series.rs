@@ -15,7 +15,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use apaint::{
     characteristics::CharacteristicType,
     hue_wheel::MakeColouredShape,
-    series::{SeriesPaint, SeriesPaintSeries},
+    series::{SeriesPaint, SeriesPaintFinder, SeriesPaintSeries},
     spec::{BasicPaintSeriesSpec, SeriesId},
 };
 
@@ -296,6 +296,29 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
         self.add_series((&new_series_spec).into())?;
         // TODO: adjust date for detecting duplicates
         Ok(())
+    }
+}
+
+impl SeriesPaintFinder<f64> for SeriesBinder {
+    fn get_series_paint(
+        &self,
+        series_id: &SeriesId,
+        paint_id: &str,
+    ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
+        let bsr = self
+            .pages
+            .borrow()
+            .binary_search_by_key(&series_id, |page| page.series_id());
+        match bsr {
+            Ok(index) => match self.pages.borrow()[index].paint_series.find(paint_id) {
+                Some(paint) => Ok(Rc::clone(paint)),
+                None => Err(apaint::Error::UnknownSeriesPaint(
+                    series_id.clone(),
+                    paint_id.to_string(),
+                )),
+            },
+            Err(_) => Err(apaint::Error::UnknownSeries(series_id.clone())),
+        }
     }
 }
 

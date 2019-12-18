@@ -168,3 +168,11 @@ impl<F: ColourComponent> From<&BasicPaintSeriesSpec<F>> for SeriesPaintSeries<F>
         }
     }
 }
+
+pub trait SeriesPaintFinder<F: ColourComponent> {
+    fn get_series_paint(
+        &self,
+        series_id: &SeriesId,
+        paint_id: &str,
+    ) -> Result<Rc<SeriesPaint<F>>, crate::Error>;
+}
