@@ -302,22 +302,31 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
 impl SeriesPaintFinder<f64> for SeriesBinder {
     fn get_series_paint(
         &self,
-        series_id: &SeriesId,
         paint_id: &str,
+        series_id: Option<&SeriesId>,
     ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
-        let bsr = self
-            .pages
-            .borrow()
-            .binary_search_by_key(&series_id, |page| page.series_id());
-        match bsr {
-            Ok(index) => match self.pages.borrow()[index].paint_series.find(paint_id) {
-                Some(paint) => Ok(Rc::clone(paint)),
-                None => Err(apaint::Error::UnknownSeriesPaint(
-                    series_id.clone(),
-                    paint_id.to_string(),
-                )),
-            },
-            Err(_) => Err(apaint::Error::UnknownSeries(series_id.clone())),
+        if let Some(series_id) = series_id {
+            let bsr = self
+                .pages
+                .borrow()
+                .binary_search_by_key(&series_id, |page| page.series_id());
+            match bsr {
+                Ok(index) => match self.pages.borrow()[index].paint_series.find(paint_id) {
+                    Some(paint) => Ok(Rc::clone(paint)),
+                    None => Err(apaint::Error::UnknownSeriesPaint(
+                        series_id.clone(),
+                        paint_id.to_string(),
+                    )),
+                },
+                Err(_) => Err(apaint::Error::UnknownSeries(series_id.clone())),
+            }
+        } else {
+            for page in self.pages.borrow().iter() {
+                if let Some(paint) = page.paint_series.find(paint_id) {
+                    return Ok(Rc::clone(paint));
+                }
+            }
+            Err(apaint::Error::NotFound(paint_id.to_string()))
         }
     }
 }
