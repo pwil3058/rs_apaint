@@ -3,6 +3,7 @@
 use std::{
     fmt,
     io::{Read, Write},
+    rc::Rc,
     string::ToString,
 };
 
@@ -84,6 +85,15 @@ impl SeriesId {
 impl fmt::Display for SeriesId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}:({})", self.series_name, self.proprietor)
+    }
+}
+
+impl From<&Rc<SeriesId>> for SeriesId {
+    fn from(sid: &Rc<SeriesId>) -> Self {
+        Self {
+            proprietor: sid.proprietor().to_string(),
+            series_name: sid.series_name().to_string(),
+        }
     }
 }
 

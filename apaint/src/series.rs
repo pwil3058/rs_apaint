@@ -29,7 +29,7 @@ pub struct SeriesPaint<F: ColourComponent> {
 }
 
 impl<F: ColourComponent> SeriesPaint<F> {
-    pub fn seried_id(&self) -> &Rc<SeriesId> {
+    pub fn series_id(&self) -> &Rc<SeriesId> {
         &self.series_id
     }
 }

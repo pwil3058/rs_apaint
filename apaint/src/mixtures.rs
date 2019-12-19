@@ -8,6 +8,7 @@ use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribut
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
+use crate::spec::SeriesId;
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
@@ -479,6 +480,79 @@ impl<F: ColourComponent> BasicPaintIfce<F> for Paint<F> {
         match self {
             Paint::Series(paint) => paint.metallicness(),
             Paint::Mixed(paint) => paint.metallicness(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SaveablePaint {
+    Series(SeriesId, String),
+    Mixed(String),
+}
+
+impl<F: ColourComponent> From<&Rc<SeriesPaint<F>>> for SaveablePaint {
+    fn from(paint: &Rc<SeriesPaint<F>>) -> Self {
+        SaveablePaint::Series(paint.series_id().into(), paint.id().to_string())
+    }
+}
+
+impl<F: ColourComponent> From<&Rc<MixedPaint<F>>> for SaveablePaint {
+    fn from(paint: &Rc<MixedPaint<F>>) -> Self {
+        SaveablePaint::Mixed(paint.id().to_string())
+    }
+}
+
+impl<F: ColourComponent> From<&Paint<F>> for SaveablePaint {
+    fn from(paint: &Paint<F>) -> Self {
+        match paint {
+            Paint::Series(paint) => paint.into(),
+            Paint::Mixed(paint) => paint.into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SaveableMixedPaint<F: ColourComponent> {
+    targeted_rgb: Option<RGB<F>>,
+    id: String,
+    name: String,
+    notes: String,
+    components: Vec<(SaveablePaint, u64)>,
+}
+
+impl<F: ColourComponent> From<&Rc<MixedPaint<F>>> for SaveableMixedPaint<F> {
+    fn from(rcmp: &Rc<MixedPaint<F>>) -> Self {
+        let components = rcmp
+            .components
+            .iter()
+            .map(|(paint, parts)| (SaveablePaint::from(paint), *parts))
+            .collect();
+        Self {
+            targeted_rgb: rcmp.targeted_rgb,
+            id: rcmp.id.to_string(),
+            name: rcmp.name.to_string(),
+            notes: rcmp.notes.to_string(),
+            components,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SaveableMixingSession<F: ColourComponent> {
+    notes: String,
+    mixtures: Vec<SaveableMixedPaint<F>>,
+}
+
+impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
+    fn from(session: &MixingSession<F>) -> Self {
+        let mixtures = session
+            .mixtures
+            .iter()
+            .map(|p| SaveableMixedPaint::from(p))
+            .collect();
+        Self {
+            notes: session.notes.to_string(),
+            mixtures,
         }
     }
 }
