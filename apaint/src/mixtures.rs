@@ -8,6 +8,7 @@ use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribut
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
+use crate::series::SeriesPaintFinder;
 use crate::spec::SeriesId;
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
@@ -161,7 +162,8 @@ impl<F: ColourComponent> MixingSession<F> {
         for mixture in self.mixtures.iter() {
             for (paint, parts) in mixture.components.iter() {
                 if let Paint::Series(series_paint) = paint {
-                    match v.binary_search_by(|p: &Rc<SeriesPaint<F>>| p.id().cmp(series_paint.id()))
+                    match v
+                        .binary_search_by_key(&series_paint.id(), |p: &Rc<SeriesPaint<F>>| p.id())
                     {
                         Ok(_) => (),
                         Err(index) => v.insert(index, Rc::clone(series_paint)),
@@ -175,7 +177,10 @@ impl<F: ColourComponent> MixingSession<F> {
 
     pub fn add_mixture(&mut self, mixture: &Rc<MixedPaint<F>>) -> Option<Rc<MixedPaint<F>>> {
         debug_assert!(self.is_sorted_unique());
-        match self.mixtures.binary_search_by(|p| p.id().cmp(mixture.id())) {
+        match self
+            .mixtures
+            .binary_search_by_key(&mixture.id(), |p| p.id())
+        {
             Ok(index) => {
                 self.mixtures.push(Rc::clone(mixture));
                 let old = self.mixtures.swap_remove(index);
@@ -241,6 +246,24 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
         components: Vec<(Rc<SeriesPaint<F>>, u64)>,
     ) -> &mut Self {
         self.series_components = components;
+        self
+    }
+
+    pub fn series_paint_component(&mut self, component: (Rc<SeriesPaint<F>>, u64)) -> &mut Self {
+        self.series_components.push(component);
+        self
+    }
+
+    pub fn mixed_paint_components(
+        &mut self,
+        components: Vec<(Rc<MixedPaint<F>>, u64)>,
+    ) -> &mut Self {
+        self.mixture_components = components;
+        self
+    }
+
+    pub fn mixed_paint_component(&mut self, component: (Rc<MixedPaint<F>>, u64)) -> &mut Self {
+        self.mixture_components.push(component);
         self
     }
 
@@ -554,5 +577,46 @@ impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
             notes: session.notes.to_string(),
             mixtures,
         }
+    }
+}
+
+impl<F: ColourComponent> SaveableMixingSession<F> {
+    pub fn mixing_session(
+        &self,
+        series_paint_finder: &impl SeriesPaintFinder<F>,
+    ) -> Result<MixingSession<F>, crate::Error> {
+        let mut mixtures: Vec<Rc<MixedPaint<F>>> = vec![];
+        for saved_mixture in self.mixtures.iter() {
+            let mut mixture_builder = MixedPaintBuilder::new(&saved_mixture.id);
+            mixture_builder.name(&saved_mixture.name);
+            mixture_builder.notes(&saved_mixture.notes);
+            if let Some(targeted_rgb) = saved_mixture.targeted_rgb {
+                mixture_builder.targeted_rgb(&targeted_rgb);
+            }
+            for saved_component in saved_mixture.components.iter() {
+                match &saved_component.0 {
+                    SaveablePaint::Series(series_id, id) => {
+                        let paint = series_paint_finder.get_series_paint(id, Some(series_id))?;
+                        mixture_builder.series_paint_component((paint, saved_component.1));
+                    }
+                    SaveablePaint::Mixed(id) => {
+                        match mixtures.binary_search_by_key(&id.as_str(), |p| p.id()) {
+                            Ok(index) => {
+                                let paint = mixtures.get(index).expect("binary searched index");
+                                mixture_builder
+                                    .mixed_paint_component((Rc::clone(paint), saved_component.1));
+                            }
+                            Err(_) => return Err(crate::Error::NotFound(id.to_string())),
+                        }
+                    }
+                }
+            }
+            let mixture = mixture_builder.build();
+            mixtures.push(mixture);
+        }
+        Ok(MixingSession {
+            notes: self.notes.to_string(),
+            mixtures,
+        })
     }
 }
