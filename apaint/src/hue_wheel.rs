@@ -283,7 +283,7 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
     pub fn add_item(&mut self, coloured_item: ColouredShape<F>) -> Option<ColouredShape<F>> {
         //self.shapes.push(coloured_item);
         let id = coloured_item.id();
-        match self.shapes.binary_search_by(|s| s.id().cmp(id)) {
+        match self.shapes.binary_search_by_key(&id, |s| s.id()) {
             Ok(index) => {
                 self.shapes.push(coloured_item);
                 let old = self.shapes.swap_remove(index);
@@ -297,7 +297,7 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
     }
 
     pub fn remove_item(&mut self, id: &str) -> ColouredShape<F> {
-        match self.shapes.binary_search_by(|s| s.id().cmp(id)) {
+        match self.shapes.binary_search_by_key(&id, |s| s.id()) {
             Ok(index) => self.shapes.remove(index),
             Err(_) => panic!("{}: shape with this id not found", id),
         }

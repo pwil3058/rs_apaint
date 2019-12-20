@@ -140,7 +140,10 @@ where
 
     pub fn add(&mut self, paint: &BasicPaintSpec<F>) -> Option<BasicPaintSpec<F>> {
         debug_assert!(self.is_sorted_unique());
-        match self.paint_list.binary_search_by(|p| p.id().cmp(paint.id())) {
+        match self
+            .paint_list
+            .binary_search_by_key(&paint.id(), |p| p.id())
+        {
             Ok(index) => {
                 self.paint_list.push(paint.clone());
                 let old = self.paint_list.swap_remove(index);
@@ -156,7 +159,7 @@ where
 
     pub fn remove(&mut self, id: &str) -> Result<BasicPaintSpec<F>, crate::Error> {
         debug_assert!(self.is_sorted_unique());
-        match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
+        match self.paint_list.binary_search_by_key(&id, |p| p.id()) {
             Ok(index) => Ok(self.paint_list.remove(index)),
             Err(_) => Err(crate::Error::NotFound(id.to_string())),
         }
@@ -168,7 +171,7 @@ where
 
     pub fn find(&self, id: &str) -> Option<&BasicPaintSpec<F>> {
         debug_assert!(self.is_sorted_unique());
-        match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
+        match self.paint_list.binary_search_by_key(&id, |p| p.id()) {
             Ok(index) => self.paint_list.get(index),
             Err(_) => None,
         }

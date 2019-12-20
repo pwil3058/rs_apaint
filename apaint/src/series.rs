@@ -133,7 +133,7 @@ where
 
     pub fn find(&self, id: &str) -> Option<&Rc<SeriesPaint<F>>> {
         debug_assert!(self.is_sorted_unique());
-        match self.paint_list.binary_search_by(|p| p.id().cmp(id)) {
+        match self.paint_list.binary_search_by_key(&id, |p| p.id()) {
             Ok(index) => self.paint_list.get(index),
             Err(_) => None,
         }
