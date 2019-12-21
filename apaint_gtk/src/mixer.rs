@@ -31,18 +31,19 @@ pub mod saved {
         file_name_label: gtk::Label,
         file_status_btn: gtk::Button,
         current_file_path: RefCell<Option<PathBuf>>,
+        current_file_digest: RefCell<Vec<u8>>,
     }
 
     impl MixerFileManager {
         const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
         const SAV_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 1;
-        const SAV_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
-        const SAV_SERIES_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 3;
-        const SAV_SERIES_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 4;
+        const SAV_MIX_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
+        const SAV_MIXES_NEED_SAVING: u64 = SAV_NEXT_CONDN << 3;
+        const SAV_MIXES_ARE_SAVEABLE: u64 = SAV_NEXT_CONDN << 4;
 
         const BTN_IMAGE_SIZE: i32 = 24;
 
-        fn new() -> Self {
+        pub fn new() -> Rc<Self> {
             let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
             let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
                 WidgetStatesControlled::Sensitivity,
@@ -51,7 +52,7 @@ pub mod saved {
             );
 
             let new_colln_btn = gtk::ButtonBuilder::new()
-                .tooltip_text("Clear the editor in preparation for creating a new collection")
+                .tooltip_text("Clear the mixer in preparation for creating a new mixing session")
                 .build();
             // TODO: change setting of image when ButtonBuilder interface is fixed.
             new_colln_btn.set_image(Some(&icon_image::colln_new_image(Self::BTN_IMAGE_SIZE)));
@@ -59,7 +60,7 @@ pub mod saved {
             hbox.pack_start(&new_colln_btn, false, false, 0);
 
             let load_colln_btn = gtk::ButtonBuilder::new()
-                .tooltip_text("Load a paint collection from a file for editing.")
+                .tooltip_text("Load a saved mixing session.")
                 .build();
             // TODO: change setting of image when ButtonBuilder interface is fixed.
             load_colln_btn.set_image(Some(&icon_image::colln_load_image(Self::BTN_IMAGE_SIZE)));
@@ -67,19 +68,19 @@ pub mod saved {
             hbox.pack_start(&load_colln_btn, false, false, 0);
 
             let save_colln_btn = gtk::ButtonBuilder::new()
-                .tooltip_text("Save the current editor content to the current file.")
+                .tooltip_text("Save the current mixing session to the current file.")
                 .build();
             // TODO: change setting of image when ButtonBuilder interface is fixed.
             save_colln_btn.set_image(Some(&icon_image::colln_save_image(Self::BTN_IMAGE_SIZE)));
             buttons.add_widget(
                 "save_colln",
                 &save_colln_btn,
-                Self::SAV_HAS_CURRENT_FILE + Self::SAV_SERIES_IS_SAVEABLE,
+                Self::SAV_HAS_CURRENT_FILE + Self::SAV_MIXES_ARE_SAVEABLE,
             );
             hbox.pack_start(&save_colln_btn, false, false, 0);
 
             let save_as_colln_btn = gtk::ButtonBuilder::new()
-                .tooltip_text("Save the current editor content to a nominated file.")
+                .tooltip_text("Save the current mixing session to a nominated file.")
                 .build();
             // TODO: change setting of image when ButtonBuilder interface is fixed.
             save_as_colln_btn
@@ -87,7 +88,7 @@ pub mod saved {
             buttons.add_widget(
                 "save_as_colln",
                 &save_as_colln_btn,
-                Self::SAV_SERIES_IS_SAVEABLE,
+                Self::SAV_MIXES_ARE_SAVEABLE,
             );
             hbox.pack_start(&save_as_colln_btn, false, false, 0);
 
@@ -105,18 +106,19 @@ pub mod saved {
             buttons.add_widget(
                 "file_status",
                 &file_status_btn,
-                Self::SAV_SERIES_IS_SAVEABLE + Self::SAV_SERIES_NEEDS_SAVING,
+                Self::SAV_MIXES_ARE_SAVEABLE + Self::SAV_MIXES_NEED_SAVING,
             );
 
             hbox.show_all();
 
-            Self {
+            Rc::new(Self {
                 hbox,
                 buttons,
                 file_name_label,
                 file_status_btn,
                 current_file_path: RefCell::new(None),
-            }
+                current_file_digest: RefCell::new(vec![]),
+            })
         }
 
         fn set_current_file_path<Q: AsRef<Path>>(&self, path: Option<Q>) {
@@ -136,8 +138,8 @@ pub mod saved {
 
         fn update_file_status_button(&self) {
             let current_condns = self.buttons.current_condns();
-            if current_condns & Self::SAV_SERIES_NEEDS_SAVING != 0 {
-                if current_condns & Self::SAV_SERIES_IS_SAVEABLE != 0 {
+            if current_condns & Self::SAV_MIXES_NEED_SAVING != 0 {
+                if current_condns & Self::SAV_MIXES_ARE_SAVEABLE != 0 {
                     self.file_status_btn
                         .set_image(Some(&icon_image::needs_save_ready_image(24)));
                     self.file_status_btn.set_tooltip_text(Some(

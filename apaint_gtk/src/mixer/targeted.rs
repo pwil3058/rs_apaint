@@ -36,7 +36,10 @@ use crate::{
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
-    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+    mixer::{
+        component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+        saved::MixerFileManager,
+    },
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
 };
@@ -148,6 +151,7 @@ impl TargetedPaintEntry {
 pub struct TargetedPaintMixer {
     vbox: gtk::Box,
     mixing_session: RefCell<MixingSession<f64>>,
+    file_manager: Rc<MixerFileManager>,
     notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
@@ -169,6 +173,7 @@ impl TargetedPaintMixer {
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let file_manager = MixerFileManager::new();
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], attributes);
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
@@ -185,6 +190,7 @@ impl TargetedPaintMixer {
             .build();
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+        button_box.pack_start(&file_manager.pwo(), true, true, 0);
         vbox.pack_start(&button_box, false, false, 0);
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
@@ -252,6 +258,7 @@ impl TargetedPaintMixer {
 
         let tpm = Rc::new(Self {
             vbox,
+            file_manager,
             notes_entry,
             mixing_session: RefCell::new(MixingSession::new()),
             hue_wheel,

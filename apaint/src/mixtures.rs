@@ -1,7 +1,8 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::rc::Rc;
+use std::{io::Write, rc::Rc};
 
+use crypto_hash::{Algorithm, Hasher};
 use num::Integer;
 
 use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB};
@@ -16,6 +17,7 @@ use crate::{
     series::SeriesPaint,
     BasicPaintIfce, LabelText, TooltipText,
 };
+use serde::Serialize;
 
 #[derive(Debug, Colour)]
 pub struct MixedPaint<F: ColourComponent> {
@@ -201,6 +203,12 @@ impl<F: ColourComponent> MixingSession<F> {
             }
         }
         true
+    }
+}
+
+impl<F: ColourComponent + Serialize> MixingSession<F> {
+    pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
+        SaveableMixingSession::from(self).digest()
     }
 }
 
@@ -618,5 +626,14 @@ impl<F: ColourComponent> SaveableMixingSession<F> {
             notes: self.notes.to_string(),
             mixtures,
         })
+    }
+}
+
+impl<F: ColourComponent + Serialize> SaveableMixingSession<F> {
+    pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
+        let mut hasher = Hasher::new(Algorithm::SHA256);
+        let json_text = serde_json::to_string(self)?;
+        hasher.write_all(json_text.as_bytes())?;
+        Ok(hasher.finish())
     }
 }
