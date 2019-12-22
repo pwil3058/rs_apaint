@@ -1,6 +1,11 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::{io::Write, rc::Rc};
+use std::{
+    io::{Read, Write},
+    rc::Rc,
+};
+
+use serde::{de::DeserializeOwned, Serialize};
 
 use crypto_hash::{Algorithm, Hasher};
 use num::Integer;
@@ -9,15 +14,13 @@ use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribut
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
-use crate::series::SeriesPaintFinder;
-use crate::spec::SeriesId;
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    series::SeriesPaint,
+    series::{SeriesPaint, SeriesPaintFinder},
+    spec::SeriesId,
     BasicPaintIfce, LabelText, TooltipText,
 };
-use serde::Serialize;
 
 #[derive(Debug, Colour)]
 pub struct MixedPaint<F: ColourComponent> {
@@ -206,13 +209,22 @@ impl<F: ColourComponent> MixingSession<F> {
     }
 }
 
-impl<F: ColourComponent + Serialize> MixingSession<F> {
-    pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
-        SaveableMixingSession::from(self).write(writer)
+impl<F: ColourComponent + DeserializeOwned> MixingSession<F> {
+    pub fn read<R: Read>(
+        reader: &mut R,
+        series_paint_finder: &Rc<impl SeriesPaintFinder<F>>,
+    ) -> Result<Self, crate::Error> {
+        let saved_session = SaveableMixingSession::read(reader)?;
+        let mixing_session = saved_session.mixing_session(series_paint_finder)?;
+        Ok(mixing_session)
     }
 }
 
 impl<F: ColourComponent + Serialize> MixingSession<F> {
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
+        SaveableMixingSession::from(self).write(writer)
+    }
+
     pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
         SaveableMixingSession::from(self).digest()
     }
@@ -597,7 +609,7 @@ impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
 impl<F: ColourComponent> SaveableMixingSession<F> {
     pub fn mixing_session(
         &self,
-        series_paint_finder: &impl SeriesPaintFinder<F>,
+        series_paint_finder: &Rc<impl SeriesPaintFinder<F>>,
     ) -> Result<MixingSession<F>, crate::Error> {
         let mut mixtures: Vec<Rc<MixedPaint<F>>> = vec![];
         for saved_mixture in self.mixtures.iter() {
@@ -632,6 +644,18 @@ impl<F: ColourComponent> SaveableMixingSession<F> {
             notes: self.notes.to_string(),
             mixtures,
         })
+    }
+}
+
+impl<'de, F> SaveableMixingSession<F>
+where
+    F: ColourComponent + DeserializeOwned,
+{
+    pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
+        let mut string = String::new();
+        reader.read_to_string(&mut string)?;
+        let session: Self = serde_json::from_str(&string)?;
+        Ok(session)
     }
 }
 

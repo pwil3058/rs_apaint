@@ -45,7 +45,7 @@ use crate::{
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
 };
-use apaint::mixtures::MixingSession;
+use apaint::mixtures::{MixingSession, SaveableMixingSession};
 
 // TODO: modify PaintListRow for MixedPaint to included target RGB
 impl PaintListRow for MixedPaint<f64> {}
@@ -421,6 +421,18 @@ impl TargetedPaintMixer {
         let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
         self.file_manager
             .set_current_file_path(Some((path, &new_digest)));
+        self.update_session_needs_saving();
+        Ok(())
+    }
+
+    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+        let path: &Path = path.as_ref();
+        let mut file = File::create(path)?;
+        let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
+        // TODO: completely clear the mixer
+        self.notes_entry.set_text(session.notes());
+        // TODO: add series paints to mixer
+        // TODO: add mixed paints to mixer
         self.update_session_needs_saving();
         Ok(())
     }

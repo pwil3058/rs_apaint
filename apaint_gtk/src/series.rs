@@ -393,3 +393,13 @@ impl PaintSeriesManager {
         self.binder.set_target_rgb(rgb);
     }
 }
+
+impl SeriesPaintFinder<f64> for PaintSeriesManager {
+    fn get_series_paint(
+        &self,
+        paint_id: &str,
+        series_id: Option<&SeriesId>,
+    ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
+        self.binder.get_series_paint(paint_id, series_id)
+    }
+}
