@@ -207,6 +207,12 @@ impl<F: ColourComponent> MixingSession<F> {
 }
 
 impl<F: ColourComponent + Serialize> MixingSession<F> {
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
+        SaveableMixingSession::from(self).write(writer)
+    }
+}
+
+impl<F: ColourComponent + Serialize> MixingSession<F> {
     pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
         SaveableMixingSession::from(self).digest()
     }
@@ -630,9 +636,18 @@ impl<F: ColourComponent> SaveableMixingSession<F> {
 }
 
 impl<F: ColourComponent + Serialize> SaveableMixingSession<F> {
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
+        let mut hasher = Hasher::new(Algorithm::SHA256);
+        let json_text = serde_json::to_string_pretty(self)?;
+        hasher.write_all(json_text.as_bytes())?;
+        let digest = hasher.finish();
+        writer.write_all(json_text.as_bytes())?;
+        Ok(digest)
+    }
+
     pub fn digest(&self) -> Result<Vec<u8>, crate::Error> {
         let mut hasher = Hasher::new(Algorithm::SHA256);
-        let json_text = serde_json::to_string(self)?;
+        let json_text = serde_json::to_string_pretty(self)?;
         hasher.write_all(json_text.as_bytes())?;
         Ok(hasher.finish())
     }

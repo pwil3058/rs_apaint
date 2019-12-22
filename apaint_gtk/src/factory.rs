@@ -461,9 +461,8 @@ impl BasicPaintFactory {
     fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
-        self.paint_series.borrow_mut().write(&mut file)?;
+        let new_digest = self.paint_series.borrow_mut().write(&mut file)?;
         self.file_manager.set_current_file_path(Some(path));
-        let new_digest = self.paint_series.borrow().digest().expect("unrecoverable");
         *self.saved_series_digest.borrow_mut() = new_digest;
         self.update_series_needs_saving();
         Ok(())

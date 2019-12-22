@@ -2,6 +2,8 @@
 
 use std::{
     cell::{Cell, RefCell},
+    fs::File,
+    path::Path,
     rc::Rc,
 };
 
@@ -44,7 +46,6 @@ use crate::{
     window::PersistentWindowButtonBuilder,
 };
 use apaint::mixtures::MixingSession;
-use std::borrow::BorrowMut;
 
 // TODO: modify PaintListRow for MixedPaint to included target RGB
 impl PaintListRow for MixedPaint<f64> {}
@@ -288,6 +289,15 @@ impl TargetedPaintMixer {
         });
 
         let tpm_c = Rc::clone(&tpm);
+        tpm.notes_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                tpm_c.mixing_session.borrow_mut().set_notes(&text);
+                tpm_c.update_saveability();
+                tpm_c.update_session_needs_saving();
+            }
+        });
+
+        let tpm_c = Rc::clone(&tpm);
         tpm.paint_series_manager
             .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
 
@@ -313,6 +323,11 @@ impl TargetedPaintMixer {
 
         let tpm_c = Rc::clone(&tpm);
         zero_parts_btn.connect_clicked(move |_| tpm_c.zero_all_parts());
+
+        // FILE MANAGEMENT
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager
+            .connect_write_to_file(move |path| tpm_c.write_to_file(path));
 
         tpm
     }
@@ -374,6 +389,40 @@ impl TargetedPaintMixer {
         } else {
             dialog.destroy();
         }
+    }
+
+    fn update_saveability(&self) {
+        let mut condns: u64 = 0;
+        let mask: u64 =
+            MixerFileManager::SAV_IS_SAVEABLE + MixerFileManager::SAV_SESSION_IS_SAVEABLE;
+        let session = self.mixing_session.borrow();
+        if session.notes().len() > 0 {
+            condns += MixerFileManager::SAV_SESSION_IS_SAVEABLE;
+            if self.file_manager.tool_needs_saving() {
+                condns += MixerFileManager::SAV_IS_SAVEABLE;
+            }
+        }
+        self.file_manager
+            .update_condns(MaskedCondns { condns, mask });
+    }
+
+    fn update_session_needs_saving(&self) {
+        let digest = self
+            .mixing_session
+            .borrow()
+            .digest()
+            .expect("unrecoverable");
+        self.file_manager.update_session_needs_saving(&digest);
+    }
+
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+        let path: &Path = path.as_ref();
+        let mut file = File::create(path)?;
+        let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
+        self.file_manager
+            .set_current_file_path(Some((path, &new_digest)));
+        self.update_session_needs_saving();
+        Ok(())
     }
 
     pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
