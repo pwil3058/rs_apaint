@@ -26,7 +26,7 @@ use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     hue_wheel::MakeColouredShape,
-    mixtures::{MixedPaint, MixedPaintBuilder},
+    mixtures::{MixedPaint, MixedPaintBuilder, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
 };
@@ -431,8 +431,25 @@ impl TargetedPaintMixer {
         let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
         // TODO: completely clear the mixer
         self.notes_entry.set_text(session.notes());
-        // TODO: add series paints to mixer
-        // TODO: add mixed paints to mixer
+        for mixture in session.mixtures() {
+            for (paint, _) in mixture.components() {
+                match paint {
+                    Paint::Series(series_paint) => {
+                        self.add_series_paint(series_paint);
+                    }
+                    Paint::Mixed(mixed_paint) => {
+                        // TODO: add mixed paints to spinners
+                    }
+                }
+            }
+            self.hue_wheel.add_item(mixture.coloured_shape());
+            self.hue_wheel.add_item(mixture.targeted_rgb_shape());
+            self.list_view
+                .add_row(&mixture.row(&self.attributes, &self.characteristics));
+        }
+        self.file_manager
+            .set_current_file_path(Some((path, &session.digest().expect("should work"))));
+        *self.mixing_session.borrow_mut() = session;
         self.update_session_needs_saving();
         Ok(())
     }

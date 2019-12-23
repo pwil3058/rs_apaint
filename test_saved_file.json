@@ -1,39 +1,4 @@
 {
-  "series_id": {
-    "proprietor": "Vallejo",
-    "series_name": "Model Air Colors CC075-rev18"
-  },
-  "paint_list": [
-    {
-      "rgb": [
-        0.976470588235294,
-        0.6549019607843137,
-        0.04705882352941176
-      ],
-      "id": "71.002",
-      "name": "Medium Yellow",
-      "notes": "",
-      "finish": "Flat",
-      "transparency": "Opaque",
-      "permanence": "Permanent",
-      "fluorescence": "NonFluorescent",
-      "metallicness": "NonMetallic"
-    },
-    {
-      "rgb": [
-        0.796078431372549,
-        0.1450980392156863,
-        0.1411764705882353
-      ],
-      "id": "71.003",
-      "name": "Red RLM23",
-      "notes": "RLM23",
-      "finish": "Flat",
-      "transparency": "Opaque",
-      "permanence": "Permanent",
-      "fluorescence": "NonFluorescent",
-      "metallicness": "NonMetallic"
-    }
-  ],
-  "phantom_data": null
+  "notes": "test",
+  "mixtures": []
 }

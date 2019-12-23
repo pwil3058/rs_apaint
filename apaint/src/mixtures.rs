@@ -60,6 +60,10 @@ impl<F: ColourComponent + ShapeConsts> MixedPaint<F> {
     pub fn targeted_rgb_id(&self) -> String {
         format!("TARGET({})", self.id)
     }
+
+    pub fn components(&self) -> impl Iterator<Item = &(Paint<F>, u64)> {
+        self.components.iter()
+    }
 }
 
 impl<F: ColourComponent> BasicPaintIfce<F> for MixedPaint<F> {
