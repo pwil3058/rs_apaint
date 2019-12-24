@@ -12,7 +12,7 @@ use num::Integer;
 
 use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB};
 
-use apaint_boilerplate::{BasicPaint, Colour};
+use apaint_boilerplate::Colour;
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
@@ -169,7 +169,7 @@ impl<F: ColourComponent> MixingSession<F> {
         let mut v = vec![];
 
         for mixture in self.mixtures.iter() {
-            for (paint, parts) in mixture.components.iter() {
+            for (paint, _parts) in mixture.components.iter() {
                 if let Paint::Series(series_paint) = paint {
                     match v
                         .binary_search_by_key(&series_paint.id(), |p: &Rc<SeriesPaint<F>>| p.id())
