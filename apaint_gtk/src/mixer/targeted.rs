@@ -437,7 +437,7 @@ impl TargetedPaintMixer {
                     Paint::Series(series_paint) => {
                         self.add_series_paint(series_paint);
                     }
-                    Paint::Mixed(mixed_paint) => {
+                    Paint::Mixed(_mixed_paint) => {
                         // TODO: add mixed paints to spinners
                     }
                 }
