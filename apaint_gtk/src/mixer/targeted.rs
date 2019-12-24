@@ -26,7 +26,7 @@ use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     hue_wheel::MakeColouredShape,
-    mixtures::{MixedPaint, MixedPaintBuilder, Paint},
+    mixtures::{MixedPaint, MixedPaintBuilder, MixingSession, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
 };
@@ -45,7 +45,6 @@ use crate::{
     series::PaintSeriesManager,
     window::PersistentWindowButtonBuilder,
 };
-use apaint::mixtures::{MixingSession, SaveableMixingSession};
 
 // TODO: modify PaintListRow for MixedPaint to included target RGB
 impl PaintListRow for MixedPaint<f64> {}
@@ -329,6 +328,10 @@ impl TargetedPaintMixer {
         tpm.file_manager
             .connect_write_to_file(move |path| tpm_c.write_to_file(path));
 
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager
+            .connect_read_from_file(move |path| tpm_c.read_from_file(path));
+
         tpm
     }
 
@@ -437,7 +440,7 @@ impl TargetedPaintMixer {
                     Paint::Series(series_paint) => {
                         self.add_series_paint(series_paint);
                     }
-                    Paint::Mixed(mixed_paint) => {
+                    Paint::Mixed(_mixed_paint) => {
                         // TODO: add mixed paints to spinners
                     }
                 }

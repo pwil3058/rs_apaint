@@ -32,6 +32,7 @@ pub mod saved {
         file_status_btn: gtk::Button,
         current_file_path: RefCell<Option<PathBuf>>,
         current_file_digest: RefCell<Vec<u8>>,
+        load_file_callback: RefCell<Option<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>>,
         write_file_callback: RefCell<Option<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>>,
     }
 
@@ -119,8 +120,23 @@ pub mod saved {
                 file_status_btn,
                 current_file_path: RefCell::new(None),
                 current_file_digest: RefCell::new(vec![]),
+                load_file_callback: RefCell::new(None),
                 write_file_callback: RefCell::new(None),
             });
+
+            let mfm_c = Rc::clone(&mfm);
+            load_colln_btn.connect_clicked(move |_|
+                // TODO: use last dir data option
+                if mfm_c.ok_to_reset() {
+                    if let Some(path) = mfm_c.ask_file_path(Some("Load from: "), None, false) {
+                        if let Some(callback) = &*mfm_c.write_file_callback.borrow() {
+                            if let Err(err) = callback(&path) {
+                                mfm_c.report_error("Problem saving file", &err);
+                            };
+                        }
+                    }
+                }
+            );
 
             let mfm_c = Rc::clone(&mfm);
             save_as_colln_btn.connect_clicked(move |_|
@@ -215,6 +231,59 @@ pub mod saved {
             callback: F,
         ) {
             *self.write_file_callback.borrow_mut() = Some(Box::new(callback));
+        }
+
+        pub fn connect_read_from_file<F: Fn(&Path) -> Result<(), apaint::Error> + 'static>(
+            &self,
+            callback: F,
+        ) {
+            *self.load_file_callback.borrow_mut() = Some(Box::new(callback));
+        }
+
+        pub fn ok_to_reset(&self) -> bool {
+            let status = self.buttons.current_condns();
+            if status & (Self::SAV_SESSION_NEEDS_SAVING + Self::SAV_TOOL_NEEDS_SAVING) != 0 {
+                if status & Self::SAV_IS_SAVEABLE != 0 {
+                    let buttons = [
+                        ("Cancel", gtk::ResponseType::Other(0)),
+                        ("Save and Continue", gtk::ResponseType::Other(1)),
+                        ("Continue Discarding Changes", gtk::ResponseType::Other(2)),
+                    ];
+                    match self.ask_question("There are unsaved changes!", None, &buttons) {
+                        gtk::ResponseType::Other(0) => return false,
+                        gtk::ResponseType::Other(1) => {
+                            let temp = self.write_file_callback.borrow();
+                            let write_callback = temp.as_ref().expect("programming error");
+                            let o_path = self.current_file_path.borrow().clone();
+                            if let Some(path) = o_path {
+                                if let Err(err) = write_callback(&path) {
+                                    self.report_error("Failed to save file", &err);
+                                    return false;
+                                }
+                            } else if let Some(path) =
+                                self.ask_file_path(Some("Save as: "), None, false)
+                            {
+                                if let Err(err) = write_callback(&path) {
+                                    self.report_error("Failed to save file", &err);
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            };
+                            return true;
+                        }
+                        _ => return true,
+                    }
+                } else {
+                    let buttons = &[
+                        ("Cancel", gtk::ResponseType::Cancel),
+                        ("Continue Discarding Changes", gtk::ResponseType::Accept),
+                    ];
+                    return self.ask_question("There are unsaved changes!", None, buttons)
+                        == gtk::ResponseType::Accept;
+                }
+            };
+            true
         }
     }
 }
