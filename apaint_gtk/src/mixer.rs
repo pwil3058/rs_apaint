@@ -233,7 +233,11 @@ pub mod saved {
             *self.write_file_callback.borrow_mut() = Some(Box::new(callback));
         }
 
+<<<<<<< HEAD
         pub fn connect_read_from_file<F: Fn(&Path) -> Result<(), apaint::Error> + 'static>(
+=======
+        pub fn connect_load_from_file<F: Fn(&Path) -> Result<(), apaint::Error> + 'static>(
+>>>>>>> c12e90263d42dbc1851ec3d4f9c56bc4854152ee
             &self,
             callback: F,
         ) {
