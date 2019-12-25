@@ -51,10 +51,11 @@ impl<F: ColourComponent> From<(&BasicPaintSpec<F>, &Rc<SeriesId>)> for SeriesPai
     }
 }
 
+// TODO: think about not considering series id when testing equality and order
 impl<F: ColourComponent> PartialEq for SeriesPaint<F> {
     fn eq(&self, other: &Self) -> bool {
-        if self.series_id == other.series_id {
-            self.id == other.id
+        if self.id == other.id {
+            self.series_id == other.series_id
         } else {
             false
         }
@@ -65,10 +66,10 @@ impl<F: ColourComponent> Eq for SeriesPaint<F> {}
 
 impl<F: ColourComponent> PartialOrd for SeriesPaint<F> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match self.series_id.cmp(&other.series_id) {
+        match self.id.cmp(&other.id) {
             Ordering::Less => Some(Ordering::Less),
             Ordering::Greater => Some(Ordering::Greater),
-            Ordering::Equal => Some(self.id.cmp(&other.id)),
+            Ordering::Equal => Some(self.series_id.cmp(&other.series_id)),
         }
     }
 }
