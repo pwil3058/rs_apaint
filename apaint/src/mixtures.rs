@@ -17,12 +17,11 @@ use apaint_boilerplate::Colour;
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    series::{SeriesPaint, SeriesPaintFinder},
-    spec::SeriesId,
+    series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, LabelText, TooltipText,
 };
 
-#[derive(Debug, Colour)]
+#[derive(Debug, Colour, PartialEq)]
 pub struct MixedPaint<F: ColourComponent> {
     rgb: RGB<F>,
     targeted_rgb: Option<RGB<F>>,
@@ -371,7 +370,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Paint<F: ColourComponent> {
     Series(Rc<SeriesPaint<F>>),
     Mixed(Rc<MixedPaint<F>>),
@@ -678,5 +677,61 @@ impl<F: ColourComponent + Serialize> SaveableMixingSession<F> {
         let json_text = serde_json::to_string_pretty(self)?;
         hasher.write_all(json_text.as_bytes())?;
         Ok(hasher.finish())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::rc::Rc;
+
+    use crate::mixtures::{MixedPaintBuilder, MixingSession};
+    use crate::series::{
+        BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
+        SeriesPaintSeriesSpec,
+    };
+    use colour_math::RGB;
+
+    impl SeriesPaintFinder<f64> for SeriesPaintSeries<f64> {
+        fn get_series_paint(
+            &self,
+            id: &str,
+            _series_id: Option<&SeriesId>,
+        ) -> Result<Rc<SeriesPaint<f64>>, crate::Error> {
+            if let Some(paint) = self.find(id) {
+                Ok(Rc::clone(paint))
+            } else {
+                Err(crate::Error::NotFound(id.to_string()))
+            }
+        }
+    }
+
+    #[test]
+    fn save_and_recover() {
+        let mut series_spec = SeriesPaintSeriesSpec::<f64>::default();
+        series_spec.set_proprietor("owner");
+        series_spec.set_series_name("series name");
+        assert!(series_spec.paints().next().is_none());
+        series_spec.add(&BasicPaintSpec::new(RGB::<f64>::RED, "red"));
+        series_spec.add(&BasicPaintSpec::new(RGB::<f64>::YELLOW, "yellow"));
+        let series = Rc::new(SeriesPaintSeries::<f64>::from(&series_spec));
+        let mut session = MixingSession::<f64>::new();
+        session.set_notes("a test mixing session");
+        let red = series.find("red").unwrap();
+        let yellow = series.find("red").unwrap();
+        let mix = vec![(Rc::clone(red), 1), (Rc::clone(yellow), 1)];
+        let mixture = MixedPaintBuilder::new("#001")
+            .series_paint_components(mix)
+            .name("orange")
+            .build();
+        session.add_mixture(&mixture);
+        let mut buffer: Vec<u8> = vec![];
+        let digest = session.write(&mut buffer).unwrap();
+        let read_session = MixingSession::<f64>::read(&mut &buffer[..], &series).unwrap();
+        assert_eq!(digest, read_session.digest().unwrap());
+        assert_eq!(session.notes(), read_session.notes());
+        assert_eq!(session.mixtures.len(), read_session.mixtures.len());
+        for (mix1, mix2) in session.mixtures().zip(read_session.mixtures()) {
+            assert_eq!(mix1, mix2);
+        }
     }
 }

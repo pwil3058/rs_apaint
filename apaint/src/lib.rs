@@ -13,7 +13,6 @@ pub mod drawing;
 pub mod hue_wheel;
 pub mod mixtures;
 pub mod series;
-pub mod spec;
 pub mod xpm;
 
 pub use colour_math::*;
@@ -77,8 +76,8 @@ pub enum Error {
     IOError(io::Error),
     SerdeJsonError(serde_json::Error),
     NotFound(String),
-    UnknownSeries(crate::spec::SeriesId),
-    UnknownSeriesPaint(crate::spec::SeriesId, String),
+    UnknownSeries(crate::series::SeriesId),
+    UnknownSeriesPaint(crate::series::SeriesId, String),
 }
 
 impl fmt::Display for Error {

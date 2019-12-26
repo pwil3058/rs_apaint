@@ -17,8 +17,7 @@ use pw_gix::gtkx::list_store::TreeModelRowOps;
 
 use crate::colour::{ColourInterface, ScalarAttribute};
 use crate::managed_menu::MenuItemSpec;
-use apaint::series::SeriesPaint;
-use apaint::spec::BasicPaintSpec;
+use apaint::series::{BasicPaintSpec, SeriesPaint};
 
 #[derive(PWO)]
 pub struct ColouredItemListView {

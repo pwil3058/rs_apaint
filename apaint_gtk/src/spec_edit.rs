@@ -11,7 +11,7 @@ use pw_gix::wrapper::*;
 
 use colour_math::ScalarAttribute;
 
-use apaint::spec::BasicPaintSpec;
+use apaint::series::BasicPaintSpec;
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 

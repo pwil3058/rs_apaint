@@ -19,7 +19,7 @@ use colour_math::{ColourInterface, ScalarAttribute};
 use apaint::{
     characteristics::CharacteristicType,
     hue_wheel::MakeColouredShape,
-    spec::{BasicPaintSeriesSpec, BasicPaintSpec},
+    series::{BasicPaintSpec, SeriesPaintSeriesSpec},
     BasicPaintIfce,
 };
 
@@ -174,7 +174,7 @@ pub struct BasicPaintFactory {
     list_view: Rc<ColouredItemListView>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    paint_series: RefCell<BasicPaintSeriesSpec<f64>>,
+    paint_series: RefCell<SeriesPaintSeriesSpec<f64>>,
     saved_series_digest: RefCell<Vec<u8>>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
@@ -245,7 +245,7 @@ impl BasicPaintFactory {
             list_view,
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
-            paint_series: RefCell::new(BasicPaintSeriesSpec::default()),
+            paint_series: RefCell::new(SeriesPaintSeriesSpec::default()),
             saved_series_digest: RefCell::new(vec![]),
             proprietor_entry,
             series_name_entry,
@@ -562,7 +562,7 @@ impl BasicPaintFactory {
     fn load(&self) {
         if let Some(path) = self.ask_file_path(Some("Load from: "), None, true) {
             match File::open(&path) {
-                Ok(mut file) => match BasicPaintSeriesSpec::<f64>::read(&mut file) {
+                Ok(mut file) => match SeriesPaintSeriesSpec::<f64>::read(&mut file) {
                     Ok(new_series) => {
                         if self.ok_to_reset() {
                             self.unguarded_reset();

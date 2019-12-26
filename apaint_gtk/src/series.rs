@@ -15,8 +15,7 @@ use apaint_gtk_boilerplate::{Wrapper, PWO};
 use apaint::{
     characteristics::CharacteristicType,
     hue_wheel::MakeColouredShape,
-    series::{SeriesPaint, SeriesPaintFinder, SeriesPaintSeries},
-    spec::{BasicPaintSeriesSpec, SeriesId},
+    series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
 
 use crate::icon_image::series_paint_load_image;
@@ -292,7 +291,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error> {
         // TODO: check for duplicate files
         let mut file = File::open(path)?;
-        let new_series_spec = BasicPaintSeriesSpec::<f64>::read(&mut file)?;
+        let new_series_spec = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
         self.add_series((&new_series_spec).into())?;
         // TODO: adjust date for detecting duplicates
         Ok(())
