@@ -34,6 +34,7 @@ pub mod saved {
         current_file_digest: RefCell<Vec<u8>>,
         load_file_callback: RefCell<Option<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>>,
         write_file_callback: RefCell<Option<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>>,
+        reset_callback: RefCell<Option<Box<dyn Fn() -> Result<(), apaint::Error>>>>,
     }
 
     impl MixerFileManager {
@@ -53,13 +54,13 @@ pub mod saved {
                 None,
             );
 
-            let new_colln_btn = gtk::ButtonBuilder::new()
+            let reset_btn = gtk::ButtonBuilder::new()
                 .tooltip_text("Clear the mixer in preparation for creating a new mixing session")
                 .build();
             // TODO: change setting of image when ButtonBuilder interface is fixed.
-            new_colln_btn.set_image(Some(&icon_image::colln_new_image(Self::BTN_IMAGE_SIZE)));
-            buttons.add_widget("new_colln", &new_colln_btn, 0);
-            hbox.pack_start(&new_colln_btn, false, false, 0);
+            reset_btn.set_image(Some(&icon_image::colln_new_image(Self::BTN_IMAGE_SIZE)));
+            buttons.add_widget("new_colln", &reset_btn, 0);
+            hbox.pack_start(&reset_btn, false, false, 0);
 
             let load_colln_btn = gtk::ButtonBuilder::new()
                 .tooltip_text("Load a saved mixing session.")
@@ -122,6 +123,7 @@ pub mod saved {
                 current_file_digest: RefCell::new(vec![]),
                 load_file_callback: RefCell::new(None),
                 write_file_callback: RefCell::new(None),
+                reset_callback: RefCell::new(None),
             });
 
             let mfm_c = Rc::clone(&mfm);
@@ -131,7 +133,7 @@ pub mod saved {
                     if let Some(path) = mfm_c.ask_file_path(Some("Load from: "), None, false) {
                         if let Some(callback) = &*mfm_c.write_file_callback.borrow() {
                             if let Err(err) = callback(&path) {
-                                mfm_c.report_error("Problem saving file", &err);
+                                mfm_c.report_error("Problem loading file", &err);
                             };
                         }
                     }
@@ -161,6 +163,17 @@ pub mod saved {
                     if let Err(err) = callback(&path) {
                         mfm_c.report_error("Problem saving file", &err);
                     };
+                }
+            });
+
+            let mfm_c = Rc::clone(&mfm);
+            reset_btn.connect_clicked(move |_| {
+                if mfm_c.ok_to_reset() {
+                    if let Some(callback) = &*mfm_c.reset_callback.borrow() {
+                        if let Err(err) = callback() {
+                            mfm_c.report_error("Problem resetting", &err);
+                        };
+                    }
                 }
             });
 

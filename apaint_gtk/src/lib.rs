@@ -307,6 +307,7 @@ pub mod list;
 pub mod mixer;
 pub mod series;
 pub mod spec_edit;
+pub mod storage;
 
 #[derive(Debug)]
 pub enum Error {

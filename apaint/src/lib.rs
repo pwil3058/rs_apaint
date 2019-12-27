@@ -78,6 +78,7 @@ pub enum Error {
     NotFound(String),
     UnknownSeries(crate::series::SeriesId),
     UnknownSeriesPaint(crate::series::SeriesId, String),
+    NotImplemented,
 }
 
 impl fmt::Display for Error {
@@ -90,6 +91,7 @@ impl fmt::Display for Error {
             Error::UnknownSeriesPaint(series_id, id) => {
                 write!(f, "{}:({}): unknown paint", id, series_id)
             }
+            Error::NotImplemented => write!(f, "Feature not yet implemented."),
         }
     }
 }
