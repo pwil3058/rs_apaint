@@ -39,7 +39,7 @@ pub struct StorageManager {
 }
 
 impl StorageManager {
-    pub fn ok_to_reset(&self) -> bool {
+    fn ok_to_reset(&self) -> bool {
         let status = self.buttons.current_condns();
         if status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0 {
             if status & SAV_IS_SAVEABLE != 0 {
@@ -82,6 +82,45 @@ impl StorageManager {
         };
         true
     }
+
+    fn reset(&self) {
+        if self.ok_to_reset() {
+            if let Err(err) = (self.reset_callback.borrow().as_ref())() {
+                self.report_error("Reset Error:", &err);
+            };
+        }
+    }
+
+    fn load(&self) {
+        if self.ok_to_reset() {
+            // TODO: use last dir data option
+            if let Some(path) = self.ask_file_path(Some("Load from: "), None, false) {
+                if let Err(err) = (self.load_callback.borrow().as_ref())(&path) {
+                    self.report_error("Load Error:", &err);
+                };
+            };
+        }
+    }
+
+    fn save(&self) {
+        let temp = self.current_file_path.borrow();
+        if let Some(path) = temp.as_ref() {
+            if let Err(err) = (self.save_callback.borrow().as_ref())(&path) {
+                self.report_error("Save Error:", &err);
+            };
+        } else {
+            self.save_as();
+        }
+    }
+
+    fn save_as(&self) {
+        // TODO: use last dir data option
+        if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
+            if let Err(err) = (self.save_callback.borrow().as_ref())(&path) {
+                self.report_error("Save Error:", &err);
+            };
+        };
+    }
 }
 
 pub struct StorageManagerBuilder {
@@ -119,13 +158,7 @@ impl StorageManagerBuilder {
         storage_manager.buttons.add_widget("reset", &button, 0);
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
-        button.connect_clicked(move |_| {
-            if sm_c.ok_to_reset() {
-                if let Err(err) = (sm_c.reset_callback.borrow().as_ref())() {
-                    sm_c.report_error("Reset Error:", &err);
-                };
-            }
-        });
+        button.connect_clicked(move |_| sm_c.reset());
 
         // Load
         let button = gtk::ButtonBuilder::new()
@@ -135,55 +168,33 @@ impl StorageManagerBuilder {
         storage_manager.buttons.add_widget("load", &button, 0);
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
-        button.connect_clicked(move |_| {
-            if sm_c.ok_to_reset() {
-                // TODO: use last dir data option
-                if let Some(path) = sm_c.ask_file_path(Some("Load from: "), None, false) {
-                    if let Err(err) = (sm_c.load_callback.borrow().as_ref())(&path) {
-                        sm_c.report_error("Load Error:", &err);
-                    };
-                };
-            }
-        });
+        button.connect_clicked(move |_| sm_c.load());
 
         // Save
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.save_tooltip_text)
             .image(&icon_image::colln_save_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
-        storage_manager.buttons.add_widget(
-            "save",
-            &button,
-            SAV_SESSION_IS_SAVEABLE + SAV_HAS_CURRENT_FILE,
-        );
+        storage_manager
+            .buttons
+            .add_widget("save", &button, SAV_SESSION_IS_SAVEABLE);
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
-        button.connect_clicked(move |_| {
-            let temp = sm_c.current_file_path.borrow();
-            let path = temp.as_ref().expect("guarded");
-            if let Err(err) = (sm_c.save_callback.borrow().as_ref())(&path) {
-                sm_c.report_error("Save Error:", &err);
-            };
-        });
+        button.connect_clicked(move |_| sm_c.save());
 
         // Save As
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.save_as_tooltip_text)
             .image(&icon_image::colln_save_as_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
-        storage_manager
-            .buttons
-            .add_widget("save as", &button, SAV_SESSION_IS_SAVEABLE);
+        storage_manager.buttons.add_widget(
+            "save as",
+            &button,
+            SAV_SESSION_IS_SAVEABLE + SAV_HAS_CURRENT_FILE,
+        );
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
-        button.connect_clicked(move |_| {
-            // TODO: use last dir data option
-            if let Some(path) = sm_c.ask_file_path(Some("Save as: "), None, false) {
-                if let Err(err) = (sm_c.save_callback.borrow().as_ref())(&path) {
-                    sm_c.report_error("Save Error:", &err);
-                };
-            };
-        });
+        button.connect_clicked(move |_| sm_c.save_as());
 
         storage_manager
             .hbox
@@ -204,18 +215,7 @@ impl StorageManagerBuilder {
             SAV_SESSION_IS_SAVEABLE + SAV_SESSION_NEEDS_SAVING,
         );
         let sm_c = Rc::clone(&storage_manager);
-        button.connect_clicked(move |_| {
-            let temp = sm_c.current_file_path.borrow();
-            if let Some(path) = temp.as_ref() {
-                if let Err(err) = (sm_c.save_callback.borrow().as_ref())(&path) {
-                    sm_c.report_error("Save Error:", &err);
-                } else if let Some(path) = sm_c.ask_file_path(Some("Save as: "), None, false) {
-                    if let Err(err) = (sm_c.save_callback.borrow().as_ref())(&path) {
-                        sm_c.report_error("Save Error:", &err);
-                    };
-                };
-            }
-        });
+        button.connect_clicked(move |_| sm_c.save());
 
         storage_manager
     }
