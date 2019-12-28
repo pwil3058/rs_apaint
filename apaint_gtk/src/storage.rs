@@ -17,12 +17,12 @@ use pw_gix::{
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::{colour::RGB, icon_image};
+use pw_gix::sav_state::MaskedCondns;
 
 pub const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
-pub const SAV_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 1;
-pub const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
-pub const SAV_SESSION_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 3;
-pub const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 4;
+pub const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
+pub const SAV_SESSION_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
+pub const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
 
 const BTN_IMAGE_SIZE: i32 = 24;
 
@@ -33,16 +33,16 @@ pub struct StorageManager {
     file_name_label: gtk::Label,
     current_file_path: RefCell<Option<PathBuf>>,
     current_file_digest: RefCell<Vec<u8>>,
-    load_callback: RefCell<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>,
-    save_callback: RefCell<Box<dyn Fn(&Path) -> Result<(), apaint::Error>>>,
-    reset_callback: RefCell<Box<dyn Fn() -> Result<(), apaint::Error>>>,
+    load_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
+    save_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
+    reset_callback: RefCell<Box<dyn Fn() -> Result<Vec<u8>, apaint::Error>>>,
 }
 
 impl StorageManager {
     fn ok_to_reset(&self) -> bool {
         let status = self.buttons.current_condns();
         if status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0 {
-            if status & SAV_IS_SAVEABLE != 0 {
+            if status & SAV_SESSION_IS_SAVEABLE + SAV_TOOL_NEEDS_SAVING == SAV_SESSION_IS_SAVEABLE {
                 let buttons = [
                     ("Cancel", gtk::ResponseType::Other(0)),
                     ("Save and Continue", gtk::ResponseType::Other(1)),
@@ -85,9 +85,18 @@ impl StorageManager {
 
     fn reset(&self) {
         if self.ok_to_reset() {
-            if let Err(err) = (self.reset_callback.borrow().as_ref())() {
-                self.report_error("Reset Error:", &err);
-            };
+            match (self.reset_callback.borrow().as_ref())() {
+                Ok(digest) => {
+                    self.file_name_label.set_label("");
+                    *self.current_file_path.borrow_mut() = None;
+                    *self.current_file_digest.borrow_mut() = digest;
+                    self.buttons.update_condns(MaskedCondns {
+                        condns: 0,
+                        mask: SAV_HAS_CURRENT_FILE + SAV_SESSION_NEEDS_SAVING,
+                    });
+                }
+                Err(err) => self.report_error("Reset Error:", &err),
+            }
         }
     }
 
@@ -95,9 +104,18 @@ impl StorageManager {
         if self.ok_to_reset() {
             // TODO: use last dir data option
             if let Some(path) = self.ask_file_path(Some("Load from: "), None, false) {
-                if let Err(err) = (self.load_callback.borrow().as_ref())(&path) {
-                    self.report_error("Load Error:", &err);
-                };
+                match (self.load_callback.borrow().as_ref())(&path) {
+                    Ok(digest) => {
+                        self.file_name_label.set_label(&path.to_string_lossy());
+                        *self.current_file_path.borrow_mut() = Some(path);
+                        *self.current_file_digest.borrow_mut() = digest;
+                        self.buttons.update_condns(MaskedCondns {
+                            condns: SAV_HAS_CURRENT_FILE,
+                            mask: SAV_HAS_CURRENT_FILE + SAV_SESSION_NEEDS_SAVING,
+                        });
+                    }
+                    Err(err) => self.report_error("Load Error:", &err),
+                }
             };
         }
     }
@@ -105,9 +123,16 @@ impl StorageManager {
     fn save(&self) {
         let temp = self.current_file_path.borrow();
         if let Some(path) = temp.as_ref() {
-            if let Err(err) = (self.save_callback.borrow().as_ref())(&path) {
-                self.report_error("Save Error:", &err);
-            };
+            match (self.save_callback.borrow().as_ref())(&path) {
+                Ok(digest) => {
+                    *self.current_file_digest.borrow_mut() = digest;
+                    self.buttons.update_condns(MaskedCondns {
+                        condns: 0,
+                        mask: SAV_SESSION_NEEDS_SAVING,
+                    })
+                }
+                Err(err) => self.report_error("Save Error:", &err),
+            }
         } else {
             self.save_as();
         }
@@ -116,9 +141,18 @@ impl StorageManager {
     fn save_as(&self) {
         // TODO: use last dir data option
         if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
-            if let Err(err) = (self.save_callback.borrow().as_ref())(&path) {
-                self.report_error("Save Error:", &err);
-            };
+            match (self.save_callback.borrow().as_ref())(&path) {
+                Ok(digest) => {
+                    self.file_name_label.set_label(&path.to_string_lossy());
+                    *self.current_file_path.borrow_mut() = Some(path);
+                    *self.current_file_digest.borrow_mut() = digest;
+                    self.buttons.update_condns(MaskedCondns {
+                        condns: SAV_HAS_CURRENT_FILE,
+                        mask: SAV_HAS_CURRENT_FILE + SAV_SESSION_NEEDS_SAVING,
+                    });
+                }
+                Err(err) => self.report_error("Save Error:", &err),
+            }
         };
     }
 }
