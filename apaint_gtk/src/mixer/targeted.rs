@@ -38,11 +38,9 @@ use crate::{
     hue_wheel::GtkHueWheel,
     icon_image::series_paint_image,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
-    mixer::{
-        component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
-        saved::MixerFileManager,
-    },
+    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
     series::PaintSeriesManager,
+    storage::{StorageManager, StorageManagerBuilder},
     window::PersistentWindowButtonBuilder,
 };
 
@@ -151,7 +149,7 @@ impl TargetedPaintEntry {
 pub struct TargetedPaintMixer {
     vbox: gtk::Box,
     mixing_session: RefCell<MixingSession<f64>>,
-    file_manager: Rc<MixerFileManager>,
+    file_manager: Rc<StorageManager>,
     notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
@@ -173,7 +171,7 @@ impl TargetedPaintMixer {
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let file_manager = MixerFileManager::new();
+        let file_manager = StorageManagerBuilder::new().build();
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], attributes);
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
@@ -291,7 +289,6 @@ impl TargetedPaintMixer {
         tpm.notes_entry.connect_changed(move |entry| {
             if let Some(text) = entry.get_text() {
                 tpm_c.mixing_session.borrow_mut().set_notes(&text);
-                tpm_c.update_saveability();
                 tpm_c.update_session_needs_saving();
             }
         });
@@ -326,11 +323,11 @@ impl TargetedPaintMixer {
         // FILE MANAGEMENT
         let tpm_c = Rc::clone(&tpm);
         tpm.file_manager
-            .connect_write_to_file(move |path| tpm_c.write_to_file(path));
+            .connect_save(move |path| tpm_c.write_to_file(path));
 
         let tpm_c = Rc::clone(&tpm);
         tpm.file_manager
-            .connect_read_from_file(move |path| tpm_c.read_from_file(path));
+            .connect_load(move |path| tpm_c.read_from_file(path));
 
         tpm
     }
@@ -394,21 +391,6 @@ impl TargetedPaintMixer {
         }
     }
 
-    fn update_saveability(&self) {
-        let mut condns: u64 = 0;
-        let mask: u64 =
-            MixerFileManager::SAV_IS_SAVEABLE + MixerFileManager::SAV_SESSION_IS_SAVEABLE;
-        let session = self.mixing_session.borrow();
-        if session.notes().len() > 0 {
-            condns += MixerFileManager::SAV_SESSION_IS_SAVEABLE;
-            if self.file_manager.tool_needs_saving() {
-                condns += MixerFileManager::SAV_IS_SAVEABLE;
-            }
-        }
-        self.file_manager
-            .update_condns(MaskedCondns { condns, mask });
-    }
-
     fn update_session_needs_saving(&self) {
         let digest = self
             .mixing_session
@@ -418,17 +400,14 @@ impl TargetedPaintMixer {
         self.file_manager.update_session_needs_saving(&digest);
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
-        self.file_manager
-            .set_current_file_path(Some((path, &new_digest)));
-        self.update_session_needs_saving();
-        Ok(())
+        Ok(new_digest)
     }
 
-    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
@@ -450,11 +429,9 @@ impl TargetedPaintMixer {
             self.list_view
                 .add_row(&mixture.row(&self.attributes, &self.characteristics));
         }
-        self.file_manager
-            .set_current_file_path(Some((path, &session.digest().expect("should work"))));
+        let digest = session.digest().expect("should work");
         *self.mixing_session.borrow_mut() = session;
-        self.update_session_needs_saving();
-        Ok(())
+        Ok(digest)
     }
 
     pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {

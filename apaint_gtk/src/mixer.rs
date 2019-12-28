@@ -25,7 +25,7 @@ pub mod saved {
     use crate::{colour::RGB, icon_image};
 
     #[derive(PWO, Wrapper)]
-    pub struct MixerFileManager {
+    pub struct MixerFileManagerObsolete {
         hbox: gtk::Box,
         buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
         file_name_label: gtk::Label,
@@ -37,7 +37,7 @@ pub mod saved {
         reset_callback: RefCell<Option<Box<dyn Fn() -> Result<(), apaint::Error>>>>,
     }
 
-    impl MixerFileManager {
+    impl MixerFileManagerObsolete {
         pub const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
         pub const SAV_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 1;
         pub const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;

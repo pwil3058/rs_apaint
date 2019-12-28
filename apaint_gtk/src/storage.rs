@@ -57,6 +57,35 @@ impl StorageManager {
         *self.reset_callback.borrow_mut() = Box::new(callback);
     }
 
+    pub fn update_session_needs_saving(&self, digest: &[u8]) {
+        let mut condns: u64 = 0;
+        let mask = SAV_SESSION_NEEDS_SAVING;
+        if digest != &self.current_file_digest.borrow()[..] {
+            condns = SAV_SESSION_NEEDS_SAVING;
+        };
+        self.buttons.update_condns(MaskedCondns { condns, mask });
+        self.update_file_status_button();
+    }
+
+    fn update_file_status_button(&self) {
+        let current_condns = self.buttons.current_condns();
+        let file_status_btn = self.buttons.get_widget("status").expect("should work");
+        if current_condns & SAV_SESSION_NEEDS_SAVING != 0 {
+            if current_condns & SAV_SESSION_IS_SAVEABLE != 0 {
+                file_status_btn.set_image(Some(&icon_image::needs_save_ready_image(24)));
+                file_status_btn.set_tooltip_text(Some(
+                    "File Status: Needs Save (Ready)\nClick to save data to file",
+                ));
+            } else {
+                file_status_btn.set_image(Some(&icon_image::needs_save_not_ready_image(24)));
+                file_status_btn.set_tooltip_text(Some("File Status: Needs Save (NOT Ready)"));
+            }
+        } else {
+            file_status_btn.set_image(Some(&icon_image::up_to_date_image(24)));
+            file_status_btn.set_tooltip_text(Some("File Status: Up To Date"));
+        }
+    }
+
     fn ok_to_reset(&self) -> bool {
         let status = self.buttons.current_condns();
         if status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0 {
@@ -114,7 +143,8 @@ impl StorageManager {
                     });
                 }
                 Err(err) => self.report_error("Reset Error:", &err),
-            }
+            };
+            self.update_file_status_button();
         }
     }
 
@@ -133,7 +163,8 @@ impl StorageManager {
                         });
                     }
                     Err(err) => self.report_error("Load Error:", &err),
-                }
+                };
+                self.update_file_status_button();
             };
         }
     }
@@ -150,7 +181,8 @@ impl StorageManager {
                     })
                 }
                 Err(err) => self.report_error("Save Error:", &err),
-            }
+            };
+            self.update_file_status_button();
         } else {
             self.save_as();
         }
@@ -170,7 +202,8 @@ impl StorageManager {
                     });
                 }
                 Err(err) => self.report_error("Save Error:", &err),
-            }
+            };
+            self.update_file_status_button();
         };
     }
 }
@@ -183,6 +216,15 @@ pub struct StorageManagerBuilder {
 }
 
 impl StorageManagerBuilder {
+    pub fn new() -> Self {
+        Self {
+            reset_tooltip_text: "Reset in preparation for a new session".to_string(),
+            load_tooltip_text: "Load data from a nominated file to start a new session".to_string(),
+            save_tooltip_text: "Save the current session".to_string(),
+            save_as_tooltip_text: "Save the current session to a new (nominated) file".to_string(),
+        }
+    }
+
     pub fn build(self) -> Rc<StorageManager> {
         let storage_manager = Rc::new(StorageManager {
             hbox: gtk::Box::new(gtk::Orientation::Horizontal, 0),
