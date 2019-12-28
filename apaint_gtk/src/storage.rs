@@ -60,11 +60,34 @@ impl StorageManager {
     }
 
     pub fn update_session_needs_saving(&self, digest: &[u8]) {
-        let mut condns: u64 = 0;
-        let mask = SAV_SESSION_NEEDS_SAVING;
-        if digest != &self.current_file_digest.borrow()[..] {
-            condns = SAV_SESSION_NEEDS_SAVING;
+        let condns: u64 = if digest != &self.current_file_digest.borrow()[..] {
+            SAV_SESSION_NEEDS_SAVING
+        } else {
+            0
         };
+        let mask = SAV_SESSION_NEEDS_SAVING;
+        self.buttons.update_condns(MaskedCondns { condns, mask });
+        self.update_file_status_button();
+    }
+
+    pub fn update_session_is_saveable(&self, is_saveable: bool) {
+        let condns: u64 = if is_saveable {
+            SAV_SESSION_IS_SAVEABLE
+        } else {
+            0
+        };
+        let mask = SAV_SESSION_IS_SAVEABLE;
+        self.buttons.update_condns(MaskedCondns { condns, mask });
+        self.update_file_status_button();
+    }
+
+    pub fn update_tool_needs_saving(&self, needs_saving: bool) {
+        let condns: u64 = if needs_saving {
+            SAV_TOOL_NEEDS_SAVING
+        } else {
+            0
+        };
+        let mask = SAV_TOOL_NEEDS_SAVING;
         self.buttons.update_condns(MaskedCondns { condns, mask });
         self.update_file_status_button();
     }
@@ -178,8 +201,9 @@ impl StorageManager {
     }
 
     fn save(&self) {
-        let temp = self.current_file_path.borrow();
-        if let Some(path) = temp.as_ref() {
+        if self.buttons.current_condns() & SAV_HAS_CURRENT_FILE != 0 {
+            let temp = self.current_file_path.borrow();
+            let path = temp.as_ref().expect("guarder");
             match (self.save_callback.borrow().as_ref())(&path) {
                 Ok(digest) => {
                     *self.current_file_digest.borrow_mut() = digest;
@@ -239,6 +263,17 @@ impl StorageManagerBuilder {
             save_as_tooltip_text: "Save the current session to a new (nominated) file".to_string(),
             last_file_key: "generic".to_string(),
         }
+    }
+
+    pub fn tooltip_text(mut self, name: &str, text: &str) -> Self {
+        match name {
+            "reset" => self.reset_tooltip_text = text.to_string(),
+            "save" => self.save_tooltip_text = text.to_string(),
+            "save as" => self.save_as_tooltip_text = text.to_string(),
+            "load" => self.load_tooltip_text = text.to_string(),
+            _ => panic!("{}: unknown button name", name),
+        };
+        self
     }
 
     pub fn build(self) -> Rc<StorageManager> {
