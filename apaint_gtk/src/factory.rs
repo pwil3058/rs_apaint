@@ -2,17 +2,12 @@
 
 use std::cell::RefCell;
 use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::rc::Rc;
 
 use gtk::prelude::*;
-use pw_gix::wrapper::*;
 
-use pw_gix::gtkx::coloured::Colourable;
-use pw_gix::gtkx::paned::RememberPosition;
-use pw_gix::sav_state::{
-    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
-};
+use pw_gix::{gtkx::paned::RememberPosition, sav_state::SAV_HOVER_OK, wrapper::*};
 
 use colour_math::{ColourInterface, ScalarAttribute};
 
@@ -25,157 +20,24 @@ use apaint::{
 
 use apaint_gtk_boilerplate::{Wrapper, PWO};
 
-use crate::colour::RGB;
-use crate::hue_wheel::GtkHueWheel;
-use crate::icon_image;
-use crate::icon_image::{needs_save_not_ready_image, needs_save_ready_image, up_to_date_image};
-use crate::list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow};
-use crate::managed_menu::MenuItemSpec;
-use crate::spec_edit::BasicPaintSpecEditor;
-
-#[derive(PWO)]
-struct FactoryFileManager {
-    hbox: gtk::Box,
-    buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
-    file_name_label: gtk::Label,
-    file_status_btn: gtk::Button,
-    current_file_path: RefCell<Option<PathBuf>>,
-}
-
-impl FactoryFileManager {
-    const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
-    const SAV_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 1;
-    const SAV_EDITOR_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
-    const SAV_SERIES_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 3;
-    const SAV_SERIES_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 4;
-
-    const BTN_IMAGE_SIZE: i32 = 24;
-
-    fn new() -> Self {
-        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
-            WidgetStatesControlled::Sensitivity,
-            None,
-            None,
-        );
-
-        let new_colln_btn = gtk::ButtonBuilder::new()
-            .tooltip_text("Clear the editor in preparation for creating a new collection")
-            .build();
-        // TODO: change setting of image when ButtonBuilder interface is fixed.
-        new_colln_btn.set_image(Some(&icon_image::colln_new_image(Self::BTN_IMAGE_SIZE)));
-        buttons.add_widget("new_colln", &new_colln_btn, 0);
-        hbox.pack_start(&new_colln_btn, false, false, 0);
-
-        let load_colln_btn = gtk::ButtonBuilder::new()
-            .tooltip_text("Load a paint collection from a file for editing.")
-            .build();
-        // TODO: change setting of image when ButtonBuilder interface is fixed.
-        load_colln_btn.set_image(Some(&icon_image::colln_load_image(Self::BTN_IMAGE_SIZE)));
-        buttons.add_widget("load_colln", &load_colln_btn, 0);
-        hbox.pack_start(&load_colln_btn, false, false, 0);
-
-        let save_colln_btn = gtk::ButtonBuilder::new()
-            .tooltip_text("Save the current editor content to the current file.")
-            .build();
-        // TODO: change setting of image when ButtonBuilder interface is fixed.
-        save_colln_btn.set_image(Some(&icon_image::colln_save_image(Self::BTN_IMAGE_SIZE)));
-        buttons.add_widget(
-            "save_colln",
-            &save_colln_btn,
-            Self::SAV_HAS_CURRENT_FILE + Self::SAV_SERIES_IS_SAVEABLE,
-        );
-        hbox.pack_start(&save_colln_btn, false, false, 0);
-
-        let save_as_colln_btn = gtk::ButtonBuilder::new()
-            .tooltip_text("Save the current editor content to a nominated file.")
-            .build();
-        // TODO: change setting of image when ButtonBuilder interface is fixed.
-        save_as_colln_btn.set_image(Some(&icon_image::colln_save_as_image(Self::BTN_IMAGE_SIZE)));
-        buttons.add_widget(
-            "save_as_colln",
-            &save_as_colln_btn,
-            Self::SAV_SERIES_IS_SAVEABLE,
-        );
-        hbox.pack_start(&save_as_colln_btn, false, false, 0);
-
-        hbox.pack_start(&gtk::Label::new(Some("Current File:")), false, false, 1);
-        let file_name_label = gtk::LabelBuilder::new()
-            .justify(gtk::Justification::Left)
-            .xalign(0.01)
-            .build();
-        file_name_label.set_widget_colour_rgb(RGB::WHITE);
-        hbox.pack_start(&file_name_label, true, true, 1);
-
-        let file_status_btn = gtk::ButtonBuilder::new().sensitive(false).build();
-        file_status_btn.set_image(Some(&up_to_date_image(Self::BTN_IMAGE_SIZE)));
-        hbox.pack_start(&file_status_btn, false, false, 1);
-        buttons.add_widget(
-            "file_status",
-            &file_status_btn,
-            Self::SAV_SERIES_IS_SAVEABLE + Self::SAV_SERIES_NEEDS_SAVING,
-        );
-
-        hbox.show_all();
-
-        Self {
-            hbox,
-            buttons,
-            file_name_label,
-            file_status_btn,
-            current_file_path: RefCell::new(None),
-        }
-    }
-
-    fn set_current_file_path<Q: AsRef<Path>>(&self, path: Option<Q>) {
-        let mut condns: u64 = 0;
-        let mask: u64 = Self::SAV_HAS_CURRENT_FILE;
-        if let Some(path) = path {
-            let path: PathBuf = path.as_ref().to_path_buf();
-            self.file_name_label.set_label(&path.to_string_lossy());
-            *self.current_file_path.borrow_mut() = Some(path);
-            condns = Self::SAV_HAS_CURRENT_FILE;
-        } else {
-            *self.current_file_path.borrow_mut() = None;
-            self.file_name_label.set_label("")
-        }
-        self.buttons.update_condns(MaskedCondns { condns, mask });
-    }
-
-    fn update_file_status_button(&self) {
-        let current_condns = self.buttons.current_condns();
-        if current_condns & Self::SAV_SERIES_NEEDS_SAVING != 0 {
-            if current_condns & Self::SAV_SERIES_IS_SAVEABLE != 0 {
-                self.file_status_btn
-                    .set_image(Some(&needs_save_ready_image(24)));
-                self.file_status_btn.set_tooltip_text(Some(
-                    "File Status: Needs Save (Ready)\nClick to save data to file",
-                ));
-            } else {
-                self.file_status_btn
-                    .set_image(Some(&needs_save_not_ready_image(24)));
-                self.file_status_btn
-                    .set_tooltip_text(Some("File Status: Needs Save (NOT Ready)"));
-            }
-        } else {
-            self.file_status_btn.set_image(Some(&up_to_date_image(24)));
-            self.file_status_btn
-                .set_tooltip_text(Some("File Status: Up To Date"));
-        }
-    }
-}
+use crate::{
+    hue_wheel::GtkHueWheel,
+    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
+    managed_menu::MenuItemSpec,
+    spec_edit::BasicPaintSpecEditor,
+    storage::{StorageManager, StorageManagerBuilder},
+};
 
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintFactory {
     vbox: gtk::Box,
-    file_manager: FactoryFileManager,
+    file_manager: Rc<StorageManager>,
     paint_editor: Rc<BasicPaintSpecEditor>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     paint_series: RefCell<SeriesPaintSeriesSpec<f64>>,
-    saved_series_digest: RefCell<Vec<u8>>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
 }
@@ -234,7 +96,16 @@ impl BasicPaintFactory {
         paned.add2(&paint_editor.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let file_manager = FactoryFileManager::new();
+        let file_manager = StorageManagerBuilder::new()
+            .last_file_key("factory::series_paints")
+            .tooltip_text(
+                "reset",
+                "Clear the editor in preparation for creating a new collection",
+            )
+            .tooltip_text("load", "Load a paint collection from a file for editing.")
+            .tooltip_text("save", "Save the current editor content to the current file (or to a nominated file if there's no current file).")
+            .tooltip_text("save as", "Save the current editor content to a nominated file which will become the current file.")
+            .build();
         vbox.pack_start(&file_manager.pwo(), false, false, 0);
         vbox.pack_start(&paned, true, true, 0);
         let bpf = Rc::new(Self {
@@ -246,7 +117,6 @@ impl BasicPaintFactory {
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
             paint_series: RefCell::new(SeriesPaintSeriesSpec::default()),
-            saved_series_digest: RefCell::new(vec![]),
             proprietor_entry,
             series_name_entry,
         });
@@ -298,95 +168,34 @@ impl BasicPaintFactory {
         });
 
         let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager
-            .buttons
-            .get_widget("new_colln")
-            .unwrap()
-            .connect_clicked(move |_| bpf_c.reset());
+        bpf.file_manager.connect_reset(move || bpf_c.reset());
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager.connect_load(move |p| bpf_c.load(p));
 
         let bpf_c = Rc::clone(&bpf);
         bpf.file_manager
-            .buttons
-            .get_widget("load_colln")
-            .unwrap()
-            .connect_clicked(move |_| bpf_c.load());
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager
-            .buttons
-            .get_widget("save_colln")
-            .unwrap()
-            .connect_clicked(move |_| bpf_c.save());
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager
-            .buttons
-            .get_widget("save_as_colln")
-            .unwrap()
-            .connect_clicked(move |_| bpf_c.save_as());
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager.file_status_btn.connect_clicked(move |_| {
-            if bpf_c.file_manager.current_file_path.borrow().is_some() {
-                bpf_c.save()
-            } else {
-                bpf_c.save_as()
-            }
-        });
+            .connect_save(move |p| bpf_c.write_to_file(p));
 
         bpf
     }
 
     fn update_saveability(&self) {
-        let mut condns: u64 = 0;
-        let mask: u64 =
-            FactoryFileManager::SAV_IS_SAVEABLE + FactoryFileManager::SAV_SERIES_IS_SAVEABLE;
         let series = self.paint_series.borrow();
         let series_id = series.series_id();
-        if series_id.proprietor().len() > 0 && series_id.series_name().len() > 0 {
-            condns += FactoryFileManager::SAV_SERIES_IS_SAVEABLE;
-            if self.file_manager.buttons.current_condns()
-                & FactoryFileManager::SAV_EDITOR_NEEDS_SAVING
-                == 0
-            {
-                condns += FactoryFileManager::SAV_IS_SAVEABLE;
-            }
-        }
-        self.file_manager
-            .buttons
-            .update_condns(MaskedCondns { condns, mask });
-        self.file_manager.update_file_status_button();
+        self.file_manager.update_session_is_saveable(
+            series_id.proprietor().len() > 0 && series_id.series_name().len() > 0,
+        );
     }
 
     fn update_series_needs_saving(&self) {
-        let mut condns: u64 = 0;
-        let mask = FactoryFileManager::SAV_SERIES_NEEDS_SAVING;
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
-        if digest != *self.saved_series_digest.borrow() {
-            condns = FactoryFileManager::SAV_SERIES_NEEDS_SAVING;
-        };
-        self.file_manager
-            .buttons
-            .update_condns(MaskedCondns { condns, mask });
-        self.file_manager.update_file_status_button();
+        self.file_manager.update_session_needs_saving(&digest);
     }
 
     fn update_editor_needs_saving(&self) {
-        let mut condns: u64 = 0;
-        let mask =
-            FactoryFileManager::SAV_EDITOR_NEEDS_SAVING + FactoryFileManager::SAV_IS_SAVEABLE;
-        if self.paint_editor.has_unsaved_changes() {
-            condns += FactoryFileManager::SAV_EDITOR_NEEDS_SAVING;
-        } else if self.file_manager.buttons.current_condns()
-            & FactoryFileManager::SAV_SERIES_IS_SAVEABLE
-            != 0
-        {
-            condns += FactoryFileManager::SAV_IS_SAVEABLE;
-        }
         self.file_manager
-            .buttons
-            .update_condns(MaskedCondns { condns, mask });
-        self.file_manager.update_file_status_button();
+            .update_tool_needs_saving(self.paint_editor.has_unsaved_changes());
     }
 
     fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec<f64>) {
@@ -409,6 +218,7 @@ impl BasicPaintFactory {
     fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
         self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
+        self.update_editor_needs_saving();
     }
 
     fn remove_paint(&self, id: &str) {
@@ -426,6 +236,7 @@ impl BasicPaintFactory {
             .expect("should not be called if paint has been removed");
         self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
+        self.update_editor_needs_saving();
     }
 
     fn edit_paint(&self, id: &str) {
@@ -456,91 +267,20 @@ impl BasicPaintFactory {
         spec.fluorescence = paint.fluorescence();
         spec.metallicness = paint.metallicness();
         self.paint_editor.edit(&spec);
+        self.update_editor_needs_saving();
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<(), apaint::Error> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.paint_series.borrow_mut().write(&mut file)?;
-        self.file_manager.set_current_file_path(Some(path));
-        *self.saved_series_digest.borrow_mut() = new_digest;
-        self.update_series_needs_saving();
-        Ok(())
+        Ok(new_digest)
     }
 
-    fn save(&self) {
-        let path = self
-            .file_manager
-            .current_file_path
-            .borrow()
-            .clone()
-            .expect("programming error: save() should not have been called.");
-        if let Err(err) = self.write_to_file(path) {
-            self.report_error("Problem saving file", &err);
-        }
-    }
-
-    fn save_as(&self) {
-        // TODO: use last dir data option
-        if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
-            if let Err(err) = self.write_to_file(path) {
-                self.report_error("Problem saving file", &err);
-            }
-        }
-    }
-
-    fn ok_to_reset(&self) -> bool {
-        let status = self.file_manager.buttons.current_condns();
-        if status
-            & (FactoryFileManager::SAV_SERIES_NEEDS_SAVING
-                + FactoryFileManager::SAV_EDITOR_NEEDS_SAVING)
-            != 0
-        {
-            if status & FactoryFileManager::SAV_IS_SAVEABLE != 0 {
-                let buttons = [
-                    ("Cancel", gtk::ResponseType::Other(0)),
-                    ("Save and Continue", gtk::ResponseType::Other(1)),
-                    ("Continue Discarding Changes", gtk::ResponseType::Other(2)),
-                ];
-                match self.ask_question("There are unsaved changes!", None, &buttons) {
-                    gtk::ResponseType::Other(0) => return false,
-                    gtk::ResponseType::Other(1) => {
-                        let o_path = self.file_manager.current_file_path.borrow().clone();
-                        if let Some(path) = o_path {
-                            if let Err(err) = self.write_to_file(&path) {
-                                self.report_error("Failed to save file", &err);
-                                return false;
-                            }
-                        } else if let Some(path) =
-                            self.ask_file_path(Some("Save as: "), None, false)
-                        {
-                            if let Err(err) = self.write_to_file(path) {
-                                self.report_error("Failed to save file", &err);
-                                return false;
-                            }
-                        } else {
-                            return false;
-                        };
-                        return true;
-                    }
-                    _ => return true,
-                }
-            } else {
-                let buttons = &[
-                    ("Cancel", gtk::ResponseType::Cancel),
-                    ("Continue Discarding Changes", gtk::ResponseType::Accept),
-                ];
-                return self.ask_question("There are unsaved changes!", None, buttons)
-                    == gtk::ResponseType::Accept;
-            }
-        };
-        true
-    }
-
-    fn reset(&self) {
-        if self.ok_to_reset() {
-            self.unguarded_reset();
-        }
+    fn reset(&self) -> Result<Vec<u8>, apaint::Error> {
+        self.unguarded_reset();
+        let digest = self.paint_series.borrow().digest().expect("unrecoverable");
+        Ok(digest)
     }
 
     fn unguarded_reset(&self) {
@@ -550,47 +290,29 @@ impl BasicPaintFactory {
         self.paint_series.borrow_mut().remove_all();
         self.hue_wheel.remove_all();
         self.list_view.remove_all();
-        self.file_manager
-            .set_current_file_path(Option::<&str>::None);
-        let new_digest = self.paint_series.borrow().digest().expect("unrecoverable");
-        *self.saved_series_digest.borrow_mut() = new_digest;
         self.update_series_needs_saving();
-        self.update_editor_needs_saving();
-        self.update_saveability();
     }
 
-    fn load(&self) {
-        if let Some(path) = self.ask_file_path(Some("Load from: "), None, true) {
-            match File::open(&path) {
-                Ok(mut file) => match SeriesPaintSeriesSpec::<f64>::read(&mut file) {
-                    Ok(new_series) => {
-                        if self.ok_to_reset() {
-                            self.unguarded_reset();
-                            let id = new_series.series_id();
-                            self.proprietor_entry.set_text(id.proprietor());
-                            self.series_name_entry.set_text(id.series_name());
-                            {
-                                let mut series = self.paint_series.borrow_mut();
-                                for paint in new_series.paints() {
-                                    series.add(paint);
-                                    self.hue_wheel.add_item(paint.coloured_shape());
-                                    let row = paint.row(&self.attributes, &self.characteristics);
-                                    self.list_view.add_row(&row);
-                                }
-                            }
-                            self.file_manager.set_current_file_path(Some(path));
-                            let new_digest =
-                                self.paint_series.borrow().digest().expect("unrecoverable");
-                            *self.saved_series_digest.borrow_mut() = new_digest;
-                            self.update_series_needs_saving();
-                            self.update_editor_needs_saving();
-                            self.update_saveability();
-                        }
-                    }
-                    Err(err) => self.report_error("Bad data.", &err),
-                },
-                Err(err) => self.report_error("Failed to open file.", &err),
+    fn load<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
+        let path: &Path = path.as_ref();
+        let mut file = File::open(&path)?;
+        let new_series = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
+        self.unguarded_reset();
+        let id = new_series.series_id();
+        self.proprietor_entry.set_text(id.proprietor());
+        self.series_name_entry.set_text(id.series_name());
+        {
+            let mut series = self.paint_series.borrow_mut();
+            for paint in new_series.paints() {
+                series.add(paint);
+                self.hue_wheel.add_item(paint.coloured_shape());
+                let row = paint.row(&self.attributes, &self.characteristics);
+                self.list_view.add_row(&row);
             }
         }
+        self.update_series_needs_saving();
+        self.update_editor_needs_saving();
+        let digest = self.paint_series.borrow().digest().expect("unrecoverable");
+        Ok(digest)
     }
 }

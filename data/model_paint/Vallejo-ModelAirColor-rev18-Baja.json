@@ -138,6 +138,21 @@
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.33725490196078434,
+        0.3333333333333333,
+        0.23137254901960785
+      ],
+      "id": "71.010",
+      "name": "Interior Green",
+      "notes": "FS34098",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
     }
   ]
 }
