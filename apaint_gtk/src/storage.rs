@@ -10,6 +10,7 @@ use gtk::prelude::*;
 
 use pw_gix::{
     gtkx::coloured::Colourable,
+    recollections::{recall, remember},
     sav_state::{ConditionalWidgetGroups, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
 };
@@ -36,6 +37,7 @@ pub struct StorageManager {
     load_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
     save_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
     reset_callback: RefCell<Box<dyn Fn() -> Result<Vec<u8>, apaint::Error>>>,
+    last_file_key: String,
 }
 
 impl StorageManager {
@@ -150,10 +152,16 @@ impl StorageManager {
 
     fn load(&self) {
         if self.ok_to_reset() {
-            // TODO: use last dir data option
-            if let Some(path) = self.ask_file_path(Some("Load from: "), None, false) {
+            let last_file = recall(&self.last_file_key);
+            let last_file = if let Some(ref text) = last_file {
+                Some(text.as_str())
+            } else {
+                None
+            };
+            if let Some(path) = self.ask_file_path(Some("Load from: "), last_file, false) {
                 match (self.load_callback.borrow().as_ref())(&path) {
                     Ok(digest) => {
+                        remember(&self.last_file_key, &path.to_string_lossy());
                         self.file_name_label.set_label(&path.to_string_lossy());
                         *self.current_file_path.borrow_mut() = Some(path);
                         *self.current_file_digest.borrow_mut() = digest;
@@ -189,10 +197,16 @@ impl StorageManager {
     }
 
     fn save_as(&self) {
-        // TODO: use last dir data option
-        if let Some(path) = self.ask_file_path(Some("Save as: "), None, false) {
+        let last_file = recall(&self.last_file_key);
+        let last_file = if let Some(ref text) = last_file {
+            Some(text.as_str())
+        } else {
+            None
+        };
+        if let Some(path) = self.ask_file_path(Some("Save as: "), last_file, false) {
             match (self.save_callback.borrow().as_ref())(&path) {
                 Ok(digest) => {
+                    remember(&self.last_file_key, &path.to_string_lossy());
                     self.file_name_label.set_label(&path.to_string_lossy());
                     *self.current_file_path.borrow_mut() = Some(path);
                     *self.current_file_digest.borrow_mut() = digest;
@@ -213,6 +227,7 @@ pub struct StorageManagerBuilder {
     load_tooltip_text: String,
     save_tooltip_text: String,
     save_as_tooltip_text: String,
+    last_file_key: String,
 }
 
 impl StorageManagerBuilder {
@@ -222,6 +237,7 @@ impl StorageManagerBuilder {
             load_tooltip_text: "Load data from a nominated file to start a new session".to_string(),
             save_tooltip_text: "Save the current session".to_string(),
             save_as_tooltip_text: "Save the current session to a new (nominated) file".to_string(),
+            last_file_key: "generic".to_string(),
         }
     }
 
@@ -242,6 +258,7 @@ impl StorageManagerBuilder {
             reset_callback: RefCell::new(Box::new(|| Err(apaint::Error::NotImplemented))),
             save_callback: RefCell::new(Box::new(|_| Err(apaint::Error::NotImplemented))),
             load_callback: RefCell::new(Box::new(|_| Err(apaint::Error::NotImplemented))),
+            last_file_key: format!("{}::storage_manager::last_file", self.last_file_key),
         });
 
         // Reset
