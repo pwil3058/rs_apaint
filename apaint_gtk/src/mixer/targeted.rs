@@ -423,7 +423,7 @@ impl TargetedPaintMixer {
 
     fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
-        let mut file = File::create(path)?;
+        let mut file = File::open(path)?;
         let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
         // TODO: completely clear the mixer
         self.notes_entry.set_text(session.notes());
