@@ -39,6 +39,24 @@ pub struct StorageManager {
 }
 
 impl StorageManager {
+    pub fn connect_load<F: Fn(&Path) -> Result<Vec<u8>, apaint::Error> + 'static>(
+        &self,
+        callback: F,
+    ) {
+        *self.load_callback.borrow_mut() = Box::new(callback);
+    }
+
+    pub fn connect_save<F: Fn(&Path) -> Result<Vec<u8>, apaint::Error> + 'static>(
+        &self,
+        callback: F,
+    ) {
+        *self.save_callback.borrow_mut() = Box::new(callback);
+    }
+
+    pub fn connect_reset<F: Fn() -> Result<Vec<u8>, apaint::Error> + 'static>(&self, callback: F) {
+        *self.reset_callback.borrow_mut() = Box::new(callback);
+    }
+
     fn ok_to_reset(&self) -> bool {
         let status = self.buttons.current_condns();
         if status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0 {
