@@ -276,6 +276,11 @@ impl StorageManagerBuilder {
         self
     }
 
+    pub fn last_file_key(mut self, key: &str) -> Self {
+        self.last_file_key = key.to_string();
+        self
+    }
+
     pub fn build(self) -> Rc<StorageManager> {
         let storage_manager = Rc::new(StorageManager {
             hbox: gtk::Box::new(gtk::Orientation::Horizontal, 0),

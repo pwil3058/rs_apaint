@@ -172,6 +172,7 @@ impl TargetedPaintMixer {
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let file_manager = StorageManagerBuilder::new()
+            .last_file_key("targeted_mixer::session")
             .tooltip_text(
                 "reset",
                 "Reset the mixer in preparation for a new mixing session",
