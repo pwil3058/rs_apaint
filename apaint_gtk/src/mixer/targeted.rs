@@ -171,7 +171,12 @@ impl TargetedPaintMixer {
 
     pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let file_manager = StorageManagerBuilder::new().build();
+        let file_manager = StorageManagerBuilder::new()
+            .tooltip_text(
+                "reset",
+                "Reset the mixer in preparation for a new mixing session",
+            )
+            .build();
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], attributes);
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
@@ -290,6 +295,7 @@ impl TargetedPaintMixer {
             if let Some(text) = entry.get_text() {
                 tpm_c.mixing_session.borrow_mut().set_notes(&text);
                 tpm_c.update_session_needs_saving();
+                tpm_c.update_session_is_saveable();
             }
         });
 
@@ -328,6 +334,9 @@ impl TargetedPaintMixer {
         let tpm_c = Rc::clone(&tpm);
         tpm.file_manager
             .connect_load(move |path| tpm_c.read_from_file(path));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager.connect_reset(move || tpm_c.full_reset());
 
         tpm
     }
@@ -400,6 +409,11 @@ impl TargetedPaintMixer {
         self.file_manager.update_session_needs_saving(&digest);
     }
 
+    fn update_session_is_saveable(&self) {
+        self.file_manager
+            .update_session_is_saveable(self.mixing_session.borrow().notes().len() > 0);
+    }
+
     fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
@@ -450,11 +464,13 @@ impl TargetedPaintMixer {
                 condns: Self::SAV_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
             });
+            self.file_manager.update_tool_needs_saving(true);
         } else {
             self.buttons.update_condns(MaskedCondns {
                 condns: Self::SAV_NOT_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
             });
+            self.file_manager.update_tool_needs_saving(false);
         }
     }
 
@@ -483,6 +499,7 @@ impl TargetedPaintMixer {
         self.series_paint_spinner_box.zero_all_parts();
         // TODO: handle case of duplicate mixed paint
         self.mixing_session.borrow_mut().add_mixture(&mixed_paint);
+        self.update_session_needs_saving();
     }
 
     pub fn cancel_current_mixture(&self) {
@@ -491,6 +508,14 @@ impl TargetedPaintMixer {
         self.mix_entry.notes_entry.set_text("");
         self.set_target_rgb(None);
         self.series_paint_spinner_box.zero_all_parts();
+    }
+
+    pub fn full_reset(&self) -> Result<Vec<u8>, apaint::Error> {
+        self.notes_entry.set_text("");
+        self.cancel_current_mixture();
+        *self.mixing_session.borrow_mut() = MixingSession::new();
+        let digest = self.mixing_session.borrow().digest().expect("should work");
+        Ok(digest)
     }
 
     pub fn simplify_current_parts(&self) {
