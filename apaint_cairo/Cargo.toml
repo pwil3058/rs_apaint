@@ -11,6 +11,4 @@ cairo-rs = { version = "0.7.1", features =["png"] }
 
 apaint = { path = "../apaint" }
 
-# TODO: change colour_math dependency when it goes public
-#colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
-colour_math = { path = "../../../CRATES/rs_colour_math.git" }
+colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
