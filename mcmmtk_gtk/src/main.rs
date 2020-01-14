@@ -12,7 +12,11 @@ fn main() {
     };
     recollections::init(&config::recollection_file_path());
     let win = gtk::Window::new(gtk::WindowType::Toplevel);
-    win.set_geometry_from_recollections("main_window", (200, 200));
+    win.set_geometry_from_recollections("main_window", (600, 400));
+    if let Some(icon) = icon::mcmmtkrs_pixbuf(64) {
+        win.set_icon(Some(&icon));
+    }
+    win.set_title("Modellers Colour Mixing/Matching Tool Kit");
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.show_all();
     win.add(&vbox);
@@ -41,17 +45,19 @@ mod icon {
         "YYYYYY__",
     ];
 
-    pub fn mcmmtkrs_pixbuf() -> gdk_pixbuf::Pixbuf {
-        gdk_pixbuf::Pixbuf::new_from_xpm_data(MCMMTKRS_XPM)
+    pub fn mcmmtkrs_pixbuf(size: i32) -> Option<gdk_pixbuf::Pixbuf> {
+        gdk_pixbuf::Pixbuf::new_from_xpm_data(MCMMTKRS_XPM).scale_simple(
+            size,
+            size,
+            gdk_pixbuf::InterpType::Tiles,
+        )
     }
 
-    pub fn mcmmtkrs_image(size: i32) -> gtk::Image {
-        if let Some(pixbuf) =
-            mcmmtkrs_pixbuf().scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear)
-        {
-            gtk::Image::new_from_pixbuf(Some(&pixbuf))
+    pub fn _mcmmtkrs_image(size: i32) -> Option<gtk::Image> {
+        if let Some(pixbuf) = mcmmtkrs_pixbuf(size) {
+            Some(gtk::Image::new_from_pixbuf(Some(&pixbuf)))
         } else {
-            panic!("File: {:?} Line: {:?}", file!(), line!())
+            None
         }
     }
 }
