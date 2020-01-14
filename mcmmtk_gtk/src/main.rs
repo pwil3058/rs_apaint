@@ -1,10 +1,13 @@
 // Copyright 2020 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
+use std::rc::Rc;
+
 use gtk::prelude::*;
 
-use pw_gix::{gtkx::window::RememberGeometry, recollections};
+use pw_gix::{gtkx::window::RememberGeometry, recollections, wrapper::*};
 
 mod config;
+mod mcmmtk;
 
 fn main() {
     if let Err(err) = gtk::init() {
@@ -17,9 +20,16 @@ fn main() {
         win.set_icon(Some(&icon));
     }
     win.set_title("Modellers Colour Mixing/Matching Tool Kit");
-    let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    vbox.show_all();
-    win.add(&vbox);
+    let mcmmtk = mcmmtk::ModellersColourMixerMatcherTK::new();
+    win.add(&mcmmtk.pwo());
+    let mcmmtk_c = Rc::clone(&mcmmtk);
+    win.connect_delete_event(move |_, _| {
+        if mcmmtk_c.ok_to_quit() {
+            gtk::Inhibit(false)
+        } else {
+            gtk::Inhibit(true)
+        }
+    });
     win.connect_destroy(|_| gtk::main_quit());
     win.show();
     gtk::main()
