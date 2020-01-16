@@ -3,7 +3,7 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use gtk::{prelude::*, BoxExt, ButtonExt, WidgetExt, WidgetExtManual};
+use gtk::{prelude::*, BoxExt, ButtonExt, WidgetExt, prelude::WidgetExtManual};
 
 use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};

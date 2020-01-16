@@ -29,7 +29,7 @@ pub struct ColouredItemListView {
 }
 
 pub trait ColouredItemListViewSpec {
-    fn column_types(&self) -> Vec<gtk::Type>;
+    fn column_types(&self) -> Vec<glib::Type>;
     fn columns(&self) -> Vec<gtk::TreeViewColumn>;
 }
 
@@ -92,7 +92,7 @@ impl ColouredItemListView {
                 if let Some(list_store) = self.view.get_model() {
                     if let Some(iter) = list_store.get_iter(&path) {
                         let value = list_store.get_value(&iter, 0);
-                        if let Some(string) = value.get() {
+                        if let Some(string) = value.get().unwrap() {
                             *self.selected_id.borrow_mut() = Some(string);
                             self.popup_menu.update_hover_condns(true);
                             return;
@@ -131,14 +131,14 @@ impl ColouredItemListView {
         }
     }
 
-    pub fn add_row(&self, row: &[gtk::Value]) {
+    pub fn add_row(&self, row: &[glib::Value]) {
         self.list_store.append_row(&row.to_vec());
     }
 
     pub fn remove_row(&self, id: &str) {
         if let Some((_, iter)) = self
             .list_store
-            .find_row_where(|list_store, iter| list_store.get_value(iter, 0).get() == Some(id))
+            .find_row_where(|list_store, iter| list_store.get_value(iter, 0).get() == Ok(Some(id)))
         {
             self.list_store.remove(&iter);
         } else {
@@ -166,18 +166,18 @@ impl BasicPaintListViewSpec {
 }
 
 impl ColouredItemListViewSpec for BasicPaintListViewSpec {
-    fn column_types(&self) -> Vec<gtk::Type> {
+    fn column_types(&self) -> Vec<glib::Type> {
         let mut column_types = vec![
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
-            gtk::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
             f64::static_type(),
         ];
         for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
-            column_types.push(gtk::Type::String);
+            column_types.push(glib::Type::String);
         }
         column_types
     }
@@ -274,13 +274,13 @@ pub trait PaintListRow: BasicPaintIfce<f64> {
         &self,
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
-    ) -> Vec<gtk::Value> {
+    ) -> Vec<glib::Value> {
         let ha = if let Some(angle) = self.hue_angle() {
             angle.degrees()
         } else {
             -181.0 + self.value()
         };
-        let mut row: Vec<gtk::Value> = vec![
+        let mut row: Vec<glib::Value> = vec![
             self.id().to_value(),
             self.rgb().pango_string().to_value(),
             self.best_foreground_rgb().pango_string().to_value(),
