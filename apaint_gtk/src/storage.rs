@@ -15,8 +15,6 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-
 use crate::{colour::RGB, icon_image};
 use pw_gix::sav_state::MaskedCondns;
 

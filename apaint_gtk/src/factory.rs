@@ -18,8 +18,6 @@ use apaint::{
     BasicPaintIfce,
 };
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-
 use crate::{
     hue_wheel::GtkHueWheel,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},

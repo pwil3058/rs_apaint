@@ -16,7 +16,6 @@ use pw_gix::{
 
 use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
-use apaint_gtk_boilerplate::{Wrapper, PWO};
 use colour_math::ScalarAttribute;
 
 use crate::attributes::AttributeSelectorRadioButtons;

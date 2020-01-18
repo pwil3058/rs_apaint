@@ -10,8 +10,6 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-
 use apaint::{
     characteristics::CharacteristicType,
     hue_wheel::MakeColouredShape,

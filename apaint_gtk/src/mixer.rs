@@ -12,8 +12,6 @@ pub mod saved {
 
     use gtk::prelude::*;
 
-    use apaint_gtk_boilerplate::{Wrapper, PWO};
-
     use pw_gix::{
         gtkx::coloured::Colourable,
         sav_state::{

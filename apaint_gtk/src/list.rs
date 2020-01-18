@@ -4,11 +4,10 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use gtk::prelude::*;
 
-use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
     gtkx::{list_store::ListRowOps, menu::ManagedMenu},
     sav_state::{MaskedCondns, WidgetStatesControlled},
-    wrapper::PackableWidgetObject,
+    wrapper::*,
 };
 
 use apaint::characteristics::CharacteristicType;

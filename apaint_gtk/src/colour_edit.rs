@@ -3,14 +3,12 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use gtk::{prelude::*, BoxExt, ButtonExt, WidgetExt, prelude::WidgetExtManual};
+use gtk::{prelude::WidgetExtManual, prelude::*, BoxExt, ButtonExt, WidgetExt};
 
 use pw_gix::gtkx::coloured::Colourable;
 use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
 use pw_gix::gtkx::menu::WrappedMenu;
 use pw_gix::wrapper::*;
-
-use apaint_gtk_boilerplate::{Wrapper, PWO};
 
 use crate::angles::Degrees;
 use crate::attributes::ColourAttributeDisplayStack;

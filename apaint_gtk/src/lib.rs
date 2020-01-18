@@ -14,7 +14,6 @@ pub mod characteristics {
     use std::cell::RefCell;
     use std::rc::Rc;
 
-    use apaint_gtk_boilerplate::PWO;
     use pw_gix::wrapper::*;
 
     pub use apaint::characteristics::{
@@ -192,7 +191,6 @@ pub mod window {
 
     use pw_gix::wrapper::*;
 
-    use apaint_gtk_boilerplate::PWO;
     use pw_gix::gtkx::window::RememberGeometry;
 
     #[derive(PWO)]

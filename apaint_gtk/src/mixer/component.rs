@@ -9,7 +9,6 @@ use num::Integer;
 
 use gtk::{prelude::*, ContainerExt, WidgetExt};
 
-use apaint_gtk_boilerplate::PWO;
 use pw_gix::{
     gtkx::{coloured::Colourable, menu::WrappedMenu},
     wrapper::*,

@@ -5,7 +5,6 @@ members = [
     "apaint_boilerplate",
     "apaint_cairo",
     "apaint_gtk",
-    "apaint_gtk_boilerplate",
     "mcmmtk_gtk",
     "gtk_test_gui",
 ]

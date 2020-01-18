@@ -5,7 +5,6 @@ use gtk::{BoxExt, RadioButtonExt, ToggleButtonExt, WidgetExt};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
 use pw_gix::wrapper::*;
 
 use crate::colour::{ColourInterface, ScalarAttribute, RGB};

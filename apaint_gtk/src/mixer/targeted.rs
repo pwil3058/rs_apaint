@@ -20,8 +20,6 @@ use pw_gix::{
 
 use colour_math::ScalarAttribute;
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-
 use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,

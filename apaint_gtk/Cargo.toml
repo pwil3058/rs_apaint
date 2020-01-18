@@ -19,7 +19,6 @@ glib = "0.9.0"
 gtk = "0.8.0"
 
 apaint = { path = "../apaint" }
-apaint_gtk_boilerplate = { path = "../apaint_gtk_boilerplate" }
 apaint_cairo = { path = "../apaint_cairo" }
 
 pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }

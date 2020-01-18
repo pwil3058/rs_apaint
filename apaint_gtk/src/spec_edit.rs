@@ -13,8 +13,6 @@ use colour_math::ScalarAttribute;
 
 use apaint::series::BasicPaintSpec;
 
-use apaint_gtk_boilerplate::{Wrapper, PWO};
-
 use crate::characteristics::{
     CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
     TransparencyEntry,
