@@ -6,8 +6,11 @@ use gtk::prelude::*;
 
 use pw_gix::{
     glibx::*,
-    gtkx::{list_store::ListRowOps, menu::ManagedMenu},
-    sav_state::{MaskedCondns, WidgetStatesControlled},
+    gtkx::{
+        list_store::ListRowOps,
+        menu::{ManagedMenu, ManagedMenuBuilder},
+    },
+    sav_state::MaskedCondns,
     wrapper::*,
 };
 
@@ -48,7 +51,7 @@ impl ColouredItemListView {
             view,
             list_store,
             selected_id: RefCell::new(None),
-            popup_menu: ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, &[]),
+            popup_menu: ManagedMenuBuilder::new().build(),
             callbacks: RefCell::new(HashMap::new()),
         });
 

@@ -9,8 +9,8 @@ use std::{
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::menu::ManagedMenu,
-    sav_state::{MaskedCondns, WidgetStatesControlled},
+    gtkx::menu::{ManagedMenu, ManagedMenuBuilder},
+    sav_state::MaskedCondns,
     wrapper::*,
 };
 
@@ -48,7 +48,7 @@ impl GtkHueWheel {
                 attributes,
             ),
             attribute: Cell::new(*attributes.first().unwrap()),
-            popup_menu: ManagedMenu::new(WidgetStatesControlled::Sensitivity, None, None, &[]),
+            popup_menu: ManagedMenuBuilder::new().build(),
             callbacks: RefCell::new(HashMap::new()),
             origin_offset: Cell::new(Point::default()),
             zoom: Cell::new(1.0),
