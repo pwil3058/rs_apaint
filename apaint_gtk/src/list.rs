@@ -5,6 +5,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use gtk::prelude::*;
 
 use pw_gix::{
+    glibx::*,
     gtkx::{list_store::ListRowOps, menu::ManagedMenu},
     sav_state::{MaskedCondns, WidgetStatesControlled},
     wrapper::*,
@@ -137,7 +138,7 @@ impl ColouredItemListView {
     pub fn remove_row(&self, id: &str) {
         if let Some((_, iter)) = self
             .list_store
-            .find_row_where(|list_store, iter| list_store.get_value(iter, 0).get() == Ok(Some(id)))
+            .find_row_where(|list_store, iter| list_store.get_value(iter, 0).get_ok() == Some(id))
         {
             self.list_store.remove(&iter);
         } else {
