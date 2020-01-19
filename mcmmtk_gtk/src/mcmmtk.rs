@@ -10,7 +10,7 @@ use pw_gix::{
 
 use apaint_gtk::characteristics::CharacteristicType;
 use apaint_gtk::colour::ScalarAttribute;
-use apaint_gtk::mixer::targeted::TargetedPaintMixer;
+use apaint_gtk::mixer::targeted::{TargetedPaintMixer, TargetedPaintMixerBuilder};
 
 #[derive(PWO, Wrapper)]
 pub struct ModellersColourMixerMatcherTK {
@@ -20,19 +20,19 @@ pub struct ModellersColourMixerMatcherTK {
 
 impl ModellersColourMixerMatcherTK {
     pub fn new() -> Rc<Self> {
-        let mixer = TargetedPaintMixer::new(
-            &[
+        let mixer = TargetedPaintMixerBuilder::new()
+            .attributes(&[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,
                 ScalarAttribute::Chroma,
-            ],
-            &[
+            ])
+            .characteristics(&[
                 CharacteristicType::Finish,
                 CharacteristicType::Transparency,
                 CharacteristicType::Fluorescence,
                 CharacteristicType::Metallicness,
-            ],
-        );
+            ])
+            .build();
         let mcmmtk = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             mixer,

@@ -167,179 +167,6 @@ impl TargetedPaintMixer {
     const HAS_TARGET_MASK: u64 = Self::SAV_HAS_TARGET + Self::SAV_NOT_HAS_TARGET;
     const SAV_HAS_NAME: u64 = SAV_NEXT_CONDN << 3;
 
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let file_manager = StorageManagerBuilder::new()
-            .last_file_key("targeted_mixer::session")
-            .tooltip_text(
-                "reset",
-                "Reset the mixer in preparation for a new mixing session",
-            )
-            .build();
-        let notes_entry = gtk::EntryBuilder::new().build();
-        let hue_wheel = GtkHueWheel::new(&[], attributes);
-        let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(&list_spec, &[]);
-        let mix_entry = TargetedPaintEntry::new(attributes);
-        let series_paint_spinner_box =
-            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
-        let paint_series_manager = PaintSeriesManager::new(attributes, characteristics);
-        let persistent_window_btn = PersistentWindowButtonBuilder::new()
-            .icon(&series_paint_image(24))
-            .window_child(&paint_series_manager.pwo())
-            .window_title("Paint Series Manager")
-            .window_geometry(Some("paint_series_manager"), (300, 200))
-            .build();
-        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
-        button_box.pack_start(&file_manager.pwo(), true, true, 0);
-        vbox.pack_start(&button_box, false, false, 0);
-        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
-        hbox.pack_start(&notes_entry, true, true, 0);
-        vbox.pack_start(&hbox, false, false, 0);
-        let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
-        paned.add1(&hue_wheel.pwo());
-        paned.add2(&mix_entry.pwo());
-        paned.set_position_from_recollections("basic paint factory h paned position", 200);
-        vbox.pack_start(&paned, true, true, 0);
-        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
-            WidgetStatesControlled::Sensitivity,
-            None,
-            None,
-        );
-        buttons.update_condns(MaskedCondns {
-            condns: Self::SAV_NOT_HAS_TARGET,
-            mask: Self::HAS_TARGET_MASK,
-        });
-        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-
-        let new_mix_btn = gtk::ButtonBuilder::new()
-            .label("New")
-            .tooltip_text("Start mixing a new colour.")
-            .build();
-        buttons.add_widget("new_mix", &new_mix_btn, Self::SAV_NOT_HAS_TARGET);
-        button_box.pack_start(&new_mix_btn, true, true, 0);
-
-        let accept_btn = gtk::ButtonBuilder::new()
-            .label("Accept")
-            .tooltip_text("Accept the current mixture and add it to the list of mixtures.")
-            .build();
-        buttons.add_widget(
-            "accept",
-            &accept_btn,
-            Self::SAV_HAS_COLOUR + Self::SAV_HAS_TARGET + Self::SAV_HAS_NAME,
-        );
-        button_box.pack_start(&accept_btn, true, true, 0);
-
-        let cancel_btn = gtk::ButtonBuilder::new()
-            .label("Cancel")
-            .tooltip_text("Cancel the current mixture.")
-            .build();
-        buttons.add_widget("cancel", &cancel_btn, Self::SAV_HAS_TARGET);
-        button_box.pack_start(&cancel_btn, true, true, 0);
-
-        let simplify_btn = gtk::ButtonBuilder::new()
-            .label("Simplify Parts")
-            .tooltip_text("Simplify the parts currently allocated to paints.")
-            .build();
-        buttons.add_widget("simplify", &simplify_btn, Self::SAV_HAS_COLOUR);
-        button_box.pack_start(&simplify_btn, true, true, 0);
-
-        let zero_parts_btn = gtk::ButtonBuilder::new()
-            .label("Zero All Parts")
-            .tooltip_text("Set the parts for all paints to zero.")
-            .build();
-        buttons.add_widget("zero_parts", &zero_parts_btn, Self::SAV_HAS_COLOUR);
-        button_box.pack_start(&zero_parts_btn, true, true, 0);
-
-        vbox.pack_start(&button_box, false, false, 0);
-        vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
-        vbox.pack_start(&list_view.pwo(), true, true, 0);
-        vbox.show_all();
-
-        let tpm = Rc::new(Self {
-            vbox,
-            file_manager,
-            notes_entry,
-            mixing_session: RefCell::new(MixingSession::new()),
-            hue_wheel,
-            list_view,
-            attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
-            mix_entry,
-            buttons,
-            series_paint_spinner_box,
-            paint_series_manager,
-            next_mix_id: Cell::new(1),
-        });
-
-        let buttons_c = Rc::clone(&tpm.buttons);
-        tpm.mix_entry.name_entry.connect_changed(move |entry| {
-            if entry.get_text_length() > 0 {
-                buttons_c.update_condns(MaskedCondns {
-                    condns: Self::SAV_HAS_NAME,
-                    mask: Self::SAV_HAS_NAME,
-                });
-            } else {
-                buttons_c.update_condns(MaskedCondns {
-                    condns: 0,
-                    mask: Self::SAV_HAS_NAME,
-                });
-            }
-        });
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.notes_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                tpm_c.mixing_session.borrow_mut().set_notes(&text);
-                tpm_c.update_session_needs_saving();
-                tpm_c.update_session_is_saveable();
-            }
-        });
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.paint_series_manager
-            .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.series_paint_spinner_box
-            .connect_contributions_changed(move || tpm_c.contributions_changed());
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.series_paint_spinner_box
-            .connect_removal_requested(move |p| tpm_c.process_removal_request(p));
-
-        let tpm_c = Rc::clone(&tpm);
-        new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
-
-        let tpm_c = Rc::clone(&tpm);
-        accept_btn.connect_clicked(move |_| tpm_c.accept_current_mixture());
-
-        let tpm_c = Rc::clone(&tpm);
-        cancel_btn.connect_clicked(move |_| tpm_c.cancel_current_mixture());
-
-        let tpm_c = Rc::clone(&tpm);
-        simplify_btn.connect_clicked(move |_| tpm_c.simplify_current_parts());
-
-        let tpm_c = Rc::clone(&tpm);
-        zero_parts_btn.connect_clicked(move |_| tpm_c.zero_all_parts());
-
-        // FILE MANAGEMENT
-        let tpm_c = Rc::clone(&tpm);
-        tpm.file_manager
-            .connect_save(move |path| tpm_c.write_to_file(path));
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.file_manager
-            .connect_load(move |path| tpm_c.read_from_file(path));
-
-        let tpm_c = Rc::clone(&tpm);
-        tpm.file_manager.connect_reset(move || tpm_c.full_reset());
-
-        tpm
-    }
-
     fn format_mix_id(&self) -> String {
         format!("MIX#{:03}", self.next_mix_id.get())
     }
@@ -529,6 +356,217 @@ impl TargetedPaintMixer {
 
     pub fn needs_saving(&self) -> bool {
         self.file_manager.needs_saving()
+    }
+}
+
+pub struct TargetedPaintMixerBuilder {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+}
+
+impl TargetedPaintMixerBuilder {
+    pub fn new() -> Self {
+        Self {
+            attributes: vec![],
+            characteristics: vec![],
+        }
+    }
+
+    pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn build(&self) -> Rc<TargetedPaintMixer> {
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let file_manager = StorageManagerBuilder::new()
+            .last_file_key("targeted_mixer::session")
+            .tooltip_text(
+                "reset",
+                "Reset the mixer in preparation for a new mixing session",
+            )
+            .build();
+        let notes_entry = gtk::EntryBuilder::new().build();
+        let hue_wheel = GtkHueWheel::new(&[], &self.attributes);
+        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
+        let list_view = ColouredItemListView::new(&list_spec, &[]);
+        let mix_entry = TargetedPaintEntry::new(&self.attributes);
+        let series_paint_spinner_box =
+            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
+        let paint_series_manager = PaintSeriesManager::new(&self.attributes, &self.characteristics);
+        let persistent_window_btn = PersistentWindowButtonBuilder::new()
+            .icon(&series_paint_image(24))
+            .window_child(&paint_series_manager.pwo())
+            .window_title("Paint Series Manager")
+            .window_geometry(Some("paint_series_manager"), (300, 200))
+            .build();
+        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+        button_box.pack_start(&file_manager.pwo(), true, true, 0);
+        vbox.pack_start(&button_box, false, false, 0);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
+        hbox.pack_start(&notes_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+        paned.add1(&hue_wheel.pwo());
+        paned.add2(&mix_entry.pwo());
+        paned.set_position_from_recollections("basic paint factory h paned position", 200);
+        vbox.pack_start(&paned, true, true, 0);
+        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
+            WidgetStatesControlled::Sensitivity,
+            None,
+            None,
+        );
+        buttons.update_condns(MaskedCondns {
+            condns: TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+            mask: TargetedPaintMixer::HAS_TARGET_MASK,
+        });
+        let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+
+        let new_mix_btn = gtk::ButtonBuilder::new()
+            .label("New")
+            .tooltip_text("Start mixing a new colour.")
+            .build();
+        buttons.add_widget(
+            "new_mix",
+            &new_mix_btn,
+            TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+        );
+        button_box.pack_start(&new_mix_btn, true, true, 0);
+
+        let accept_btn = gtk::ButtonBuilder::new()
+            .label("Accept")
+            .tooltip_text("Accept the current mixture and add it to the list of mixtures.")
+            .build();
+        buttons.add_widget(
+            "accept",
+            &accept_btn,
+            TargetedPaintMixer::SAV_HAS_COLOUR
+                + TargetedPaintMixer::SAV_HAS_TARGET
+                + TargetedPaintMixer::SAV_HAS_NAME,
+        );
+        button_box.pack_start(&accept_btn, true, true, 0);
+
+        let cancel_btn = gtk::ButtonBuilder::new()
+            .label("Cancel")
+            .tooltip_text("Cancel the current mixture.")
+            .build();
+        buttons.add_widget("cancel", &cancel_btn, TargetedPaintMixer::SAV_HAS_TARGET);
+        button_box.pack_start(&cancel_btn, true, true, 0);
+
+        let simplify_btn = gtk::ButtonBuilder::new()
+            .label("Simplify Parts")
+            .tooltip_text("Simplify the parts currently allocated to paints.")
+            .build();
+        buttons.add_widget(
+            "simplify",
+            &simplify_btn,
+            TargetedPaintMixer::SAV_HAS_COLOUR,
+        );
+        button_box.pack_start(&simplify_btn, true, true, 0);
+
+        let zero_parts_btn = gtk::ButtonBuilder::new()
+            .label("Zero All Parts")
+            .tooltip_text("Set the parts for all paints to zero.")
+            .build();
+        buttons.add_widget(
+            "zero_parts",
+            &zero_parts_btn,
+            TargetedPaintMixer::SAV_HAS_COLOUR,
+        );
+        button_box.pack_start(&zero_parts_btn, true, true, 0);
+
+        vbox.pack_start(&button_box, false, false, 0);
+        vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
+        vbox.pack_start(&list_view.pwo(), true, true, 0);
+        vbox.show_all();
+
+        let tpm = Rc::new(TargetedPaintMixer {
+            vbox,
+            file_manager,
+            notes_entry,
+            mixing_session: RefCell::new(MixingSession::new()),
+            hue_wheel,
+            list_view,
+            attributes: self.attributes.clone(),
+            characteristics: self.characteristics.clone(),
+            mix_entry,
+            buttons,
+            series_paint_spinner_box,
+            paint_series_manager,
+            next_mix_id: Cell::new(1),
+        });
+
+        let buttons_c = Rc::clone(&tpm.buttons);
+        tpm.mix_entry.name_entry.connect_changed(move |entry| {
+            if entry.get_text_length() > 0 {
+                buttons_c.update_condns(MaskedCondns {
+                    condns: TargetedPaintMixer::SAV_HAS_NAME,
+                    mask: TargetedPaintMixer::SAV_HAS_NAME,
+                });
+            } else {
+                buttons_c.update_condns(MaskedCondns {
+                    condns: 0,
+                    mask: TargetedPaintMixer::SAV_HAS_NAME,
+                });
+            }
+        });
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.notes_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                tpm_c.mixing_session.borrow_mut().set_notes(&text);
+                tpm_c.update_session_needs_saving();
+                tpm_c.update_session_is_saveable();
+            }
+        });
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.paint_series_manager
+            .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.series_paint_spinner_box
+            .connect_contributions_changed(move || tpm_c.contributions_changed());
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.series_paint_spinner_box
+            .connect_removal_requested(move |p| tpm_c.process_removal_request(p));
+
+        let tpm_c = Rc::clone(&tpm);
+        new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
+
+        let tpm_c = Rc::clone(&tpm);
+        accept_btn.connect_clicked(move |_| tpm_c.accept_current_mixture());
+
+        let tpm_c = Rc::clone(&tpm);
+        cancel_btn.connect_clicked(move |_| tpm_c.cancel_current_mixture());
+
+        let tpm_c = Rc::clone(&tpm);
+        simplify_btn.connect_clicked(move |_| tpm_c.simplify_current_parts());
+
+        let tpm_c = Rc::clone(&tpm);
+        zero_parts_btn.connect_clicked(move |_| tpm_c.zero_all_parts());
+
+        // FILE MANAGEMENT
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager
+            .connect_save(move |path| tpm_c.write_to_file(path));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager
+            .connect_load(move |path| tpm_c.read_from_file(path));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.file_manager.connect_reset(move || tpm_c.full_reset());
+
+        tpm
     }
 }
 

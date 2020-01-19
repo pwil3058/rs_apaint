@@ -9,7 +9,7 @@ use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 
 use apaint_boilerplate::Colour;
 
-use apaint_gtk::mixer::targeted::TargetedPaintMixer;
+use apaint_gtk::mixer::targeted::TargetedPaintMixerBuilder;
 use apaint_gtk::{colour::*, factory::BasicPaintFactory};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -57,19 +57,19 @@ fn main() {
         false,
         0,
     );
-    let mixer = TargetedPaintMixer::new(
-        &[
+    let mixer = TargetedPaintMixerBuilder::new()
+        .attributes(&[
             ScalarAttribute::Value,
             ScalarAttribute::Greyness,
             ScalarAttribute::Chroma,
-        ],
-        &[
+        ])
+        .characteristics(&[
             CharacteristicType::Finish,
             CharacteristicType::Transparency,
             CharacteristicType::Fluorescence,
             CharacteristicType::Metallicness,
-        ],
-    );
+        ])
+        .build();
     vbox.pack_start(&mixer.pwo(), false, false, 0);
     vbox.show_all();
     win.add(&vbox);
