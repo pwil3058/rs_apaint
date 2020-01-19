@@ -79,7 +79,18 @@ impl ModellersColourMixerMatcherTK {
     }
 
     pub fn ok_to_quit(&self) -> bool {
-        self.ask_confirm_action("OK to quit?", None)
+        let buttons = [
+            ("Cancel", gtk::ResponseType::Cancel),
+            ("Continue Discarding Changes", gtk::ResponseType::Other(1)),
+        ];
+        if self.mixer.needs_saving() {
+            if self.ask_question("Mixer has unsaved changes!", None, &buttons)
+                == gtk::ResponseType::Cancel
+            {
+                return false;
+            }
+        }
+        true
     }
 
     fn launch_pdf_viewer(&self) {

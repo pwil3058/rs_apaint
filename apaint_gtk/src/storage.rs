@@ -18,10 +18,10 @@ use pw_gix::{
 use crate::{colour::RGB, icon_image};
 use pw_gix::sav_state::MaskedCondns;
 
-pub const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
-pub const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
-pub const SAV_SESSION_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
-pub const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
+const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
+const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
+const SAV_SESSION_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
+const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
 
 const BTN_IMAGE_SIZE: i32 = 24;
 
@@ -88,6 +88,11 @@ impl StorageManager {
         let mask = SAV_TOOL_NEEDS_SAVING;
         self.buttons.update_condns(MaskedCondns { condns, mask });
         self.update_file_status_button();
+    }
+
+    pub fn needs_saving(&self) -> bool {
+        let status = self.buttons.current_condns();
+        status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0
     }
 
     fn update_file_status_button(&self) {

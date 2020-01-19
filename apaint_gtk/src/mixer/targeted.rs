@@ -447,6 +447,7 @@ impl TargetedPaintMixer {
         Ok(digest)
     }
 
+    // TODO: review visibility of targeted mixer methods
     pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
         self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text(name);
@@ -524,6 +525,10 @@ impl TargetedPaintMixer {
 
     pub fn zero_all_parts(&self) {
         self.series_paint_spinner_box.zero_all_parts();
+    }
+
+    pub fn needs_saving(&self) -> bool {
+        self.file_manager.needs_saving()
     }
 }
 
