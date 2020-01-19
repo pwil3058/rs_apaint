@@ -29,6 +29,7 @@ use apaint::{
     BasicPaintIfce,
 };
 
+use crate::series::PaintSeriesManagerBuilder;
 use crate::{
     attributes::ColourAttributeDisplayStack,
     colour::RGB,
@@ -398,7 +399,10 @@ impl TargetedPaintMixerBuilder {
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
-        let paint_series_manager = PaintSeriesManager::new(&self.attributes, &self.characteristics);
+        let paint_series_manager = PaintSeriesManagerBuilder::new()
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics)
+            .build();
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
             .icon(&series_paint_image(24))
             .window_child(&paint_series_manager.pwo())

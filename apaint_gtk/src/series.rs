@@ -25,7 +25,7 @@ use crate::{
 };
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesPage {
+struct SeriesPage {
     paned: gtk::Paned,
     paint_series: SeriesPaintSeries<f64>,
     hue_wheel: Rc<GtkHueWheel>,
@@ -34,7 +34,7 @@ pub struct SeriesPage {
 }
 
 impl SeriesPage {
-    pub fn new(
+    fn new(
         paint_series: SeriesPaintSeries<f64>,
         menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
@@ -81,16 +81,16 @@ impl SeriesPage {
         sp
     }
 
-    pub fn series_id(&self) -> &Rc<SeriesId> {
+    fn series_id(&self) -> &Rc<SeriesId> {
         self.paint_series.series_id()
     }
 
-    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+    fn update_popup_condns(&self, changed_condns: MaskedCondns) {
         self.hue_wheel.update_popup_condns(changed_condns);
         self.list_view.update_popup_condns(changed_condns);
     }
 
-    pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
         &self,
         name: &str,
         callback: F,
@@ -102,7 +102,7 @@ impl SeriesPage {
             .push(Box::new(callback));
     }
 
-    pub fn invoke_named_callback(&self, item: &str, id: &str) {
+    fn invoke_named_callback(&self, item: &str, id: &str) {
         if let Some(paint) = self.paint_series.find(id) {
             for callback in self
                 .callbacks
@@ -116,13 +116,13 @@ impl SeriesPage {
         }
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.hue_wheel.set_target_rgb(rgb);
     }
 }
 
 #[derive(PWO, Wrapper)]
-pub struct SeriesBinder {
+struct SeriesBinder {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<Rc<SeriesPage>>>,
     menu_items: Vec<MenuItemSpec>,
@@ -133,7 +133,7 @@ pub struct SeriesBinder {
 }
 
 impl SeriesBinder {
-    pub fn new(
+    fn new(
         menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
@@ -163,13 +163,13 @@ impl SeriesBinder {
             .binary_search_by_key(&sid, |page| page.series_id())
     }
 
-    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+    fn update_popup_condns(&self, changed_condns: MaskedCondns) {
         for page in self.pages.borrow().iter() {
             page.update_popup_condns(changed_condns)
         }
     }
 
-    pub fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
         &self,
         name: &str,
         callback: F,
@@ -181,7 +181,7 @@ impl SeriesBinder {
             .push(Box::new(callback));
     }
 
-    pub fn invoke_named_callback(&self, item: &str, paint: Rc<SeriesPaint<f64>>) {
+    fn invoke_named_callback(&self, item: &str, paint: Rc<SeriesPaint<f64>>) {
         for callback in self
             .callbacks
             .borrow()
@@ -193,7 +193,7 @@ impl SeriesBinder {
         }
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    fn set_target_rgb(&self, rgb: Option<&RGB>) {
         if let Some(rgb) = rgb {
             *self.target_rgb.borrow_mut() = Some(*rgb);
             for page in self.pages.borrow().iter() {
@@ -225,7 +225,7 @@ impl SeriesBinder {
     }
 }
 
-pub trait RcSeriesBinder {
+trait RcSeriesBinder {
     fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error>;
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error>;
 }
@@ -335,39 +335,6 @@ pub struct PaintSeriesManager {
 }
 
 impl PaintSeriesManager {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        let menu_items = &[(
-            "add",
-            "Add",
-            None,
-            "Add the indicated paint to the mixer/palette",
-            SAV_HOVER_OK,
-        )
-            .into()];
-        let binder = SeriesBinder::new(menu_items, attributes, characteristics);
-        let load_file_btn = gtk::ButtonBuilder::new()
-            .image(&series_paint_load_image(24).upcast::<gtk::Widget>())
-            .tooltip_text("Load a paint series from a file.")
-            .build();
-        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.pack_start(&load_file_btn, false, false, 0);
-        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        vbox.pack_start(&hbox, false, false, 0);
-        vbox.pack_start(&binder.pwo(), true, true, 0);
-        vbox.show_all();
-
-        let psm = Rc::new(Self { vbox, binder });
-
-        let psm_c = Rc::clone(&psm);
-        load_file_btn.connect_clicked(move |_| {
-            if let Err(err) = psm_c.load_series_from_file() {
-                psm_c.report_error("Load file failed.", &err);
-            }
-        });
-
-        psm
-    }
-
     fn load_series_from_file(&self) -> Result<(), crate::Error> {
         let last_file = recall("PaintSeriesManager::last_loaded_file");
         let last_file = if let Some(ref text) = last_file {
@@ -389,6 +356,10 @@ impl PaintSeriesManager {
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.binder.set_target_rgb(rgb);
     }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        self.binder.update_popup_condns(changed_condns)
+    }
 }
 
 impl SeriesPaintFinder<f64> for PaintSeriesManager {
@@ -398,5 +369,62 @@ impl SeriesPaintFinder<f64> for PaintSeriesManager {
         series_id: Option<&SeriesId>,
     ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
         self.binder.get_series_paint(paint_id, series_id)
+    }
+}
+
+pub struct PaintSeriesManagerBuilder {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+}
+
+impl PaintSeriesManagerBuilder {
+    pub fn new() -> Self {
+        Self {
+            attributes: vec![],
+            characteristics: vec![],
+        }
+    }
+
+    pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn build(&self) -> Rc<PaintSeriesManager> {
+        let menu_items = &[(
+            "add",
+            "Add",
+            None,
+            "Add the indicated paint to the mixer/palette",
+            SAV_HOVER_OK,
+        )
+            .into()];
+        let binder = SeriesBinder::new(menu_items, &self.attributes, &self.characteristics);
+        let load_file_btn = gtk::ButtonBuilder::new()
+            .image(&series_paint_load_image(24).upcast::<gtk::Widget>())
+            .tooltip_text("Load a paint series from a file.")
+            .build();
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&load_file_btn, false, false, 0);
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        vbox.pack_start(&binder.pwo(), true, true, 0);
+        vbox.show_all();
+
+        let psm = Rc::new(PaintSeriesManager { vbox, binder });
+
+        let psm_c = Rc::clone(&psm);
+        load_file_btn.connect_clicked(move |_| {
+            if let Err(err) = psm_c.load_series_from_file() {
+                psm_c.report_error("Load file failed.", &err);
+            }
+        });
+
+        psm
     }
 }
