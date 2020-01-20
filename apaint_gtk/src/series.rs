@@ -256,9 +256,10 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
         path: &Path,
     ) -> Result<(), crate::Error> {
         match self.binary_search_series_id(&new_series.series_id()) {
-            Ok(_) => Err(crate::Error::GeneralError(
-                "Series already in binder".to_string(),
-            )),
+            Ok(_) => Err(crate::Error::GeneralError(format!(
+                "{}: Series already in binder",
+                &new_series.series_id()
+            ))),
             Err(index) => {
                 let l_text = format!(
                     "{}\n{}",
@@ -319,7 +320,6 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
         let mut file = File::open(path)?;
         let new_series_spec = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
         self.add_series((&new_series_spec).into(), path)?;
-        // TODO: adjust date for detecting duplicates
         Ok(())
     }
 }
