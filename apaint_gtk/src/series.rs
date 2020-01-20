@@ -3,6 +3,7 @@ use std::{
     cell::RefCell,
     collections::HashMap,
     fs::File,
+    io::{Read, Write},
     path::{Path, PathBuf},
     rc::Rc,
 };
@@ -136,6 +137,7 @@ struct SeriesBinder {
     characteristics: Vec<CharacteristicType>,
     target_rgb: RefCell<Option<RGB>>,
     callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
+    loaded_files_data_path: Option<PathBuf>,
 }
 
 impl SeriesBinder {
@@ -143,6 +145,7 @@ impl SeriesBinder {
         menu_items: &[MenuItemSpec],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
+        loaded_files_data_path: Option<PathBuf>,
     ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
@@ -152,7 +155,7 @@ impl SeriesBinder {
             hash_map.insert(item_name.to_string(), vec![]);
         }
         let callbacks = RefCell::new(hash_map);
-        Rc::new(Self {
+        let binder = Rc::new(Self {
             notebook,
             pages,
             menu_items: menu_items.to_vec(),
@@ -160,7 +163,17 @@ impl SeriesBinder {
             characteristics: characteristics.to_vec(),
             target_rgb: RefCell::new(None),
             callbacks,
-        })
+            loaded_files_data_path,
+        });
+
+        for path_buf in &binder.read_loaded_file_paths() {
+            if let Err(err) = binder.add_series_from_file(&path_buf) {
+                binder.report_error("Error preloading:", &err);
+            }
+        }
+        binder.write_loaded_file_paths();
+
+        binder
     }
 
     fn binary_search_series_id(&self, sid: &Rc<SeriesId>) -> Result<usize, usize> {
@@ -236,6 +249,29 @@ impl SeriesBinder {
             } else {
                 panic!("attempt to remove non existent series")
             }
+        }
+    }
+
+    fn read_loaded_file_paths(&self) -> Vec<PathBuf> {
+        if let Some(loaded_files_data_path) = &self.loaded_files_data_path {
+            if loaded_files_data_path.exists() {
+                let mut file = File::open(&loaded_files_data_path).expect("unrecoverable");
+                let mut string = String::new();
+                file.read_to_string(&mut string).expect("unrecoverable");
+                return string.lines().map(|s| PathBuf::from(s)).collect();
+            }
+        }
+        vec![]
+    }
+
+    fn write_loaded_file_paths(&self) {
+        if let Some(loaded_files_data_path) = &self.loaded_files_data_path {
+            let mut string = String::new();
+            for (_, path_buf) in self.pages.borrow().iter() {
+                string += (pw_pathux::path_to_string(&path_buf) + "\n").as_str();
+            }
+            let mut file = File::create(loaded_files_data_path).expect("unrecoverable");
+            file.write(&string.into_bytes()).expect("unrecoverable");
         }
     }
 }
@@ -375,6 +411,7 @@ impl PaintSeriesManager {
             self.binder.add_series_from_file(&abs_path)?;
             let path_text = pw_pathux::path_to_string(&abs_path);
             remember("PaintSeriesManager::last_loaded_file", &path_text);
+            self.binder.write_loaded_file_paths();
         };
         Ok(())
     }
@@ -405,6 +442,7 @@ impl SeriesPaintFinder<f64> for PaintSeriesManager {
 pub struct PaintSeriesManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
+    loaded_files_data_path: Option<PathBuf>,
 }
 
 impl PaintSeriesManagerBuilder {
@@ -412,6 +450,7 @@ impl PaintSeriesManagerBuilder {
         Self {
             attributes: vec![],
             characteristics: vec![],
+            loaded_files_data_path: None,
         }
     }
 
@@ -425,6 +464,11 @@ impl PaintSeriesManagerBuilder {
         self
     }
 
+    pub fn loaded_files_data_path(&mut self, path: &Path) -> &mut Self {
+        self.loaded_files_data_path = Some(path.to_path_buf());
+        self
+    }
+
     pub fn build(&self) -> Rc<PaintSeriesManager> {
         let menu_items = &[(
             "add",
@@ -434,7 +478,12 @@ impl PaintSeriesManagerBuilder {
             SAV_HOVER_OK,
         )
             .into()];
-        let binder = SeriesBinder::new(menu_items, &self.attributes, &self.characteristics);
+        let binder = SeriesBinder::new(
+            menu_items,
+            &self.attributes,
+            &self.characteristics,
+            self.loaded_files_data_path.clone(),
+        );
         let load_file_btn = gtk::ButtonBuilder::new()
             .image(&series_paint_load_image(24).upcast::<gtk::Widget>())
             .tooltip_text("Load a paint series from a file.")

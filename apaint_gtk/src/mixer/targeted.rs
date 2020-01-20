@@ -3,7 +3,7 @@
 use std::{
     cell::{Cell, RefCell},
     fs::File,
-    path::Path,
+    path::{Path, PathBuf},
     rc::Rc,
 };
 
@@ -363,6 +363,7 @@ impl TargetedPaintMixer {
 pub struct TargetedPaintMixerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
+    config_dir_path: Option<PathBuf>,
 }
 
 impl TargetedPaintMixerBuilder {
@@ -370,6 +371,7 @@ impl TargetedPaintMixerBuilder {
         Self {
             attributes: vec![],
             characteristics: vec![],
+            config_dir_path: None,
         }
     }
 
@@ -380,6 +382,11 @@ impl TargetedPaintMixerBuilder {
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn config_dir_path(&mut self, path: &Path) -> &mut Self {
+        self.config_dir_path = Some(path.to_path_buf());
         self
     }
 
@@ -399,10 +406,14 @@ impl TargetedPaintMixerBuilder {
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
-        let paint_series_manager = PaintSeriesManagerBuilder::new()
+        let mut builder = PaintSeriesManagerBuilder::new();
+        builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
-            .build();
+            .characteristics(&self.characteristics);
+        if let Some(ref config_dir_path) = self.config_dir_path {
+            builder.loaded_files_data_path(&config_dir_path.join("paint_series_files"));
+        }
+        let paint_series_manager = builder.build();
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
             .icon(&series_paint_image(24))
             .window_child(&paint_series_manager.pwo())

@@ -18,6 +18,8 @@ pub struct ModellersColourMixerMatcherTK {
     mixer: Rc<TargetedPaintMixer>,
 }
 
+use crate::config;
+
 impl ModellersColourMixerMatcherTK {
     pub fn new() -> Rc<Self> {
         let mixer = TargetedPaintMixerBuilder::new()
@@ -32,6 +34,7 @@ impl ModellersColourMixerMatcherTK {
                 CharacteristicType::Fluorescence,
                 CharacteristicType::Metallicness,
             ])
+            .config_dir_path(&config::config_dir_path())
             .build();
         let mcmmtk = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),

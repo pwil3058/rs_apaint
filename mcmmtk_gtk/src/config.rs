@@ -15,7 +15,7 @@ fn abs_default_config_dir_path() -> PathBuf {
     expand_home_dir_or_mine(&Path::new(DEFAULT_CONFIG_DIR_PATH))
 }
 
-fn config_dir_path() -> PathBuf {
+pub fn config_dir_path() -> PathBuf {
     match env::var(DCDP_OVERRIDE_ENVAR) {
         Ok(dir_path) => {
             if dir_path.len() == 0 {
