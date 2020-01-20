@@ -311,6 +311,7 @@ pub mod storage;
 pub enum Error {
     APaintError(apaint::Error),
     IOError(io::Error),
+    DuplicateFile(String),
     GeneralError(String),
 }
 
@@ -319,6 +320,7 @@ impl fmt::Display for Error {
         match self {
             Error::APaintError(err) => write!(f, "Error: {}.", err),
             Error::IOError(err) => write!(f, "Error: {}.", err),
+            Error::DuplicateFile(string) => write!(f, "Error: {}.", string),
             Error::GeneralError(string) => write!(f, "Error: {}.", string),
         }
     }

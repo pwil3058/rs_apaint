@@ -1,11 +1,17 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
-use std::{cell::RefCell, collections::HashMap, fs::File, path::Path, rc::Rc};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    fs::File,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 
 use gtk::prelude::*;
 
 use pw_gix::{
     gtkx::notebook::{TabRemoveLabel, TabRemoveLabelInterface},
-    recollections::recall,
+    recollections::{recall, remember},
     sav_state::{MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
 };
@@ -124,7 +130,7 @@ impl SeriesPage {
 #[derive(PWO, Wrapper)]
 struct SeriesBinder {
     notebook: gtk::Notebook,
-    pages: RefCell<Vec<Rc<SeriesPage>>>,
+    pages: RefCell<Vec<(Rc<SeriesPage>, PathBuf)>>,
     menu_items: Vec<MenuItemSpec>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -160,11 +166,20 @@ impl SeriesBinder {
     fn binary_search_series_id(&self, sid: &Rc<SeriesId>) -> Result<usize, usize> {
         self.pages
             .borrow()
-            .binary_search_by_key(&sid, |page| page.series_id())
+            .binary_search_by_key(&sid, |(page, _)| page.series_id())
+    }
+
+    fn find_file_path(&self, path: &Path) -> Option<usize> {
+        for (index, (_, page_path)) in self.pages.borrow().iter().enumerate() {
+            if path == page_path {
+                return Some(index);
+            }
+        }
+        None
     }
 
     fn update_popup_condns(&self, changed_condns: MaskedCondns) {
-        for page in self.pages.borrow().iter() {
+        for (page, _) in self.pages.borrow().iter() {
             page.update_popup_condns(changed_condns)
         }
     }
@@ -196,12 +211,12 @@ impl SeriesBinder {
     fn set_target_rgb(&self, rgb: Option<&RGB>) {
         if let Some(rgb) = rgb {
             *self.target_rgb.borrow_mut() = Some(*rgb);
-            for page in self.pages.borrow().iter() {
+            for (page, _) in self.pages.borrow().iter() {
                 page.set_target_rgb(Some(rgb));
             }
         } else {
             *self.target_rgb.borrow_mut() = None;
-            for page in self.pages.borrow().iter() {
+            for (page, _) in self.pages.borrow().iter() {
                 page.set_target_rgb(None);
             }
         }
@@ -209,7 +224,7 @@ impl SeriesBinder {
 
     fn remove_series_at_index(&self, index: usize) {
         let page = self.pages.borrow_mut().remove(index);
-        let page_num = self.notebook.page_num(&page.pwo());
+        let page_num = self.notebook.page_num(&page.0.pwo());
         self.notebook.remove_page(page_num);
     }
 
@@ -226,12 +241,20 @@ impl SeriesBinder {
 }
 
 trait RcSeriesBinder {
-    fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error>;
+    fn add_series(
+        &self,
+        new_series: SeriesPaintSeries<f64>,
+        path: &Path,
+    ) -> Result<(), crate::Error>;
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error>;
 }
 
 impl RcSeriesBinder for Rc<SeriesBinder> {
-    fn add_series(&self, new_series: SeriesPaintSeries<f64>) -> Result<(), crate::Error> {
+    fn add_series(
+        &self,
+        new_series: SeriesPaintSeries<f64>,
+        path: &Path,
+    ) -> Result<(), crate::Error> {
         match self.binary_search_series_id(&new_series.series_id()) {
             Ok(_) => Err(crate::Error::GeneralError(
                 "Series already in binder".to_string(),
@@ -280,17 +303,22 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     Some(index as u32),
                 );
                 self.notebook.show_all();
-                self.pages.borrow_mut().insert(index, new_page);
+                self.pages
+                    .borrow_mut()
+                    .insert(index, (new_page, path.to_path_buf()));
                 Ok(())
             }
         }
     }
 
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error> {
-        // TODO: check for duplicate files
+        if self.find_file_path(path).is_some() {
+            let msg = format!("{}: is already loaded", path.to_string_lossy());
+            return Err(crate::Error::DuplicateFile(msg));
+        }
         let mut file = File::open(path)?;
         let new_series_spec = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
-        self.add_series((&new_series_spec).into())?;
+        self.add_series((&new_series_spec).into(), path)?;
         // TODO: adjust date for detecting duplicates
         Ok(())
     }
@@ -306,9 +334,9 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
             let bsr = self
                 .pages
                 .borrow()
-                .binary_search_by_key(&series_id, |page| page.series_id());
+                .binary_search_by_key(&series_id, |(page, _)| page.series_id());
             match bsr {
-                Ok(index) => match self.pages.borrow()[index].paint_series.find(paint_id) {
+                Ok(index) => match self.pages.borrow()[index].0.paint_series.find(paint_id) {
                     Some(paint) => Ok(Rc::clone(paint)),
                     None => Err(apaint::Error::UnknownSeriesPaint(
                         series_id.clone(),
@@ -319,7 +347,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
             }
         } else {
             for page in self.pages.borrow().iter() {
-                if let Some(paint) = page.paint_series.find(paint_id) {
+                if let Some(paint) = page.0.paint_series.find(paint_id) {
                     return Ok(Rc::clone(paint));
                 }
             }
@@ -345,6 +373,8 @@ impl PaintSeriesManager {
         if let Some(path) = self.ask_file_path(Some("Collection File Name:"), last_file, true) {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
             self.binder.add_series_from_file(&abs_path)?;
+            let path_text = pw_pathux::path_to_string(&abs_path);
+            remember("PaintSeriesManager::last_loaded_file", &path_text);
         };
         Ok(())
     }
