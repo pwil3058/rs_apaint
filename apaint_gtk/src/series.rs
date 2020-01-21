@@ -31,6 +31,8 @@ use crate::{
     managed_menu::MenuItemSpec,
 };
 
+pub mod display;
+
 #[derive(PWO, Wrapper)]
 struct SeriesPage {
     paned: gtk::Paned,
