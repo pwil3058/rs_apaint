@@ -119,7 +119,7 @@ impl PaintDisplayBuilder {
         vbox.pack_start(&cads.pwo(), true, true, 0);
 
         for characteristic_type in self.characteristics.iter() {
-            let value = paint.characteristic_full(*characteristic_type);
+            let value = paint.characteristic(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(&value).build();
             label.set_widget_colour_rgb(rgb);
             vbox.pack_start(&label, false, false, 0);

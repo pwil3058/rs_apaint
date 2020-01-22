@@ -300,7 +300,7 @@ pub trait PaintListRow: BasicPaintIfce<f64> {
             row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
         }
         for characteristic in characteristics.iter() {
-            let string = self.characteristic_abbrev(*characteristic);
+            let string = self.characteristic(*characteristic).abbrev();
             row.push(string.to_value());
         }
         row

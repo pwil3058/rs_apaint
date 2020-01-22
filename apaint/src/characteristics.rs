@@ -62,6 +62,76 @@ pub enum Metallicness {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+pub enum Characteristic {
+    Finish(Finish),
+    Transparency(Transparency),
+    Permanence(Permanence),
+    Fluorescence(Fluorescence),
+    Metallicness(Metallicness),
+}
+
+impl Characteristic {
+    pub fn name(&self) -> &'static str {
+        match *self {
+            Characteristic::Finish(_) => Finish::NAME,
+            Characteristic::Transparency(_) => Transparency::NAME,
+            Characteristic::Permanence(_) => Permanence::NAME,
+            Characteristic::Fluorescence(_) => Fluorescence::NAME,
+            Characteristic::Metallicness(_) => Metallicness::NAME,
+        }
+    }
+
+    pub fn prompt(&self) -> &'static str {
+        match *self {
+            Characteristic::Finish(_) => Finish::PROMPT,
+            Characteristic::Transparency(_) => Transparency::PROMPT,
+            Characteristic::Permanence(_) => Permanence::PROMPT,
+            Characteristic::Fluorescence(_) => Fluorescence::PROMPT,
+            Characteristic::Metallicness(_) => Metallicness::PROMPT,
+        }
+    }
+
+    pub fn list_header_name(&self) -> &'static str {
+        match *self {
+            Characteristic::Finish(_) => Finish::LIST_HEADER_NAME,
+            Characteristic::Transparency(_) => Transparency::LIST_HEADER_NAME,
+            Characteristic::Permanence(_) => Permanence::LIST_HEADER_NAME,
+            Characteristic::Fluorescence(_) => Fluorescence::LIST_HEADER_NAME,
+            Characteristic::Metallicness(_) => Metallicness::LIST_HEADER_NAME,
+        }
+    }
+
+    pub fn str_values(&self) -> Vec<&'static str> {
+        match *self {
+            Characteristic::Finish(_) => Finish::str_values(),
+            Characteristic::Transparency(_) => Transparency::str_values(),
+            Characteristic::Permanence(_) => Permanence::str_values(),
+            Characteristic::Fluorescence(_) => Fluorescence::str_values(),
+            Characteristic::Metallicness(_) => Metallicness::str_values(),
+        }
+    }
+
+    pub fn abbrev(&self) -> &'static str {
+        match *self {
+            Characteristic::Finish(value) => value.abbrev(),
+            Characteristic::Transparency(value) => value.abbrev(),
+            Characteristic::Permanence(value) => value.abbrev(),
+            Characteristic::Fluorescence(value) => value.abbrev(),
+            Characteristic::Metallicness(value) => value.abbrev(),
+        }
+    }
+    pub fn full(&self) -> &'static str {
+        match *self {
+            Characteristic::Finish(value) => value.full(),
+            Characteristic::Transparency(value) => value.full(),
+            Characteristic::Permanence(value) => value.full(),
+            Characteristic::Fluorescence(value) => value.full(),
+            Characteristic::Metallicness(value) => value.full(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
 pub enum CharacteristicType {
     Finish,
     Transparency,
