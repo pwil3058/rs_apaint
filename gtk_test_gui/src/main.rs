@@ -1,4 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
+
+use std::rc::Rc;
+
 use gtk;
 use gtk::{BoxExt, ContainerExt, WidgetExt};
 
@@ -9,7 +12,9 @@ use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 
 use apaint_boilerplate::Colour;
 
+use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
 use apaint_gtk::mixer::targeted::TargetedPaintMixerBuilder;
+use apaint_gtk::series::display::PaintDisplayBuilder;
 use apaint_gtk::{colour::*, factory::BasicPaintFactory};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -71,6 +76,27 @@ fn main() {
         ])
         .build();
     vbox.pack_start(&mixer.pwo(), false, false, 0);
+    // TODO: why do paint and target have different values?
+    let mut paint_spec = BasicPaintSpec::new([0.1, 0.3, 0.8].into(), "id");
+    paint_spec.name = "name".to_string();
+    paint_spec.notes = "notes".to_string();
+    let paint = SeriesPaint::<f64>::from((&paint_spec, &Rc::new(SeriesId::new("Series", "Owner"))));
+    let mut builder = PaintDisplayBuilder::new();
+    builder
+        .attributes(&[
+            ScalarAttribute::Value,
+            ScalarAttribute::Greyness,
+            ScalarAttribute::Chroma,
+        ])
+        .characteristics(&[
+            CharacteristicType::Finish,
+            CharacteristicType::Transparency,
+            CharacteristicType::Fluorescence,
+            CharacteristicType::Metallicness,
+        ])
+        .target_rgb(&[0.6, 0.1, 0.7].into());
+    let display = builder.build(&Rc::new(paint));
+    vbox.pack_start(&display.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

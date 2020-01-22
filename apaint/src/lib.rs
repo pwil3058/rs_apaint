@@ -60,6 +60,16 @@ pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
         Metallicness::default()
     }
 
+    fn characteristic_full(&self, characteristic_type: CharacteristicType) -> &'static str {
+        match characteristic_type {
+            CharacteristicType::Finish => self.finish().full(),
+            CharacteristicType::Transparency => self.transparency().full(),
+            CharacteristicType::Permanence => self.permanence().full(),
+            CharacteristicType::Fluorescence => self.fluorescence().full(),
+            CharacteristicType::Metallicness => self.metallicness().full(),
+        }
+    }
+
     fn characteristic_abbrev(&self, characteristic_type: CharacteristicType) -> &'static str {
         match characteristic_type {
             CharacteristicType::Finish => self.finish().abbrev(),

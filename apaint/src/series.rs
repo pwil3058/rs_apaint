@@ -238,6 +238,13 @@ pub struct SeriesId {
 }
 
 impl SeriesId {
+    pub fn new(series_name: &str, proprietor: &str) -> Self {
+        Self {
+            proprietor: proprietor.to_string(),
+            series_name: series_name.to_string(),
+        }
+    }
+
     pub fn proprietor(&self) -> &str {
         &self.proprietor
     }

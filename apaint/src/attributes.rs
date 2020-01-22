@@ -61,7 +61,7 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent> {
             let size = drawer.size();
             let indicator_x = size.width * attr_value;
             drawer.set_line_width(F::TWO);
-            drawer.set_line_colour(self.attr_value_fg_rgb());
+            drawer.set_line_colour(self.attr_target_value_fg_rgb());
             drawer.draw_line(&[
                 (indicator_x, F::ONE).into(),
                 (indicator_x, size.height - F::ONE).into(),
