@@ -288,7 +288,7 @@ impl<F: ColourComponent> HueCAD<F> {
     }
 
     fn calc_hue_value(hue: Hue<F>, target_hue: Hue<F>) -> F {
-        F::HALF - (target_hue - hue).degrees() / Degrees::DEG_360.degrees()
+        F::HALF + (target_hue - hue).degrees() / Degrees::DEG_360.degrees()
     }
 }
 
