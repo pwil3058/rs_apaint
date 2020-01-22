@@ -10,10 +10,7 @@ use pw_gix::{gtkx::coloured::*, wrapper::*};
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
-use crate::{
-    attributes::ColourAttributeDisplayStack,
-    colour::{Colour, RGB},
-};
+use crate::{attributes::ColourAttributeDisplayStack, colour::RGB};
 
 #[derive(PWO)]
 pub struct PaintDisplay {
@@ -24,7 +21,7 @@ pub struct PaintDisplay {
 }
 
 impl PaintDisplay {
-    fn set_target(&self, new_target: Option<&RGB>) {
+    pub fn set_target(&self, new_target: Option<&RGB>) {
         if let Some(rgb) = new_target {
             self.target_label.set_label("Current Target");
             self.target_label.set_widget_colour_rgb(*rgb);
@@ -34,6 +31,10 @@ impl PaintDisplay {
             self.target_label.set_widget_colour_rgb(self.paint.rgb());
             self.cads.set_target_colour(Option::<&RGB>::None);
         };
+    }
+
+    pub fn paint(&self) -> &Rc<SeriesPaint<f64>> {
+        &self.paint
     }
 }
 

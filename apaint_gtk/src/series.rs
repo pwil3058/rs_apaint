@@ -30,6 +30,7 @@ use crate::{
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     managed_menu::MenuItemSpec,
 };
+use pw_gix::gtkx::paned::RememberPosition;
 
 pub mod display;
 
@@ -50,6 +51,7 @@ impl SeriesPage {
         characteristics: &[CharacteristicType],
     ) -> Rc<Self> {
         let paned = gtk::PanedBuilder::new().build();
+        paned.set_position_from_recollections("SeriesPage:paned_position", 200);
         let hue_wheel = GtkHueWheel::new(menu_items, attributes);
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
         let list_view = ColouredItemListView::new(&list_spec, menu_items);
@@ -418,6 +420,10 @@ impl PaintSeriesManager {
         Ok(())
     }
 
+    fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
+        println! {"DISPLAY: {:?}", paint};
+    }
+
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
         self.binder.connect_popup_menu_item("add", callback);
     }
@@ -472,14 +478,24 @@ impl PaintSeriesManagerBuilder {
     }
 
     pub fn build(&self) -> Rc<PaintSeriesManager> {
-        let menu_items = &[(
-            "add",
-            "Add",
-            None,
-            "Add the indicated paint to the mixer/palette",
-            SAV_HOVER_OK,
-        )
-            .into()];
+        let menu_items = &[
+            (
+                "info",
+                "Paint Information",
+                None,
+                "Display information for the indicated paint",
+                SAV_HOVER_OK,
+            )
+                .into(),
+            (
+                "add",
+                "Add",
+                None,
+                "Add the indicated paint to the mixer/palette",
+                SAV_HOVER_OK,
+            )
+                .into(),
+        ];
         let binder = SeriesBinder::new(
             menu_items,
             &self.attributes,
@@ -498,6 +514,10 @@ impl PaintSeriesManagerBuilder {
         vbox.show_all();
 
         let psm = Rc::new(PaintSeriesManager { vbox, binder });
+
+        let psm_c = Rc::clone(&psm);
+        psm.binder
+            .connect_popup_menu_item("info", move |paint| psm_c.display_paint_information(&paint));
 
         let psm_c = Rc::clone(&psm);
         load_file_btn.connect_clicked(move |_| {
