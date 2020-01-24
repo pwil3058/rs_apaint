@@ -6,7 +6,7 @@ use gtk::prelude::*;
 
 use colour_math::{ColourInterface, ScalarAttribute};
 
-use pw_gix::{gtkx::coloured::*, wrapper::*};
+use pw_gix::{gtkx::coloured::*, gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
@@ -132,5 +132,35 @@ impl PaintDisplayBuilder {
             target_label,
             cads,
         }
+    }
+}
+
+pub struct PaintDisplayDialog {
+    dialog: gtk::Dialog,
+}
+
+pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
+    caller: W,
+    buttons: Vec<(String, gtk::ResponseType)>,
+    paint_display_builder: PaintDisplayBuilder,
+}
+
+impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
+    fn new_dialog(&self) -> gtk::Dialog {
+        let dialog = gtk::DialogBuilder::new().build();
+        if let Some(parent) = self.caller.get_toplevel_gtk_window() {
+            dialog.set_transient_for(Some(&parent));
+        }
+        for (label, response) in self.buttons.iter() {
+            dialog.add_button(label, *response);
+        }
+        dialog
+    }
+
+    pub fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+        let dialog = self.new_dialog();
+        let display = self.paint_display_builder.build(paint);
+        dialog.get_content_area().add(&display.pwo());
+        dialog.show();
     }
 }
