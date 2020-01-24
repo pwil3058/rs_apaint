@@ -63,8 +63,12 @@ impl PaintDisplayBuilder {
         self
     }
 
-    pub fn target_rgb(&mut self, target_rgb: &RGB) -> &mut Self {
-        self.target_rgb = Some(*target_rgb);
+    pub fn target_rgb(&mut self, target_rgb: Option<&RGB>) -> &mut Self {
+        self.target_rgb = if let Some(target_rgb) = target_rgb {
+            Some(*target_rgb)
+        } else {
+            None
+        };
         self
     }
 
@@ -125,6 +129,7 @@ impl PaintDisplayBuilder {
             label.set_widget_colour_rgb(rgb);
             vbox.pack_start(&label, false, false, 0);
         }
+        vbox.show_all();
 
         PaintDisplay {
             vbox,
@@ -133,10 +138,6 @@ impl PaintDisplayBuilder {
             cads,
         }
     }
-}
-
-pub struct PaintDisplayDialog {
-    dialog: gtk::Dialog,
 }
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
@@ -162,5 +163,50 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         let display = self.paint_display_builder.build(paint);
         dialog.get_content_area().add(&display.pwo());
         dialog.show();
+    }
+}
+
+pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
+    caller: W,
+    buttons: Vec<(String, gtk::ResponseType)>,
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+    target_rgb: Option<RGB>,
+}
+
+impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
+    pub fn new(caller: &W) -> Self {
+        Self {
+            caller: caller.clone(),
+            buttons: vec![],
+            attributes: vec![],
+            characteristics: vec![],
+            target_rgb: None,
+        }
+    }
+
+    pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn build(&self) -> PaintDisplayDialogManager<W> {
+        let mut paint_display_builder = PaintDisplayBuilder::new();
+        paint_display_builder
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics);
+        if let Some(target_rgb) = self.target_rgb {
+            paint_display_builder.target_rgb(Some(&target_rgb));
+        }
+        PaintDisplayDialogManager {
+            caller: self.caller.clone(),
+            buttons: self.buttons.clone(),
+            paint_display_builder,
+        }
     }
 }

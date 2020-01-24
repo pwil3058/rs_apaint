@@ -11,7 +11,10 @@ use std::{
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+    gtkx::{
+        dialog::dialog_user::TopGtkWindow,
+        notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+    },
     recollections::{recall, remember},
     sav_state::{MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
@@ -33,6 +36,8 @@ use crate::{
 use pw_gix::gtkx::paned::RememberPosition;
 
 pub mod display;
+
+use crate::series::display::*;
 
 #[derive(PWO, Wrapper)]
 struct SeriesPage {
@@ -400,6 +405,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
 pub struct PaintSeriesManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
+    display_dialog_manager: PaintDisplayDialogManager<gtk::Box>,
 }
 
 impl PaintSeriesManager {
@@ -421,7 +427,7 @@ impl PaintSeriesManager {
     }
 
     fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
-        println! {"DISPLAY: {:?}", paint};
+        self.display_dialog_manager.display_paint(paint);
     }
 
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
@@ -512,8 +518,16 @@ impl PaintSeriesManagerBuilder {
         vbox.pack_start(&hbox, false, false, 0);
         vbox.pack_start(&binder.pwo(), true, true, 0);
         vbox.show_all();
+        let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics)
+            .build();
 
-        let psm = Rc::new(PaintSeriesManager { vbox, binder });
+        let psm = Rc::new(PaintSeriesManager {
+            vbox,
+            binder,
+            display_dialog_manager,
+        });
 
         let psm_c = Rc::clone(&psm);
         psm.binder

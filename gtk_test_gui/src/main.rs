@@ -94,7 +94,7 @@ fn main() {
             CharacteristicType::Fluorescence,
             CharacteristicType::Metallicness,
         ])
-        .target_rgb(&[0.6, 0.1, 0.7].into());
+        .target_rgb(Some(&[0.6, 0.1, 0.7].into()));
     let display = builder.build(&Rc::new(paint));
     vbox.pack_start(&display.pwo(), true, true, 0);
     vbox.show_all();
