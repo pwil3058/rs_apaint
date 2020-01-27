@@ -1,6 +1,6 @@
 // Copyright 2020 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use std::rc::Rc;
+use std::{collections::BTreeMap, rc::Rc};
 
 use gtk::prelude::*;
 
@@ -140,10 +140,16 @@ impl PaintDisplayBuilder {
     }
 }
 
+struct PaintDisplayDialog {
+    pub dialog: gtk::Dialog,
+    pub display: PaintDisplay,
+}
+
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(String, gtk::ResponseType)>,
     paint_display_builder: PaintDisplayBuilder,
+    dialogs: BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>,
 }
 
 impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
@@ -155,14 +161,33 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         for (label, response) in self.buttons.iter() {
             dialog.add_button(label, *response);
         }
+        // TODO: think about removal from map as an optional action to hiding
+        dialog.connect_delete_event(|d, _| {
+            d.hide_on_delete();
+            gtk::Inhibit(true)
+        });
         dialog
     }
 
-    pub fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
-        let dialog = self.new_dialog();
-        let display = self.paint_display_builder.build(paint);
-        dialog.get_content_area().add(&display.pwo());
-        dialog.show();
+    pub fn display_paint(&mut self, paint: &Rc<SeriesPaint<f64>>) {
+        if !self.dialogs.contains_key(paint) {
+            let dialog = self.new_dialog();
+            let display = self.paint_display_builder.build(paint);
+            dialog
+                .get_content_area()
+                .pack_start(&display.pwo(), true, true, 0);
+            let pdd = PaintDisplayDialog { dialog, display };
+            self.dialogs.insert(Rc::clone(paint), pdd);
+        };
+        let pdd = self.dialogs.get(paint).expect("we just pit it there");
+        pdd.dialog.present();
+    }
+
+    pub fn set_target_rgb(&mut self, rgb: Option<&RGB>) {
+        self.paint_display_builder.target_rgb(rgb);
+        for pdd in self.dialogs.values() {
+            pdd.display.set_target(rgb);
+        }
     }
 }
 
@@ -207,6 +232,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
             caller: self.caller.clone(),
             buttons: self.buttons.clone(),
             paint_display_builder,
+            dialogs: BTreeMap::new(),
         }
     }
 }

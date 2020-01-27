@@ -405,7 +405,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
 pub struct PaintSeriesManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
-    display_dialog_manager: PaintDisplayDialogManager<gtk::Box>,
+    display_dialog_manager: RefCell<PaintDisplayDialogManager<gtk::Box>>,
 }
 
 impl PaintSeriesManager {
@@ -427,7 +427,9 @@ impl PaintSeriesManager {
     }
 
     fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
-        self.display_dialog_manager.display_paint(paint);
+        self.display_dialog_manager
+            .borrow_mut()
+            .display_paint(paint);
     }
 
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
@@ -436,6 +438,7 @@ impl PaintSeriesManager {
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.binder.set_target_rgb(rgb);
+        self.display_dialog_manager.borrow_mut().set_target_rgb(rgb);
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
@@ -526,7 +529,7 @@ impl PaintSeriesManagerBuilder {
         let psm = Rc::new(PaintSeriesManager {
             vbox,
             binder,
-            display_dialog_manager,
+            display_dialog_manager: RefCell::new(display_dialog_manager),
         });
 
         let psm_c = Rc::clone(&psm);
