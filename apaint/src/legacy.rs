@@ -33,30 +33,24 @@ fn extract_header_value(line: Option<&str>) -> Result<String, crate::Error> {
 fn extract_paint_spec<F: ColourComponent>(line: &str) -> Result<BasicPaintSpec<F>, crate::Error> {
     use crate::Error::NotAValidLegacySpec;
     if let Some(cap) = PAINT_RE.captures(line) {
-        println!("CAP: {:?}", cap);
         let name = cap.name("name").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb_str = cap.name("rgb").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb = colour_math::rgb::RGB16::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
-        println!("RGB: {:?}", rgb);
         let mut bps = BasicPaintSpec::<F>::new(rgb.into(), name);
         bps.name = name.to_string();
-        println!("notes: {:?}", cap.name("notes"));
         bps.notes = cap
             .name("notes")
             .ok_or(NotAValidLegacySpec)?
             .as_str()
             .to_string();
-        println!("characteristics: {:?}", cap.name("characteristics"));
         let characteristics_str = cap
             .name("characteristics")
             .ok_or(NotAValidLegacySpec)?
             .as_str();
         for m in CHARACTERISTIC_RE.find_iter(characteristics_str) {
-            println!("M: {:?} : STR: {:?}", m, m.as_str());
             let c = CHARACTERISTIC_RE
                 .captures(m.as_str())
                 .ok_or(NotAValidLegacySpec)?;
-            println!("C: {:?}", c);
             match &c[1] {
                 "finish" => {
                     bps.finish = Finish::from_str(&c[2]).map_err(|_| NotAValidLegacySpec)?
@@ -107,7 +101,6 @@ pub fn read_legacy_paint_series_spec<R: Read, F: ColourComponent>(
     let mut string = String::new();
     reader.read_to_string(&mut string)?;
     let spec = extract_legacy_paint_series_spec(&string)?;
-    println!("SUCCESS");
     Ok(spec)
 }
 
