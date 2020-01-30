@@ -8,43 +8,59 @@ use pw_gix::{
     gdk_pixbufx::viewer::PixbufViewBuilder, gtkx::window::RememberGeometry, sample, wrapper::*,
 };
 
-use apaint_gtk::characteristics::CharacteristicType;
-use apaint_gtk::colour::ScalarAttribute;
-use apaint_gtk::mixer::targeted::{TargetedPaintMixer, TargetedPaintMixerBuilder};
+use apaint_gtk::{
+    characteristics::CharacteristicType,
+    colour::ScalarAttribute,
+    factory::{BasicPaintFactory, BasicPaintFactoryBuilder},
+    mixer::targeted::{TargetedPaintMixer, TargetedPaintMixerBuilder},
+};
+
+use crate::config;
 
 #[derive(PWO, Wrapper)]
 pub struct ModellersColourMixerMatcherTK {
     vbox: gtk::Box,
     mixer: Rc<TargetedPaintMixer>,
+    factory: Rc<BasicPaintFactory>,
 }
-
-use crate::config;
 
 impl ModellersColourMixerMatcherTK {
     pub fn new() -> Rc<Self> {
+        let attributes = vec![
+            ScalarAttribute::Value,
+            ScalarAttribute::Greyness,
+            ScalarAttribute::Chroma,
+        ];
+        let characteristics = vec![
+            CharacteristicType::Finish,
+            CharacteristicType::Transparency,
+            CharacteristicType::Fluorescence,
+            CharacteristicType::Metallicness,
+        ];
         let mixer = TargetedPaintMixerBuilder::new()
-            .attributes(&[
-                ScalarAttribute::Value,
-                ScalarAttribute::Greyness,
-                ScalarAttribute::Chroma,
-            ])
-            .characteristics(&[
-                CharacteristicType::Finish,
-                CharacteristicType::Transparency,
-                CharacteristicType::Fluorescence,
-                CharacteristicType::Metallicness,
-            ])
+            .attributes(&attributes)
+            .characteristics(&characteristics)
             .config_dir_path(&config::config_dir_path())
+            .build();
+        let factory = BasicPaintFactoryBuilder::new()
+            .attributes(&attributes)
+            .characteristics(&characteristics)
             .build();
         let mcmmtk = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             mixer,
+            factory,
         });
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         mcmmtk.vbox.pack_start(&hbox, false, false, 0);
 
         let stack = gtk::StackBuilder::new().build();
         stack.add_titled(&mcmmtk.mixer.pwo(), "mixer", "Mixer");
+        stack.add_titled(
+            &mcmmtk.factory.pwo(),
+            "factory",
+            "Paint/Standard Editor/Factory",
+        );
         mcmmtk.vbox.pack_start(&stack, true, true, 0);
         let stack_switcher = gtk::StackSwitcherBuilder::new()
             .tooltip_text("Select mode.")
@@ -86,10 +102,19 @@ impl ModellersColourMixerMatcherTK {
             ("Cancel", gtk::ResponseType::Cancel),
             ("Continue Discarding Changes", gtk::ResponseType::Other(1)),
         ];
-        if self.mixer.needs_saving() {
-            if self.ask_question("Mixer has unsaved changes!", None, &buttons)
-                == gtk::ResponseType::Cancel
-            {
+        let question = if self.mixer.needs_saving() {
+            if self.factory.needs_saving() {
+                Some("Mixer and Paint/Standards Editor/Factory have unsaved changes!")
+            } else {
+                Some("Mixer has unsaved changes!")
+            }
+        } else if self.factory.needs_saving() {
+            Some("Paint/Standards Editor/Factory has unsaved changes!")
+        } else {
+            None
+        };
+        if let Some(question) = question {
+            if self.ask_question(question, None, &buttons) == gtk::ResponseType::Cancel {
                 return false;
             }
         }

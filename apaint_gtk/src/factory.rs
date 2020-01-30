@@ -191,6 +191,10 @@ impl BasicPaintFactory {
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
         Ok(digest)
     }
+
+    pub fn needs_saving(&self) -> bool {
+        self.file_manager.needs_saving()
+    }
 }
 
 pub struct BasicPaintFactoryBuilder {

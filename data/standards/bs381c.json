@@ -1,0 +1,1793 @@
+{
+  "series_id": {
+    "proprietor": "UK Government",
+    "series_name": "British Standard 381C (www.britishstandardcolour.com)"
+  },
+  "paint_list": [
+    {
+      "rgb": [
+        0.5781338216220341,
+        0.7461051346608683,
+        0.6718852521553369
+      ],
+      "id": "BS381C 101",
+      "name": "Sky Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.35541313801785307,
+        0.5702296482795453,
+        0.566323338673991
+      ],
+      "id": "BS381C 102",
+      "name": "Turquoise Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.23047226672770277,
+        0.40625619897764553,
+        0.47266346227206835
+      ],
+      "id": "BS381C 103",
+      "name": "Peacock Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1484397650110628,
+        0.30078583962767985,
+        0.4921950102998398
+      ],
+      "id": "BS381C 104",
+      "name": "Azure Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1210955977721828,
+        0.18750286106660563,
+        0.3398489356832227
+      ],
+      "id": "BS381C 105",
+      "name": "Oxford Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.16406500343327993,
+        0.15625238422217136,
+        0.23828488593881134
+      ],
+      "id": "BS381C 106",
+      "name": "Royal Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.22656595712214847,
+        0.44922560463874267,
+        0.660166323338674
+      ],
+      "id": "BS381C 107",
+      "name": "Strong Blue / Pacific Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.08984512092774853,
+        0.21094071869993133,
+        0.47266346227206835
+      ],
+      "id": "BS381C 108",
+      "name": "Aircraft Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.10937666895551995,
+        0.33594262607766845,
+        0.5000076295109483
+      ],
+      "id": "BS381C 109",
+      "name": "Middle Blue / Anchusa",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1718776226443885,
+        0.2421911955443656,
+        0.4570382238498512
+      ],
+      "id": "BS381C 110",
+      "name": "Roundel Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5468833447775998,
+        0.769542992294194,
+        0.7304798962386511
+      ],
+      "id": "BS381C 111",
+      "name": "Sky Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4687571526665141,
+        0.6757915617608912,
+        0.7578240634775311
+      ],
+      "id": "BS381C 112",
+      "name": "Arctic Blue / Fiesta Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2460975051499199,
+        0.40625619897764553,
+        0.4882887006942855
+      ],
+      "id": "BS381C 113",
+      "name": "Deep Saxe Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1210955977721828,
+        0.2929732204165713,
+        0.37891203173876553
+      ],
+      "id": "BS381C 114",
+      "name": "Rail Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.371099412527657,
+        0.5312581063553826,
+        0.7539177538719768
+      ],
+      "id": "BS381C 115",
+      "name": "Cobalt Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.14062714579995422,
+        0.343755245288777,
+        0.6836041809719997
+      ],
+      "id": "BS381C 166",
+      "name": "French Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6523537041275654,
+        0.7734493018997483,
+        0.9179827573052567
+      ],
+      "id": "BS381C 172",
+      "name": "Pale Roundel Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3906309605554284,
+        0.6250095368886854,
+        0.6640726329442282
+      ],
+      "id": "BS381C 174",
+      "name": "Orient Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.30859845883878845,
+        0.5039139391165026,
+        0.769542992294194
+      ],
+      "id": "BS381C 175",
+      "name": "Light French Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7304798962386511,
+        0.7851682307164111,
+        0.6445410849164569
+      ],
+      "id": "BS381C 210",
+      "name": "Sky",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7343862058442054,
+        0.8437628747997253,
+        0.5625085831998169
+      ],
+      "id": "BS381C 216",
+      "name": "Eau de Nil",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5859464408331426,
+        0.7461051346608683,
+        0.39453727016098267
+      ],
+      "id": "BS381C 217",
+      "name": "Sea Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4101625085831998,
+        0.5429770351720454,
+        0.2773479819943542
+      ],
+      "id": "BS381C 218",
+      "name": "Grass Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2929732204165713,
+        0.3398489356832227,
+        0.16015869382772566
+      ],
+      "id": "BS381C 220",
+      "name": "Olive Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3125047684443427,
+        0.4882887006942855,
+        0.22656595712214847
+      ],
+      "id": "BS381C 221",
+      "name": "Brilliant Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.41406881818875413,
+        0.4375066758220798,
+        0.19140917067215993
+      ],
+      "id": "BS381C 222",
+      "name": "Light Bronze Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2851606012054627,
+        0.3203173876554513,
+        0.22656595712214847
+      ],
+      "id": "BS381C 223",
+      "name": "Middle Bronze Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2421911955443656,
+        0.2734416723887999,
+        0.18750286106660563
+      ],
+      "id": "BS381C 224",
+      "name": "Deep Bronze Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2500038147554742,
+        0.41406881818875413,
+        0.15625238422217136
+      ],
+      "id": "BS381C 225",
+      "name": "Light Brunswick Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1992217898832685,
+        0.3242236972610056,
+        0.23047226672770277
+      ],
+      "id": "BS381C 226",
+      "name": "Mid Brunswick Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.14453345540550852,
+        0.2656290531776913,
+        0.1953154802777142
+      ],
+      "id": "BS381C 227",
+      "name": "Deep Brunswick Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.25781643396658277,
+        0.5429770351720454,
+        0.3906309605554284
+      ],
+      "id": "BS381C 228",
+      "name": "Emerald Green / Viridian",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.30859845883878845,
+        0.3203173876554513,
+        0.25391012436102844
+      ],
+      "id": "BS381C 241",
+      "name": "Dark Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2656290531776913,
+        0.5781338216220341,
+        0.3671931029221027
+      ],
+      "id": "BS381C 261",
+      "name": "Bold Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2773479819943542,
+        0.41406881818875413,
+        0.2968795300221256
+      ],
+      "id": "BS381C 267",
+      "name": "Deep Chrome Green / Traffic Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5586022735942626,
+        0.7734493018997483,
+        0.5742275120164797
+      ],
+      "id": "BS381C 275",
+      "name": "Opaline Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5273517967498283,
+        0.5859464408331426,
+        0.3515678644998856
+      ],
+      "id": "BS381C 278",
+      "name": "Light Olive Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.40625619897764553,
+        0.6679789425497825,
+        0.4648508430609598
+      ],
+      "id": "BS381C 280",
+      "name": "Verdigris Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3125047684443427,
+        0.4179751277943084,
+        0.3203173876554513
+      ],
+      "id": "BS381C 282",
+      "name": "BS381C 282",
+      "notes": "Forest Green",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4921950102998398,
+        0.5586022735942626,
+        0.42969405661097126
+      ],
+      "id": "BS381C 283",
+      "name": "BS381C 283",
+      "notes": "Aircraft Grey Green",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4179751277943084,
+        0.43360036621652553,
+        0.3515678644998856
+      ],
+      "id": "BS381C 284",
+      "name": "BS381C 284",
+      "notes": "Spruce Green",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.371099412527657,
+        0.3593804837109941,
+        0.2929732204165713
+      ],
+      "id": "BS381C 285",
+      "name": "BS381C 285",
+      "notes": "NATO Green",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.30859845883878845,
+        0.316411078049897,
+        0.2187533379110399
+      ],
+      "id": "BS381C 298",
+      "name": "BS381C 298",
+      "notes": "Olive Drab",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9922026398107882,
+        0.9218890669108111,
+        0.015625238422217136
+      ],
+      "id": "BS381C 309",
+      "name": "BS381C 309",
+      "notes": "Canary Yellow",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9922026398107882,
+        0.9726710917830167,
+        0.3867246509498741
+      ],
+      "id": "BS381C 310",
+      "name": "BS381C 310",
+      "notes": "Primrose",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9922026398107882,
+        0.9726710917830167,
+        0.41406881818875413
+      ],
+      "id": "BS381C 315",
+      "name": "BS381C 315",
+      "notes": "Grapefruit",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6171969176775769,
+        0.44922560463874267,
+        0.2226596475165942
+      ],
+      "id": "BS381C 320",
+      "name": "BS381C 320",
+      "notes": "Light Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2968795300221256,
+        0.28906691081101704,
+        0.23437857633325704
+      ],
+      "id": "BS381C 337",
+      "name": "BS381C 337",
+      "notes": "Very Dark Drab",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.48047608148317694,
+        0.4179751277943084,
+        0.30859845883878845
+      ],
+      "id": "BS381C 350",
+      "name": "BS381C 350",
+      "notes": "Dark Earth",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9843900205996796,
+        0.9257953765163653,
+        0.5859464408331426
+      ],
+      "id": "BS381C 352",
+      "name": "BS381C 352",
+      "notes": "Pale Cream",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9882963302052339,
+        0.9375143053330282,
+        0.47656977187762267
+      ],
+      "id": "BS381C 353",
+      "name": "BS381C 353",
+      "notes": "Deep Cream",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9882963302052339,
+        0.8476691844052796,
+        0.023437857633325704
+      ],
+      "id": "BS381C 355",
+      "name": "BS381C 355",
+      "notes": "Lemon",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9843900205996796,
+        0.7812619211108568,
+        0.03125047684443427
+      ],
+      "id": "BS381C 356",
+      "name": "BS381C 356",
+      "notes": "Golden Yellow",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9609521629663539,
+        0.7812619211108568,
+        0.4375066758220798
+      ],
+      "id": "BS381C 358",
+      "name": "BS381C 358",
+      "notes": "Light Buff",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8554818036163881,
+        0.6718852521553369,
+        0.3125047684443427
+      ],
+      "id": "BS381C 359",
+      "name": "BS381C 359",
+      "notes": "Middle Buff",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8281376363775083,
+        0.7226672770275425,
+        0.4882887006942855
+      ],
+      "id": "BS381C 361",
+      "name": "BS381C 361",
+      "notes": "Light Stone",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9297016861219196,
+        0.7578240634775311,
+        0.0
+      ],
+      "id": "BS381C 363",
+      "name": "BS381C 363",
+      "notes": "Bold Yellow",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9531395437552453,
+        0.9375143053330282,
+        0.7382925154497597
+      ],
+      "id": "BS381C 365",
+      "name": "BS381C 365",
+      "notes": "Vellum",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9570458533607996,
+        0.9023575188830396,
+        0.6289158464942397
+      ],
+      "id": "BS381C 366",
+      "name": "BS381C 366",
+      "notes": "Light Biege",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9922026398107882,
+        0.9609521629663539,
+        0.7461051346608683
+      ],
+      "id": "BS381C 367",
+      "name": "BS381C 367",
+      "notes": "Manilla",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9922026398107882,
+        0.9179827573052567,
+        0.6562600137331197
+      ],
+      "id": "BS381C 369",
+      "name": "BS381C 369",
+      "notes": "Biscuit",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7304798962386511,
+        0.6367284657053482,
+        0.5390707255664912
+      ],
+      "id": "BS381C 380",
+      "name": "BS381C 380",
+      "notes": "Camouflage Desert Sand",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9297016861219196,
+        0.8711070420386053,
+        0.6445410849164569
+      ],
+      "id": "BS381C 384",
+      "name": "BS381C 384",
+      "notes": "Light Straw",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8906385900663768,
+        0.8086060883497368,
+        0.5742275120164797
+      ],
+      "id": "BS381C 388",
+      "name": "BS381C 388",
+      "notes": "Biege",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6953231097886625,
+        0.6523537041275654,
+        0.5312581063553826
+      ],
+      "id": "BS381C 389",
+      "name": "BS381C 389",
+      "notes": "Camouflage Biege",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.45313191424429694,
+        0.32813000686655985,
+        0.18359655146105136
+      ],
+      "id": "BS381C 411",
+      "name": "BS381C 411",
+      "notes": "Middle Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3593804837109941,
+        0.25781643396658277,
+        0.17969024185549706
+      ],
+      "id": "BS381C 412",
+      "name": "BS381C 412",
+      "notes": "Dark Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6562600137331197,
+        0.42188143739986267,
+        0.16015869382772566
+      ],
+      "id": "BS381C 414",
+      "name": "BS381C 414",
+      "notes": "Golden Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6562600137331197,
+        0.5664148928053712,
+        0.4648508430609598
+      ],
+      "id": "BS381C 420",
+      "name": "BS381C 420",
+      "notes": "Dark Camouflage Desert Sand",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5156328679331655,
+        0.35547417410543986,
+        0.30078583962767985
+      ],
+      "id": "BS381C 435",
+      "name": "BS381C 435",
+      "notes": "Camouflage Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.33594262607766845,
+        0.2929732204165713,
+        0.2773479819943542
+      ],
+      "id": "BS381C 436",
+      "name": "BS381C 436",
+      "notes": "Dark Camouflage Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6484473945220112,
+        0.3242236972610056,
+        0.25391012436102844
+      ],
+      "id": "BS381C 444",
+      "name": "BS381C 444",
+      "notes": "Terracotta",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5117265583276112,
+        0.25781643396658277,
+        0.16797131303883422
+      ],
+      "id": "BS381C 445",
+      "name": "BS381C 445",
+      "notes": "Venetian Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4648508430609598,
+        0.2656290531776913,
+        0.18750286106660563
+      ],
+      "id": "BS381C 446",
+      "name": "BS381C 446",
+      "notes": "Red Oxide",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.949233234149691,
+        0.6953231097886625,
+        0.5429770351720454
+      ],
+      "id": "BS381C 447",
+      "name": "BS381C 447",
+      "notes": "Salmon Pink",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.40234988937209126,
+        0.2500038147554742,
+        0.22656595712214847
+      ],
+      "id": "BS381C 448",
+      "name": "BS381C 448",
+      "notes": "Deep Indian Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4101625085831998,
+        0.23047226672770277,
+        0.2460975051499199
+      ],
+      "id": "BS381C 449",
+      "name": "BS381C 449",
+      "notes": "Light Purple Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.37891203173876553,
+        0.1992217898832685,
+        0.2226596475165942
+      ],
+      "id": "BS381C 452",
+      "name": "BS381C 452",
+      "notes": "Dark Crimson",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9804837109941252,
+        0.8672007324330511,
+        0.8359502555886168
+      ],
+      "id": "BS381C 453",
+      "name": "BS381C 453",
+      "notes": "Shell Pink",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9062638284885939,
+        0.6289158464942397,
+        0.632822156099794
+      ],
+      "id": "BS381C 454",
+      "name": "BS381C 454",
+      "notes": "Pale Roundel Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7382925154497597,
+        0.5586022735942626,
+        0.33594262607766845
+      ],
+      "id": "BS381C 460",
+      "name": "BS381C 460",
+      "notes": "Deep Buff",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.47266346227206835,
+        0.2226596475165942,
+        0.1953154802777142
+      ],
+      "id": "BS381C 473",
+      "name": "BS381C 473",
+      "notes": "Gulf Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5507896543831541,
+        0.35547417410543986,
+        0.25391012436102844
+      ],
+      "id": "BS381C 489",
+      "name": "BS381C 489",
+      "notes": "Leaf Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.34766155489433126,
+        0.2851606012054627,
+        0.2421911955443656
+      ],
+      "id": "BS381C 499",
+      "name": "BS381C 499",
+      "notes": "Service Brown",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8632944228274968,
+        0.20312809948882277,
+        0.1250019073777371
+      ],
+      "id": "BS381C 537",
+      "name": "BS381C 537",
+      "notes": "Signal Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7656366826886397,
+        0.10937666895551995,
+        0.13281452658884565
+      ],
+      "id": "BS381C 538",
+      "name": "BS381C 538",
+      "notes": "Post Office Red / Cherry",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8203250171663996,
+        0.11718928816662852,
+        0.16797131303883422
+      ],
+      "id": "BS381C 539",
+      "name": "BS381C 539",
+      "notes": "Currant Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5429770351720454,
+        0.10156404974441138,
+        0.1953154802777142
+      ],
+      "id": "BS381C 540",
+      "name": "BS381C 540",
+      "notes": "Crimson",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2773479819943542,
+        0.10547035934996567,
+        0.12890821698329138
+      ],
+      "id": "BS381C 541",
+      "name": "BS381C 541",
+      "notes": "Maroon",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5937590600442512,
+        0.1757839322499428,
+        0.3398489356832227
+      ],
+      "id": "BS381C 542",
+      "name": "BS381C 542",
+      "notes": "Ruby",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9336079957274739,
+        0.5156328679331655,
+        0.11718928816662852
+      ],
+      "id": "BS381C 557",
+      "name": "BS381C 557",
+      "notes": "Light Orange",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8632944228274968,
+        0.20703440909437706,
+        0.14062714579995422
+      ],
+      "id": "BS381C 564",
+      "name": "BS381C 564",
+      "notes": "Bold Red",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9804837109941252,
+        0.6093842984664684,
+        0.023437857633325704
+      ],
+      "id": "BS381C 568",
+      "name": "BS381C 568",
+      "notes": "Apricot",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8906385900663768,
+        0.3320363164721141,
+        0.13672083619439995
+      ],
+      "id": "BS381C 592",
+      "name": "BS381C 592",
+      "notes": "International Orange",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9453269245441367,
+        0.28125429159990845,
+        0.08593881132219425
+      ],
+      "id": "BS381C 593",
+      "name": "BS381C 593",
+      "notes": "Rail Red / Azo Orange",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6250095368886854,
+        0.660166323338674,
+        0.6640726329442282
+      ],
+      "id": "BS381C 626",
+      "name": "BS381C 626",
+      "notes": "Camouflage Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.742198825055314,
+        0.7500114442664225,
+        0.7187609674219883
+      ],
+      "id": "BS381C 627",
+      "name": "BS381C 627",
+      "notes": "Light Aircraft Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.47656977187762267,
+        0.5117265583276112,
+        0.5429770351720454
+      ],
+      "id": "BS381C 629",
+      "name": "BS381C 629",
+      "notes": "Dark Camouflage Grey / Quacker Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6445410849164569,
+        0.6757915617608912,
+        0.5937590600442512
+      ],
+      "id": "BS381C 630",
+      "name": "BS381C 630",
+      "notes": "French Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6015716792553597,
+        0.6640726329442282,
+        0.6211032272831312
+      ],
+      "id": "BS381C 631",
+      "name": "BS381C 631",
+      "notes": "Light Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4179751277943084,
+        0.45313191424429694,
+        0.4648508430609598
+      ],
+      "id": "BS381C 632",
+      "name": "BS381C 632",
+      "notes": "Dark Admiralty Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.25781643396658277,
+        0.2968795300221256,
+        0.3242236972610056
+      ],
+      "id": "BS381C 633",
+      "name": "BS381C 633",
+      "notes": "RAF Blue Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.43360036621652553,
+        0.4453192950331884,
+        0.3906309605554284
+      ],
+      "id": "BS381C 634",
+      "name": "BS381C 634",
+      "notes": "Slate",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3203173876554513,
+        0.35547417410543986,
+        0.3320363164721141
+      ],
+      "id": "BS381C 635",
+      "name": "BS381C 635",
+      "notes": "Lead",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.371099412527657,
+        0.46094453345540554,
+        0.5078202487220569
+      ],
+      "id": "BS381C 636",
+      "name": "BS381C 636",
+      "notes": "PRU Blue",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5546959639887084,
+        0.605477988860914,
+        0.6093842984664684
+      ],
+      "id": "BS381C 637",
+      "name": "BS381C 637",
+      "notes": "Medium Sea Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.42188143739986267,
+        0.44922560463874267,
+        0.4648508430609598
+      ],
+      "id": "BS381C 638",
+      "name": "BS381C 638",
+      "notes": "Dark Sea Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.398443579766537,
+        0.4570382238498512,
+        0.3867246509498741
+      ],
+      "id": "BS381C 639",
+      "name": "BS381C 639",
+      "notes": "Light Slate Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.33594262607766845,
+        0.37891203173876553,
+        0.3906309605554284
+      ],
+      "id": "BS381C 640",
+      "name": "BS381C 640",
+      "notes": "Extra Dark Sea Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.15625238422217136,
+        0.16797131303883422,
+        0.18359655146105136
+      ],
+      "id": "BS381C 642",
+      "name": "BS381C 642",
+      "notes": "Night",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3046921492332342,
+        0.3242236972610056,
+        0.3320363164721141
+      ],
+      "id": "BS381C 671",
+      "name": "BS381C 671",
+      "notes": "Middle Graphite",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.660166323338674,
+        0.714854657816434,
+        0.7226672770275425
+      ],
+      "id": "BS381C 676",
+      "name": "BS381C 676",
+      "notes": "Light Weatherwork Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.40234988937209126,
+        0.43360036621652553,
+        0.46094453345540554
+      ],
+      "id": "BS381C 677",
+      "name": "BS381C 677",
+      "notes": "Dark Weatherwork Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.48047608148317694,
+        0.5742275120164797,
+        0.6367284657053482
+      ],
+      "id": "BS381C 692",
+      "name": "BS381C 692",
+      "notes": "Smoke Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5312581063553826,
+        0.5664148928053712,
+        0.5507896543831541
+      ],
+      "id": "BS381C 693",
+      "name": "BS381C 693",
+      "notes": "Aircraft Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5625085831998169,
+        0.6015716792553597,
+        0.5703212024109254
+      ],
+      "id": "BS381C 694",
+      "name": "BS381C 694",
+      "notes": "Dove Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7109483482108797,
+        0.8242313267719539,
+        0.796887159533074
+      ],
+      "id": "BS381C 697",
+      "name": "BS381C 697",
+      "notes": "Light Admiralty Grey",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.42969405661097126,
+        0.28906691081101704,
+        0.4570382238498512
+      ],
+      "id": "BS381C 796",
+      "name": "BS381C 796",
+      "notes": "Dark Violet",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7851682307164111,
+        0.6562600137331197,
+        0.8046997787441825
+      ],
+      "id": "BS381C 797",
+      "name": "BS381C 797",
+      "notes": "Light Violet",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    }
+  ]
+}
