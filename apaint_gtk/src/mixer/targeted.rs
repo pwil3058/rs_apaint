@@ -18,7 +18,7 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::ScalarAttribute;
+use colour_math::{ColourInterface, ScalarAttribute};
 
 use apaint::{
     characteristics::CharacteristicType,
@@ -29,16 +29,18 @@ use apaint::{
     BasicPaintIfce,
 };
 
-use crate::series::PaintSeriesManagerBuilder;
 use crate::{
     attributes::ColourAttributeDisplayStack,
     colour::RGB,
     colour_edit::ColourEditor,
     hue_wheel::GtkHueWheel,
-    icon_image::series_paint_image,
+    icon_image::{paint_standard_image, series_paint_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
-    series::PaintSeriesManager,
+    series::{
+        PaintSeriesManager, PaintSeriesManagerBuilder, PaintStandardsManager,
+        PaintStandardsManagerBuilder,
+    },
     storage::{StorageManager, StorageManagerBuilder},
     window::PersistentWindowButtonBuilder,
 };
@@ -158,13 +160,14 @@ pub struct TargetedPaintMixer {
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     paint_series_manager: Rc<PaintSeriesManager>,
+    paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
 }
 
 impl TargetedPaintMixer {
     const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN << 0;
     const SAV_HAS_TARGET: u64 = SAV_NEXT_CONDN << 1;
-    const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
+    pub const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
     const HAS_TARGET_MASK: u64 = Self::SAV_HAS_TARGET + Self::SAV_NOT_HAS_TARGET;
     const SAV_HAS_NAME: u64 = SAV_NEXT_CONDN << 3;
 
@@ -288,16 +291,22 @@ impl TargetedPaintMixer {
         self.mix_entry.set_target_rgb(rgb);
         self.paint_series_manager.set_target_rgb(rgb);
         if rgb.is_some() {
-            self.buttons.update_condns(MaskedCondns {
+            let masked_condns = MaskedCondns {
                 condns: Self::SAV_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
-            });
+            };
+            self.buttons.update_condns(masked_condns);
+            self.paint_standards_manager
+                .update_popup_condns(masked_condns);
             self.file_manager.update_tool_needs_saving(true);
         } else {
-            self.buttons.update_condns(MaskedCondns {
+            let masked_condns = MaskedCondns {
                 condns: Self::SAV_NOT_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
-            });
+            };
+            self.buttons.update_condns(masked_condns);
+            self.paint_standards_manager
+                .update_popup_condns(masked_condns);
             self.file_manager.update_tool_needs_saving(false);
         }
     }
@@ -406,6 +415,7 @@ impl TargetedPaintMixerBuilder {
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
+
         let mut builder = PaintSeriesManagerBuilder::new();
         builder
             .attributes(&self.attributes)
@@ -422,6 +432,27 @@ impl TargetedPaintMixerBuilder {
             .build();
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+
+        let mut builder = PaintStandardsManagerBuilder::new();
+        builder
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics);
+        if let Some(ref config_dir_path) = self.config_dir_path {
+            builder.loaded_files_data_path(&config_dir_path.join("paint_standards_files"));
+        }
+        let paint_standards_manager = builder.build();
+        paint_standards_manager.update_popup_condns(MaskedCondns {
+            condns: TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+            mask: TargetedPaintMixer::HAS_TARGET_MASK,
+        });
+        let persistent_window_btn = PersistentWindowButtonBuilder::new()
+            .icon(&paint_standard_image(24))
+            .window_child(&paint_standards_manager.pwo())
+            .window_title("Paint Standards Manager")
+            .window_geometry(Some("paint_standards_manager"), (300, 200))
+            .build();
+        button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+
         button_box.pack_start(&file_manager.pwo(), true, true, 0);
         vbox.pack_start(&button_box, false, false, 0);
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -515,6 +546,7 @@ impl TargetedPaintMixerBuilder {
             buttons,
             series_paint_spinner_box,
             paint_series_manager,
+            paint_standards_manager,
             next_mix_id: Cell::new(1),
         });
 
@@ -545,6 +577,15 @@ impl TargetedPaintMixerBuilder {
         let tpm_c = Rc::clone(&tpm);
         tpm.paint_series_manager
             .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.paint_standards_manager
+            .connect_set_as_target(move |paint| {
+                let id = paint.id();
+                let name = paint.name().unwrap_or("");
+                let rgb = paint.rgb();
+                tpm_c.start_new_mixture(id, name, &rgb);
+            });
 
         let tpm_c = Rc::clone(&tpm);
         tpm.series_paint_spinner_box

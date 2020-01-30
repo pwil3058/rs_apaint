@@ -26,10 +26,10 @@ use apaint::{
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
 
-use crate::icon_image::series_paint_load_image;
 use crate::{
     colour::{ScalarAttribute, RGB},
     hue_wheel::GtkHueWheel,
+    icon_image::{paint_standard_load_image, series_paint_load_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     managed_menu::MenuItemSpec,
 };
@@ -527,6 +527,138 @@ impl PaintSeriesManagerBuilder {
             .build();
 
         let psm = Rc::new(PaintSeriesManager {
+            vbox,
+            binder,
+            display_dialog_manager: RefCell::new(display_dialog_manager),
+        });
+
+        let psm_c = Rc::clone(&psm);
+        psm.binder
+            .connect_popup_menu_item("info", move |paint| psm_c.display_paint_information(&paint));
+
+        let psm_c = Rc::clone(&psm);
+        load_file_btn.connect_clicked(move |_| {
+            if let Err(err) = psm_c.load_series_from_file() {
+                psm_c.report_error("Load file failed.", &err);
+            }
+        });
+
+        psm
+    }
+}
+
+#[derive(PWO, Wrapper)]
+pub struct PaintStandardsManager {
+    vbox: gtk::Box,
+    binder: Rc<SeriesBinder>,
+    display_dialog_manager: RefCell<PaintDisplayDialogManager<gtk::Box>>,
+}
+
+impl PaintStandardsManager {
+    fn load_series_from_file(&self) -> Result<(), crate::Error> {
+        let last_file = recall("PaintStandardsManager::last_loaded_file");
+        let last_file = if let Some(ref text) = last_file {
+            Some(text.as_str())
+        } else {
+            None
+        };
+        if let Some(path) = self.ask_file_path(Some("Paint Standard's File Name:"), last_file, true)
+        {
+            let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
+            self.binder.add_series_from_file(&abs_path)?;
+            let path_text = pw_pathux::path_to_string(&abs_path);
+            remember("PaintStandardsManager::last_loaded_file", &path_text);
+            self.binder.write_loaded_file_paths();
+        };
+        Ok(())
+    }
+
+    fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
+        self.display_dialog_manager
+            .borrow_mut()
+            .display_paint(paint);
+    }
+
+    pub fn connect_set_as_target<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
+        self.binder.connect_popup_menu_item("set target", callback);
+    }
+
+    pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
+        self.binder.update_popup_condns(changed_condns)
+    }
+}
+
+pub struct PaintStandardsManagerBuilder {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+    loaded_files_data_path: Option<PathBuf>,
+}
+
+impl PaintStandardsManagerBuilder {
+    pub fn new() -> Self {
+        Self {
+            attributes: vec![],
+            characteristics: vec![],
+            loaded_files_data_path: None,
+        }
+    }
+
+    pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn loaded_files_data_path(&mut self, path: &Path) -> &mut Self {
+        self.loaded_files_data_path = Some(path.to_path_buf());
+        self
+    }
+
+    pub fn build(&self) -> Rc<PaintStandardsManager> {
+        let menu_items = &[
+            (
+                "info",
+                "Paint Information",
+                None,
+                "Display information for the indicated paint",
+                SAV_HOVER_OK,
+            )
+                .into(),
+            (
+                "set target",
+                "Set As Target",
+                None,
+                "Set the indicated standard as the target in the mixer",
+                SAV_HOVER_OK + crate::mixer::targeted::TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+            )
+                .into(),
+        ];
+        let binder = SeriesBinder::new(
+            menu_items,
+            &self.attributes,
+            &self.characteristics,
+            self.loaded_files_data_path.clone(),
+        );
+        let load_file_btn = gtk::ButtonBuilder::new()
+            .image(&paint_standard_load_image(24).upcast::<gtk::Widget>())
+            .tooltip_text("Load a paint standards series from a file.")
+            .build();
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&load_file_btn, false, false, 0);
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        vbox.pack_start(&binder.pwo(), true, true, 0);
+        vbox.show_all();
+        let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics)
+            .build();
+
+        let psm = Rc::new(PaintStandardsManager {
             vbox,
             binder,
             display_dialog_manager: RefCell::new(display_dialog_manager),

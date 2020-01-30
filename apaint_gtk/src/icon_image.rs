@@ -136,3 +136,33 @@ pub fn series_paint_load_image(size: i32) -> gtk::Image {
         panic!("File: {:?} Line: {:?}", file!(), line!())
     }
 }
+
+// PAINT STANDARD IMAGE
+pub fn paint_standard_pixbuf() -> gdk_pixbuf::Pixbuf {
+    gdk_pixbuf::Pixbuf::new_from_xpm_data(PAINT_STANDARD_XPM)
+}
+
+pub fn paint_standard_image(size: i32) -> gtk::Image {
+    if let Some(pixbuf) =
+        paint_standard_pixbuf().scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear)
+    {
+        gtk::Image::new_from_pixbuf(Some(&pixbuf))
+    } else {
+        panic!("File: {:?} Line: {:?}", file!(), line!())
+    }
+}
+
+// PAINT STANDARD LOAD IMAGE
+pub fn paint_standard_load_pixbuf() -> gdk_pixbuf::Pixbuf {
+    gdk_pixbuf::Pixbuf::new_from_xpm_data(PAINT_STANDARD_LOAD_XPM)
+}
+
+pub fn paint_standard_load_image(size: i32) -> gtk::Image {
+    if let Some(pixbuf) =
+        paint_standard_load_pixbuf().scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear)
+    {
+        gtk::Image::new_from_pixbuf(Some(&pixbuf))
+    } else {
+        panic!("File: {:?} Line: {:?}", file!(), line!())
+    }
+}
