@@ -16,7 +16,7 @@ use crate::{
 lazy_static! {
     static ref HEADER_RE: Regex = Regex::new(r"^\w+:\s*(.*)$").expect("programmer error");
     static ref PAINT_RE: Regex = Regex::new(
-        r#"^(?P<ptype>\w+)\((name=)?"(?P<name>.+)", rgb=(?P<rgb>RGB(16)?\([^)]+\))(?P<characteristics>(?:, \w+="\w+")*)(, notes="(?P<notes>.*)")?\)$"#
+        r#"^(?P<ptype>\w+)\((name=)?"(?P<name>.+)", rgb=(?P<rgb>RGB(16)?\([^)]+\))(?P<characteristics>(?:, [^n]\w+="\w+")*)(, notes="(?P<notes>.*)")?\)$"#
     ).expect("programmer error");
     static ref CHARACTERISTIC_RE: Regex = Regex::new(r###"(\w+)="(\w+)""###).expect("programmer error");
 }
@@ -37,8 +37,10 @@ fn extract_paint_spec<F: ColourComponent>(line: &str) -> Result<BasicPaintSpec<F
         let name = cap.name("name").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb_str = cap.name("rgb").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb = colour_math::rgb::RGB16::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
+        println!("RGB: {:?}", rgb);
         let mut bps = BasicPaintSpec::<F>::new(rgb.into(), name);
         bps.name = name.to_string();
+        println!("notes: {:?}", cap.name("notes"));
         bps.notes = cap
             .name("notes")
             .ok_or(NotAValidLegacySpec)?
@@ -104,7 +106,9 @@ pub fn read_legacy_paint_series_spec<R: Read, F: ColourComponent>(
 ) -> Result<SeriesPaintSeriesSpec<F>, crate::Error> {
     let mut string = String::new();
     reader.read_to_string(&mut string)?;
-    extract_legacy_paint_series_spec(&string)
+    let spec = extract_legacy_paint_series_spec(&string)?;
+    println!("SUCCESS");
+    Ok(spec)
 }
 
 #[cfg(test)]
