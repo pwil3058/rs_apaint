@@ -25,6 +25,7 @@ use crate::{
     spec_edit::BasicPaintSpecEditor,
     storage::{StorageManager, StorageManagerBuilder},
 };
+use apaint::legacy::read_legacy_paint_series_spec;
 
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintFactory {
@@ -294,7 +295,22 @@ impl BasicPaintFactory {
     fn load<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
         let path: &Path = path.as_ref();
         let mut file = File::open(&path)?;
-        let new_series = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
+        let new_series = match SeriesPaintSeriesSpec::<f64>::read(&mut file) {
+            Ok(series) => series,
+            Err(err) => match &err {
+                apaint::Error::SerdeJsonError(_) => {
+                    let mut file = File::open(&path)?;
+                    let series = if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
+                        println!("SERIES");
+                        series
+                    } else {
+                        return Err(err);
+                    };
+                    series
+                }
+                _ => return Err(err),
+            },
+        };
         self.unguarded_reset();
         let id = new_series.series_id();
         self.proprietor_entry.set_text(id.proprietor());
