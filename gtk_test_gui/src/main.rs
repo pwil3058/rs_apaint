@@ -15,7 +15,7 @@ use apaint_boilerplate::Colour;
 use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
 use apaint_gtk::mixer::targeted::TargetedPaintMixerBuilder;
 use apaint_gtk::series::display::PaintDisplayBuilder;
-use apaint_gtk::{colour::*, factory::BasicPaintFactory};
+use apaint_gtk::{colour::*, factory::BasicPaintFactoryBuilder};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[component = "f64"]
@@ -44,20 +44,20 @@ fn main() {
     let win = gtk::Window::new(gtk::WindowType::Toplevel);
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(
-        &BasicPaintFactory::new(
-            &[
+        &BasicPaintFactoryBuilder::new()
+            .attributes(&[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,
                 //ScalarAttribute::Chroma,
-            ],
-            &[
+            ])
+            .characteristics(&[
                 CharacteristicType::Finish,
                 CharacteristicType::Transparency,
                 CharacteristicType::Fluorescence,
                 CharacteristicType::Metallicness,
-            ],
-        )
-        .pwo(),
+            ])
+            .build()
+            .pwo(),
         false,
         false,
         0,

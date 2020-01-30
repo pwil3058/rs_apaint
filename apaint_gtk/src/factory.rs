@@ -42,143 +42,6 @@ pub struct BasicPaintFactory {
 }
 
 impl BasicPaintFactory {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
-        let menu_items: &[MenuItemSpec] = &[
-            (
-                "edit",
-                "Edit",
-                None,
-                "Edit the indicated paint",
-                SAV_HOVER_OK,
-            )
-                .into(),
-            (
-                "remove",
-                "Remove",
-                None,
-                "Remove the indicated paint from the series.",
-                SAV_HOVER_OK,
-            )
-                .into(),
-        ];
-        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let grid = gtk::GridBuilder::new().hexpand(true).build();
-        vbox.pack_start(&grid, false, false, 0);
-        let label = gtk::LabelBuilder::new()
-            .label("Series Name:")
-            .halign(gtk::Align::End)
-            .build();
-        grid.attach(&label, 0, 0, 1, 1);
-        let series_name_entry = gtk::EntryBuilder::new().hexpand(true).build();
-        grid.attach(&series_name_entry, 1, 0, 1, 1);
-        let label = gtk::LabelBuilder::new()
-            .label("Proprietor:")
-            .halign(gtk::Align::End)
-            .build();
-        grid.attach(&label, 0, 1, 1, 1);
-        let proprietor_entry = gtk::EntryBuilder::new().hexpand(true).build();
-        grid.attach(&proprietor_entry, 1, 1, 1, 1);
-        let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
-        let paint_editor = BasicPaintSpecEditor::new(attributes, characteristics);
-        let hue_wheel = GtkHueWheel::new(menu_items, attributes);
-        let paint_list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(&paint_list_spec, menu_items);
-        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
-        scrolled_window.add(&list_view.pwo());
-        let notebook = gtk::NotebookBuilder::new().build();
-        notebook.add(&scrolled_window);
-        notebook.set_tab_label_text(&scrolled_window, "Paint List");
-        notebook.add(&hue_wheel.pwo());
-        notebook.set_tab_label_text(&hue_wheel.pwo(), "Hue/Attribute Wheel");
-        vbox.pack_start(&notebook, true, true, 0);
-        paned.add1(&vbox);
-        paned.add2(&paint_editor.pwo());
-        paned.set_position_from_recollections("basic paint factory h paned position", 200);
-        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        let file_manager = StorageManagerBuilder::new()
-            .last_file_key("factory::series_paints")
-            .tooltip_text(
-                "reset",
-                "Clear the editor in preparation for creating a new collection",
-            )
-            .tooltip_text("load", "Load a paint collection from a file for editing.")
-            .tooltip_text("save", "Save the current editor content to the current file (or to a nominated file if there's no current file).")
-            .tooltip_text("save as", "Save the current editor content to a nominated file which will become the current file.")
-            .build();
-        vbox.pack_start(&file_manager.pwo(), false, false, 0);
-        vbox.pack_start(&paned, true, true, 0);
-        let bpf = Rc::new(Self {
-            vbox,
-            file_manager,
-            paint_editor,
-            hue_wheel,
-            list_view,
-            attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
-            paint_series: RefCell::new(SeriesPaintSeriesSpec::default()),
-            proprietor_entry,
-            series_name_entry,
-        });
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.paint_editor
-            .connect_add_action(move |spec| bpf_c.add_paint(spec));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.paint_editor
-            .connect_accept_action(move |id, spec| bpf_c.replace_paint(id, spec));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.paint_editor
-            .connect_changed(move |_| bpf_c.update_editor_needs_saving());
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.hue_wheel
-            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.list_view
-            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.hue_wheel
-            .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.list_view
-            .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.proprietor_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                bpf_c.paint_series.borrow_mut().set_proprietor(&text);
-                bpf_c.update_saveability();
-                bpf_c.update_series_needs_saving();
-            }
-        });
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.series_name_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                bpf_c.paint_series.borrow_mut().set_series_name(&text);
-                bpf_c.update_saveability();
-                bpf_c.update_series_needs_saving();
-            }
-        });
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager.connect_reset(move || bpf_c.reset());
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager.connect_load(move |p| bpf_c.load(p));
-
-        let bpf_c = Rc::clone(&bpf);
-        bpf.file_manager
-            .connect_save(move |p| bpf_c.write_to_file(p));
-
-        bpf
-    }
-
     fn update_saveability(&self) {
         let series = self.paint_series.borrow();
         let series_id = series.series_id();
@@ -301,7 +164,6 @@ impl BasicPaintFactory {
                 apaint::Error::SerdeJsonError(_) => {
                     let mut file = File::open(&path)?;
                     let series = if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
-                        println!("SERIES");
                         series
                     } else {
                         return Err(err);
@@ -328,5 +190,166 @@ impl BasicPaintFactory {
         self.update_editor_needs_saving();
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
         Ok(digest)
+    }
+}
+
+pub struct BasicPaintFactoryBuilder {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+}
+
+impl BasicPaintFactoryBuilder {
+    pub fn new() -> Self {
+        Self {
+            attributes: vec![],
+            characteristics: vec![],
+        }
+    }
+
+    pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn build(&self) -> Rc<BasicPaintFactory> {
+        let menu_items: &[MenuItemSpec] = &[
+            (
+                "edit",
+                "Edit",
+                None,
+                "Edit the indicated paint",
+                SAV_HOVER_OK,
+            )
+                .into(),
+            (
+                "remove",
+                "Remove",
+                None,
+                "Remove the indicated paint from the series.",
+                SAV_HOVER_OK,
+            )
+                .into(),
+        ];
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let grid = gtk::GridBuilder::new().hexpand(true).build();
+        vbox.pack_start(&grid, false, false, 0);
+        let label = gtk::LabelBuilder::new()
+            .label("Series Name:")
+            .halign(gtk::Align::End)
+            .build();
+        grid.attach(&label, 0, 0, 1, 1);
+        let series_name_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        grid.attach(&series_name_entry, 1, 0, 1, 1);
+        let label = gtk::LabelBuilder::new()
+            .label("Proprietor:")
+            .halign(gtk::Align::End)
+            .build();
+        grid.attach(&label, 0, 1, 1, 1);
+        let proprietor_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        grid.attach(&proprietor_entry, 1, 1, 1, 1);
+        let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+        let paint_editor = BasicPaintSpecEditor::new(&self.attributes, &self.characteristics);
+        let hue_wheel = GtkHueWheel::new(menu_items, &self.attributes);
+        let paint_list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
+        let list_view = ColouredItemListView::new(&paint_list_spec, menu_items);
+        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+        scrolled_window.add(&list_view.pwo());
+        let notebook = gtk::NotebookBuilder::new().build();
+        notebook.add(&scrolled_window);
+        notebook.set_tab_label_text(&scrolled_window, "Paint List");
+        notebook.add(&hue_wheel.pwo());
+        notebook.set_tab_label_text(&hue_wheel.pwo(), "Hue/Attribute Wheel");
+        vbox.pack_start(&notebook, true, true, 0);
+        paned.add1(&vbox);
+        paned.add2(&paint_editor.pwo());
+        paned.set_position_from_recollections("basic paint factory h paned position", 200);
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let file_manager = StorageManagerBuilder::new()
+            .last_file_key("factory::series_paints")
+            .tooltip_text(
+                "reset",
+                "Clear the editor in preparation for creating a new collection",
+            )
+            .tooltip_text("load", "Load a paint collection from a file for editing.")
+            .tooltip_text("save", "Save the current editor content to the current file (or to a nominated file if there's no current file).")
+            .tooltip_text("save as", "Save the current editor content to a nominated file which will become the current file.")
+            .build();
+        vbox.pack_start(&file_manager.pwo(), false, false, 0);
+        vbox.pack_start(&paned, true, true, 0);
+        let bpf = Rc::new(BasicPaintFactory {
+            vbox,
+            file_manager,
+            paint_editor,
+            hue_wheel,
+            list_view,
+            attributes: self.attributes.to_vec(),
+            characteristics: self.characteristics.to_vec(),
+            paint_series: RefCell::new(SeriesPaintSeriesSpec::default()),
+            proprietor_entry,
+            series_name_entry,
+        });
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.paint_editor
+            .connect_add_action(move |spec| bpf_c.add_paint(spec));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.paint_editor
+            .connect_accept_action(move |id, spec| bpf_c.replace_paint(id, spec));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.paint_editor
+            .connect_changed(move |_| bpf_c.update_editor_needs_saving());
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.hue_wheel
+            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.list_view
+            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.hue_wheel
+            .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.list_view
+            .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.proprietor_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                bpf_c.paint_series.borrow_mut().set_proprietor(&text);
+                bpf_c.update_saveability();
+                bpf_c.update_series_needs_saving();
+            }
+        });
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.series_name_entry.connect_changed(move |entry| {
+            if let Some(text) = entry.get_text() {
+                bpf_c.paint_series.borrow_mut().set_series_name(&text);
+                bpf_c.update_saveability();
+                bpf_c.update_series_needs_saving();
+            }
+        });
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager.connect_reset(move || bpf_c.reset());
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager.connect_load(move |p| bpf_c.load(p));
+
+        let bpf_c = Rc::clone(&bpf);
+        bpf.file_manager
+            .connect_save(move |p| bpf_c.write_to_file(p));
+
+        bpf
     }
 }
