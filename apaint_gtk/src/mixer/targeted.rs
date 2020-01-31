@@ -26,7 +26,7 @@ use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     hue_wheel::MakeColouredShape,
-    mixtures::{MixedPaint, MixedPaintBuilder, MixingSession, Paint},
+    mixtures::{MixingSession, Mixture, MixtureBuilder, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
 };
@@ -40,7 +40,7 @@ use crate::{
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::{
         component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
-        display::{MixedPaintDisplayDialogManager, MixedPaintDisplayDialogManagerBuilder},
+        display::{MixtureDisplayDialogManager, MixtureDisplayDialogManagerBuilder},
     },
     series::{
         PaintSeriesManager, PaintSeriesManagerBuilder, PaintStandardsManager,
@@ -50,8 +50,8 @@ use crate::{
     window::PersistentWindowButtonBuilder,
 };
 
-// TODO: modify PaintListRow for MixedPaint to included target RGB
-impl PaintListRow for MixedPaint<f64> {}
+// TODO: modify PaintListRow for Mixture to included target RGB
+impl PaintListRow for Mixture<f64> {}
 
 #[derive(PWO)]
 pub struct TargetedPaintEntry {
@@ -167,7 +167,7 @@ pub struct TargetedPaintMixer {
     paint_series_manager: Rc<PaintSeriesManager>,
     paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
-    display_dialog_manager: RefCell<MixedPaintDisplayDialogManager<gtk::Box>>,
+    display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
 }
 
 impl TargetedPaintMixer {
@@ -320,7 +320,7 @@ impl TargetedPaintMixer {
     pub fn accept_current_mixture(&self) {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
-        let mixed_paint = MixedPaintBuilder::<f64>::new(&mix_id)
+        let mixed_paint = MixtureBuilder::<f64>::new(&mix_id)
             .name(&self.mix_entry.name_entry.get_text().unwrap_or("".into()))
             .notes(&self.mix_entry.notes_entry.get_text().unwrap_or("".into()))
             .targeted_rgb(
@@ -432,7 +432,7 @@ impl TargetedPaintMixerBuilder {
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
 
-        let display_dialog_manager = MixedPaintDisplayDialogManagerBuilder::new(&vbox)
+        let display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
             .build();
@@ -648,7 +648,6 @@ impl TargetedPaintMixerBuilder {
         tpm.list_view.connect_popup_menu_item("info", move |id| {
             let mixing_session = tpm_c.mixing_session.borrow();
             let mixture = mixing_session.mixture(id).expect("programm error");
-            println!("info: {:?}", mixture);
             tpm_c
                 .display_dialog_manager
                 .borrow_mut()

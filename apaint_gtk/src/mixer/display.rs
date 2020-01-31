@@ -8,19 +8,19 @@ use colour_math::{ColourInterface, ScalarAttribute};
 
 use pw_gix::{gtkx::coloured::*, gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 
-use apaint::{characteristics::CharacteristicType, mixtures::MixedPaint, BasicPaintIfce};
+use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{attributes::ColourAttributeDisplayStack, colour::RGB};
 
 #[derive(PWO)]
-pub struct MixedPaintDisplay {
+pub struct MixtureDisplay {
     vbox: gtk::Box,
-    mixture: Rc<MixedPaint<f64>>,
+    mixture: Rc<Mixture<f64>>,
     target_label: gtk::Label,
     cads: ColourAttributeDisplayStack,
 }
 
-impl MixedPaintDisplay {
+impl MixtureDisplay {
     pub fn set_target(&self, new_target: Option<&RGB>) {
         if let Some(rgb) = new_target {
             self.target_label.set_label("Current Target");
@@ -33,18 +33,18 @@ impl MixedPaintDisplay {
         };
     }
 
-    pub fn mixture(&self) -> &Rc<MixedPaint<f64>> {
+    pub fn mixture(&self) -> &Rc<Mixture<f64>> {
         &self.mixture
     }
 }
 
-pub struct MixedPaintDisplayBuilder {
+pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
 }
 
-impl MixedPaintDisplayBuilder {
+impl MixtureDisplayBuilder {
     pub fn new() -> Self {
         Self {
             attributes: vec![],
@@ -72,7 +72,7 @@ impl MixedPaintDisplayBuilder {
         self
     }
 
-    pub fn build(&self, mixture: &Rc<MixedPaint<f64>>) -> MixedPaintDisplay {
+    pub fn build(&self, mixture: &Rc<Mixture<f64>>) -> MixtureDisplay {
         let rgb = mixture.rgb();
         let vbox = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
@@ -117,7 +117,7 @@ impl MixedPaintDisplayBuilder {
         }
         vbox.show_all();
 
-        MixedPaintDisplay {
+        MixtureDisplay {
             vbox,
             mixture: Rc::clone(mixture),
             target_label,
@@ -126,19 +126,19 @@ impl MixedPaintDisplayBuilder {
     }
 }
 
-struct MixedPaintDisplayDialog {
+struct MixtureDisplayDialog {
     pub dialog: gtk::Dialog,
-    pub display: MixedPaintDisplay,
+    pub display: MixtureDisplay,
 }
 
-pub struct MixedPaintDisplayDialogManager<W: TopGtkWindow> {
+pub struct MixtureDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(String, gtk::ResponseType)>,
-    mixture_display_builder: MixedPaintDisplayBuilder,
-    dialogs: BTreeMap<Rc<MixedPaint<f64>>, MixedPaintDisplayDialog>,
+    mixture_display_builder: MixtureDisplayBuilder,
+    dialogs: BTreeMap<Rc<Mixture<f64>>, MixtureDisplayDialog>,
 }
 
-impl<W: TopGtkWindow> MixedPaintDisplayDialogManager<W> {
+impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
     fn new_dialog(&self) -> gtk::Dialog {
         let dialog = gtk::DialogBuilder::new().build();
         if let Some(parent) = self.caller.get_toplevel_gtk_window() {
@@ -155,14 +155,14 @@ impl<W: TopGtkWindow> MixedPaintDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn display_mixture(&mut self, mixture: &Rc<MixedPaint<f64>>) {
+    pub fn display_mixture(&mut self, mixture: &Rc<Mixture<f64>>) {
         if !self.dialogs.contains_key(mixture) {
             let dialog = self.new_dialog();
             let display = self.mixture_display_builder.build(mixture);
             dialog
                 .get_content_area()
                 .pack_start(&display.pwo(), true, true, 0);
-            let pdd = MixedPaintDisplayDialog { dialog, display };
+            let pdd = MixtureDisplayDialog { dialog, display };
             self.dialogs.insert(Rc::clone(mixture), pdd);
         };
         let pdd = self.dialogs.get(mixture).expect("we just pit it there");
@@ -177,7 +177,7 @@ impl<W: TopGtkWindow> MixedPaintDisplayDialogManager<W> {
     }
 }
 
-pub struct MixedPaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
+pub struct MixtureDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(String, gtk::ResponseType)>,
     attributes: Vec<ScalarAttribute>,
@@ -185,7 +185,7 @@ pub struct MixedPaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     target_rgb: Option<RGB>,
 }
 
-impl<W: TopGtkWindow + Clone> MixedPaintDisplayDialogManagerBuilder<W> {
+impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
     pub fn new(caller: &W) -> Self {
         Self {
             caller: caller.clone(),
@@ -206,15 +206,15 @@ impl<W: TopGtkWindow + Clone> MixedPaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn build(&self) -> MixedPaintDisplayDialogManager<W> {
-        let mut mixture_display_builder = MixedPaintDisplayBuilder::new();
+    pub fn build(&self) -> MixtureDisplayDialogManager<W> {
+        let mut mixture_display_builder = MixtureDisplayBuilder::new();
         mixture_display_builder
             .attributes(&self.attributes)
             .characteristics(&self.characteristics);
         if let Some(target_rgb) = self.target_rgb {
             mixture_display_builder.target_rgb(Some(&target_rgb));
         }
-        MixedPaintDisplayDialogManager {
+        MixtureDisplayDialogManager {
             caller: self.caller.clone(),
             buttons: self.buttons.clone(),
             mixture_display_builder,

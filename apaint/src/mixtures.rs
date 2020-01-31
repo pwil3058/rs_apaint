@@ -23,7 +23,7 @@ use crate::{
 };
 
 #[derive(Debug, Colour)]
-pub struct MixedPaint<F: ColourComponent> {
+pub struct Mixture<F: ColourComponent> {
     rgb: RGB<F>,
     targeted_rgb: Option<RGB<F>>,
     id: String,
@@ -37,7 +37,7 @@ pub struct MixedPaint<F: ColourComponent> {
     components: Vec<(Paint<F>, u64)>,
 }
 
-impl<F: ColourComponent + ShapeConsts> MixedPaint<F> {
+impl<F: ColourComponent + ShapeConsts> Mixture<F> {
     pub fn targeted_rgb(&self) -> Option<&RGB<F>> {
         if let Some(ref rgb) = self.targeted_rgb {
             Some(rgb)
@@ -66,7 +66,7 @@ impl<F: ColourComponent + ShapeConsts> MixedPaint<F> {
     }
 }
 
-impl<F: ColourComponent> BasicPaintIfce<F> for MixedPaint<F> {
+impl<F: ColourComponent> BasicPaintIfce<F> for Mixture<F> {
     fn id(&self) -> &str {
         &self.id
     }
@@ -108,7 +108,7 @@ impl<F: ColourComponent> BasicPaintIfce<F> for MixedPaint<F> {
     }
 }
 
-impl<F: ColourComponent> TooltipText for MixedPaint<F> {
+impl<F: ColourComponent> TooltipText for Mixture<F> {
     fn tooltip_text(&self) -> String {
         let mut string = self.label_text();
         if let Some(notes) = self.notes() {
@@ -120,7 +120,7 @@ impl<F: ColourComponent> TooltipText for MixedPaint<F> {
     }
 }
 
-impl<F: ColourComponent> LabelText for MixedPaint<F> {
+impl<F: ColourComponent> LabelText for Mixture<F> {
     fn label_text(&self) -> String {
         if let Some(name) = self.name() {
             format!("Mix {}: {}", self.id, name)
@@ -132,22 +132,22 @@ impl<F: ColourComponent> LabelText for MixedPaint<F> {
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for MixedPaint<F> {
+impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Mixture<F> {
     fn coloured_shape(&self) -> ColouredShape<F> {
         let tooltip_text = self.tooltip_text();
         ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Diamond)
     }
 }
 
-impl<F: ColourComponent> PartialEq for MixedPaint<F> {
+impl<F: ColourComponent> PartialEq for Mixture<F> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl<F: ColourComponent> Eq for MixedPaint<F> {}
+impl<F: ColourComponent> Eq for Mixture<F> {}
 
-impl<F: ColourComponent> PartialOrd for MixedPaint<F> {
+impl<F: ColourComponent> PartialOrd for Mixture<F> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match self.id.cmp(&other.id) {
             Ordering::Less => Some(Ordering::Less),
@@ -157,7 +157,7 @@ impl<F: ColourComponent> PartialOrd for MixedPaint<F> {
     }
 }
 
-impl<F: ColourComponent> Ord for MixedPaint<F> {
+impl<F: ColourComponent> Ord for Mixture<F> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
@@ -166,7 +166,7 @@ impl<F: ColourComponent> Ord for MixedPaint<F> {
 #[derive(Debug)]
 pub struct MixingSession<F: ColourComponent> {
     notes: String,
-    mixtures: Vec<Rc<MixedPaint<F>>>,
+    mixtures: Vec<Rc<Mixture<F>>>,
 }
 
 impl<F: ColourComponent> MixingSession<F> {
@@ -185,7 +185,7 @@ impl<F: ColourComponent> MixingSession<F> {
         self.notes = notes.to_string()
     }
 
-    pub fn mixtures(&self) -> impl Iterator<Item = &Rc<MixedPaint<F>>> {
+    pub fn mixtures(&self) -> impl Iterator<Item = &Rc<Mixture<F>>> {
         self.mixtures.iter()
     }
 
@@ -208,7 +208,7 @@ impl<F: ColourComponent> MixingSession<F> {
         v
     }
 
-    pub fn add_mixture(&mut self, mixture: &Rc<MixedPaint<F>>) -> Option<Rc<MixedPaint<F>>> {
+    pub fn add_mixture(&mut self, mixture: &Rc<Mixture<F>>) -> Option<Rc<Mixture<F>>> {
         debug_assert!(self.is_sorted_unique());
         match self
             .mixtures
@@ -227,7 +227,7 @@ impl<F: ColourComponent> MixingSession<F> {
         }
     }
 
-    pub fn mixture(&self, id: &str) -> Option<&Rc<MixedPaint<F>>> {
+    pub fn mixture(&self, id: &str) -> Option<&Rc<Mixture<F>>> {
         debug_assert!(self.is_sorted_unique());
         match self.mixtures.binary_search_by_key(&id, |p| p.id()) {
             Ok(index) => self.mixtures.get(index),
@@ -267,16 +267,16 @@ impl<F: ColourComponent + Serialize> MixingSession<F> {
 }
 
 #[derive(Debug)]
-pub struct MixedPaintBuilder<F: ColourComponent> {
+pub struct MixtureBuilder<F: ColourComponent> {
     id: String,
     name: String,
     notes: String,
     series_components: Vec<(Rc<SeriesPaint<F>>, u64)>,
-    mixture_components: Vec<(Rc<MixedPaint<F>>, u64)>,
+    mixture_components: Vec<(Rc<Mixture<F>>, u64)>,
     targeted_rgb: Option<RGB<F>>,
 }
 
-impl<F: ColourComponent> MixedPaintBuilder<F> {
+impl<F: ColourComponent> MixtureBuilder<F> {
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_string(),
@@ -316,20 +316,17 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
         self
     }
 
-    pub fn mixed_paint_components(
-        &mut self,
-        components: Vec<(Rc<MixedPaint<F>>, u64)>,
-    ) -> &mut Self {
+    pub fn mixed_paint_components(&mut self, components: Vec<(Rc<Mixture<F>>, u64)>) -> &mut Self {
         self.mixture_components = components;
         self
     }
 
-    pub fn mixed_paint_component(&mut self, component: (Rc<MixedPaint<F>>, u64)) -> &mut Self {
+    pub fn mixed_paint_component(&mut self, component: (Rc<Mixture<F>>, u64)) -> &mut Self {
         self.mixture_components.push(component);
         self
     }
 
-    pub fn build(&self) -> Rc<MixedPaint<F>> {
+    pub fn build(&self) -> Rc<Mixture<F>> {
         debug_assert!((self.series_components.len() + self.mixture_components.len()) > 0);
         let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
@@ -386,7 +383,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
             rgb_sum[i] /= divisor;
         }
         let divisor = total_adjusted_parts as f64;
-        let mp = MixedPaint::<F> {
+        let mp = Mixture::<F> {
             rgb: rgb_sum.into(),
             targeted_rgb: self.targeted_rgb,
             id: self.id.clone(),
@@ -406,7 +403,7 @@ impl<F: ColourComponent> MixedPaintBuilder<F> {
 #[derive(Debug, PartialEq)]
 pub enum Paint<F: ColourComponent> {
     Series(Rc<SeriesPaint<F>>),
-    Mixed(Rc<MixedPaint<F>>),
+    Mixed(Rc<Mixture<F>>),
 }
 
 impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Paint<F> {
@@ -581,8 +578,8 @@ impl<F: ColourComponent> From<&Rc<SeriesPaint<F>>> for SaveablePaint {
     }
 }
 
-impl<F: ColourComponent> From<&Rc<MixedPaint<F>>> for SaveablePaint {
-    fn from(paint: &Rc<MixedPaint<F>>) -> Self {
+impl<F: ColourComponent> From<&Rc<Mixture<F>>> for SaveablePaint {
+    fn from(paint: &Rc<Mixture<F>>) -> Self {
         SaveablePaint::Mixed(paint.id().to_string())
     }
 }
@@ -597,7 +594,7 @@ impl<F: ColourComponent> From<&Paint<F>> for SaveablePaint {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SaveableMixedPaint<F: ColourComponent> {
+pub struct SaveableMixture<F: ColourComponent> {
     targeted_rgb: Option<RGB<F>>,
     id: String,
     name: String,
@@ -605,8 +602,8 @@ pub struct SaveableMixedPaint<F: ColourComponent> {
     components: Vec<(SaveablePaint, u64)>,
 }
 
-impl<F: ColourComponent> From<&Rc<MixedPaint<F>>> for SaveableMixedPaint<F> {
-    fn from(rcmp: &Rc<MixedPaint<F>>) -> Self {
+impl<F: ColourComponent> From<&Rc<Mixture<F>>> for SaveableMixture<F> {
+    fn from(rcmp: &Rc<Mixture<F>>) -> Self {
         let components = rcmp
             .components
             .iter()
@@ -625,7 +622,7 @@ impl<F: ColourComponent> From<&Rc<MixedPaint<F>>> for SaveableMixedPaint<F> {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SaveableMixingSession<F: ColourComponent> {
     notes: String,
-    mixtures: Vec<SaveableMixedPaint<F>>,
+    mixtures: Vec<SaveableMixture<F>>,
 }
 
 impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
@@ -633,7 +630,7 @@ impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
         let mixtures = session
             .mixtures
             .iter()
-            .map(|p| SaveableMixedPaint::from(p))
+            .map(|p| SaveableMixture::from(p))
             .collect();
         Self {
             notes: session.notes.to_string(),
@@ -647,9 +644,9 @@ impl<F: ColourComponent> SaveableMixingSession<F> {
         &self,
         series_paint_finder: &Rc<impl SeriesPaintFinder<F>>,
     ) -> Result<MixingSession<F>, crate::Error> {
-        let mut mixtures: Vec<Rc<MixedPaint<F>>> = vec![];
+        let mut mixtures: Vec<Rc<Mixture<F>>> = vec![];
         for saved_mixture in self.mixtures.iter() {
-            let mut mixture_builder = MixedPaintBuilder::new(&saved_mixture.id);
+            let mut mixture_builder = MixtureBuilder::new(&saved_mixture.id);
             mixture_builder.name(&saved_mixture.name);
             mixture_builder.notes(&saved_mixture.notes);
             if let Some(targeted_rgb) = saved_mixture.targeted_rgb {
@@ -717,7 +714,7 @@ impl<F: ColourComponent + Serialize> SaveableMixingSession<F> {
 mod test {
     use std::rc::Rc;
 
-    use crate::mixtures::{MixedPaintBuilder, MixingSession};
+    use crate::mixtures::{MixingSession, MixtureBuilder};
     use crate::series::{
         BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
         SeriesPaintSeriesSpec,
@@ -752,7 +749,7 @@ mod test {
         let red = series.find("red").unwrap();
         let yellow = series.find("red").unwrap();
         let mix = vec![(Rc::clone(red), 1), (Rc::clone(yellow), 1)];
-        let mixture = MixedPaintBuilder::new("#001")
+        let mixture = MixtureBuilder::new("#001")
             .series_paint_components(mix)
             .name("orange")
             .build();
