@@ -1,6 +1,7 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use std::{
+    cmp::Ordering,
     io::{Read, Write},
     rc::Rc,
 };
@@ -21,7 +22,7 @@ use crate::{
     BasicPaintIfce, LabelText, TooltipText,
 };
 
-#[derive(Debug, Colour, PartialEq)]
+#[derive(Debug, Colour)]
 pub struct MixedPaint<F: ColourComponent> {
     rgb: RGB<F>,
     targeted_rgb: Option<RGB<F>>,
@@ -138,6 +139,30 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for MixedPaint<F> {
     }
 }
 
+impl<F: ColourComponent> PartialEq for MixedPaint<F> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl<F: ColourComponent> Eq for MixedPaint<F> {}
+
+impl<F: ColourComponent> PartialOrd for MixedPaint<F> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.id.cmp(&other.id) {
+            Ordering::Less => Some(Ordering::Less),
+            Ordering::Greater => Some(Ordering::Greater),
+            Ordering::Equal => Some(Ordering::Equal),
+        }
+    }
+}
+
+impl<F: ColourComponent> Ord for MixedPaint<F> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 #[derive(Debug)]
 pub struct MixingSession<F: ColourComponent> {
     notes: String,
@@ -199,6 +224,14 @@ impl<F: ColourComponent> MixingSession<F> {
                 self.mixtures.insert(index, Rc::clone(mixture));
                 None
             }
+        }
+    }
+
+    pub fn mixture(&self, id: &str) -> Option<&Rc<MixedPaint<F>>> {
+        debug_assert!(self.is_sorted_unique());
+        match self.mixtures.binary_search_by_key(&id, |p| p.id()) {
+            Ok(index) => self.mixtures.get(index),
+            Err(_) => None,
         }
     }
 

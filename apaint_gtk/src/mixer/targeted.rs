@@ -14,7 +14,9 @@ use cairo;
 use pw_gix::{
     cairox::*,
     gtkx::paned::RememberPosition,
-    sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
+    sav_state::{
+        ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
+    },
     wrapper::*,
 };
 
@@ -36,7 +38,10 @@ use crate::{
     hue_wheel::GtkHueWheel,
     icon_image::{paint_standard_image, series_paint_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
-    mixer::component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+    mixer::{
+        component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
+        display::{MixedPaintDisplayDialogManager, MixedPaintDisplayDialogManagerBuilder},
+    },
     series::{
         PaintSeriesManager, PaintSeriesManagerBuilder, PaintStandardsManager,
         PaintStandardsManagerBuilder,
@@ -162,6 +167,7 @@ pub struct TargetedPaintMixer {
     paint_series_manager: Rc<PaintSeriesManager>,
     paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
+    display_dialog_manager: RefCell<MixedPaintDisplayDialogManager<gtk::Box>>,
 }
 
 impl TargetedPaintMixer {
@@ -411,10 +417,25 @@ impl TargetedPaintMixerBuilder {
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], &self.attributes);
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
-        let list_view = ColouredItemListView::new(&list_spec, &[]);
+        let list_view = ColouredItemListView::new(
+            &list_spec,
+            &[(
+                "info",
+                "Paint Information",
+                None,
+                "Display information for the indicated paint",
+                SAV_HOVER_OK,
+            )
+                .into()],
+        );
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
         let series_paint_spinner_box =
             PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
+
+        let display_dialog_manager = MixedPaintDisplayDialogManagerBuilder::new(&vbox)
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics)
+            .build();
 
         let mut builder = PaintSeriesManagerBuilder::new();
         builder
@@ -548,6 +569,7 @@ impl TargetedPaintMixerBuilder {
             paint_series_manager,
             paint_standards_manager,
             next_mix_id: Cell::new(1),
+            display_dialog_manager: RefCell::new(display_dialog_manager),
         });
 
         let buttons_c = Rc::clone(&tpm.buttons);
@@ -621,6 +643,17 @@ impl TargetedPaintMixerBuilder {
 
         let tpm_c = Rc::clone(&tpm);
         tpm.file_manager.connect_reset(move || tpm_c.full_reset());
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.list_view.connect_popup_menu_item("info", move |id| {
+            let mixing_session = tpm_c.mixing_session.borrow();
+            let mixture = mixing_session.mixture(id).expect("programm error");
+            println!("info: {:?}", mixture);
+            tpm_c
+                .display_dialog_manager
+                .borrow_mut()
+                .display_mixture(mixture);
+        });
 
         tpm
     }
