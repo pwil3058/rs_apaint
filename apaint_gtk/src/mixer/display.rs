@@ -107,6 +107,13 @@ impl MixtureDisplayBuilder {
             label
         };
         vbox.pack_start(&target_label, true, true, 0);
+
+        if let Some(targeted_rgb) = mixture.targeted_rgb() {
+            let label = gtk::LabelBuilder::new().label("Matched Colour").build();
+            label.set_widget_colour_rgb(*targeted_rgb);
+            vbox.pack_start(&label, true, true, 0);
+        }
+
         vbox.pack_start(&cads.pwo(), true, true, 0);
 
         for characteristic_type in self.characteristics.iter() {
