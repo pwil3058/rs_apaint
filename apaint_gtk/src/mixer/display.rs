@@ -134,7 +134,6 @@ impl MixtureDisplayBuilder {
         let list_view = ColouredItemListView::new(&self.list_spec, &[]);
         vbox.pack_start(&list_view.pwo(), false, false, 0);
         for (paint, parts) in mixture.components() {
-            println!("{}: {:?}", parts, paint);
             let mut row = paint.row(&self.attributes, &self.characteristics);
             let value: glib::Value = (*parts as u64).to_value();
             row.insert(7, value);
