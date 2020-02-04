@@ -94,7 +94,7 @@ impl<'a> drawing::Draw<f64> for Drawer<'a> {
     }
 
     fn draw_text(&self, text: &str, posn: TextPosn, font_size: f64) {
-        if text.len() == 0 {
+        if text.is_empty() {
             return;
         }
         self.cairo_context.set_font_size(font_size);
@@ -104,7 +104,19 @@ impl<'a> drawing::Draw<f64> for Drawer<'a> {
                 self.cairo_context
                     .move_to(point.x - te.width / 2.0, point.y + te.height / 2.0);
             }
-            _ => (),
+            TextPosn::TopLeftCorner(point) => {
+                self.cairo_context.move_to(point.x, point.y + te.height);
+            }
+            TextPosn::TopRightCorner(point) => {
+                self.cairo_context
+                    .move_to(point.x - te.width, point.y + te.height);
+            }
+            TextPosn::BottomLeftCorner(point) => {
+                self.cairo_context.move_to(point.x, point.y);
+            }
+            TextPosn::BottomRightCorner(point) => {
+                self.cairo_context.move_to(point.x - te.width, point.y);
+            }
         }
         self.set_colour(self.text_colour.get());
         self.cairo_context.show_text(&text);

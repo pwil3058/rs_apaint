@@ -46,7 +46,7 @@ impl BasicPaintFactory {
         let series = self.paint_series.borrow();
         let series_id = series.series_id();
         self.file_manager.update_session_is_saveable(
-            series_id.proprietor().len() > 0 && series_id.series_name().len() > 0,
+            !series_id.proprietor().is_empty() && !series_id.series_name().is_empty(),
         );
     }
 
@@ -70,7 +70,7 @@ impl BasicPaintFactory {
         self.list_view.add_row(&row);
     }
 
-    fn do_remove_paint_work(&self, id: &str) -> Result<(), apaint::Error> {
+    fn do_remove_paint_work(&self, id: &str) -> apaint::Result<()> {
         self.paint_series.borrow_mut().remove(id)?;
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
@@ -132,14 +132,14 @@ impl BasicPaintFactory {
         self.update_editor_needs_saving();
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.paint_series.borrow_mut().write(&mut file)?;
         Ok(new_digest)
     }
 
-    fn reset(&self) -> Result<Vec<u8>, apaint::Error> {
+    fn reset(&self) -> apaint::Result<Vec<u8>> {
         self.unguarded_reset();
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
         Ok(digest)
@@ -155,7 +155,7 @@ impl BasicPaintFactory {
         self.update_series_needs_saving();
     }
 
-    fn load<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
+    fn load<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(&path)?;
         let new_series = match SeriesPaintSeriesSpec::<f64>::read(&mut file) {
@@ -163,12 +163,11 @@ impl BasicPaintFactory {
             Err(err) => match &err {
                 apaint::Error::SerdeJsonError(_) => {
                     let mut file = File::open(&path)?;
-                    let series = if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
+                    if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
                         series
                     } else {
                         return Err(err);
-                    };
-                    series
+                    }
                 }
                 _ => return Err(err),
             },
@@ -197,6 +196,7 @@ impl BasicPaintFactory {
     }
 }
 
+#[derive(Default)]
 pub struct BasicPaintFactoryBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -204,10 +204,7 @@ pub struct BasicPaintFactoryBuilder {
 
 impl BasicPaintFactoryBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {

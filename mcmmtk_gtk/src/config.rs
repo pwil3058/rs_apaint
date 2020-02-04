@@ -18,9 +18,9 @@ fn abs_default_config_dir_path() -> PathBuf {
 pub fn config_dir_path() -> PathBuf {
     match env::var(DCDP_OVERRIDE_ENVAR) {
         Ok(dir_path) => {
-            if dir_path.len() == 0 {
+            if dir_path.is_empty() {
                 abs_default_config_dir_path()
-            } else if dir_path.starts_with("~") {
+            } else if dir_path.starts_with('~') {
                 expand_home_dir_or_mine(&Path::new(&dir_path))
             } else {
                 dir_path.into()

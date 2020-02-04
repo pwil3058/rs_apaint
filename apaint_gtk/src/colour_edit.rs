@@ -39,31 +39,31 @@ enum DeltaSize {
 }
 
 impl DeltaSize {
-    fn for_value(&self) -> f64 {
-        match *self {
+    fn for_value(self) -> f64 {
+        match self {
             DeltaSize::Small => 0.0025,
             DeltaSize::Normal => 0.005,
             DeltaSize::Large => 0.01,
         }
     }
 
-    fn for_chroma(&self) -> f64 {
-        match *self {
+    fn for_chroma(self) -> f64 {
+        match self {
             DeltaSize::Small => 0.0025,
             DeltaSize::Normal => 0.005,
             DeltaSize::Large => 0.01,
         }
     }
 
-    fn for_hue_anticlockwise(&self) -> Degrees {
-        match *self {
+    fn for_hue_anticlockwise(self) -> Degrees {
+        match self {
             DeltaSize::Small => 0.5.into(),
             DeltaSize::Normal => 1.0.into(),
             DeltaSize::Large => 5.0.into(),
         }
     }
 
-    fn for_hue_clockwise(&self) -> Degrees {
+    fn for_hue_clockwise(self) -> Degrees {
         -self.for_hue_anticlockwise()
     }
 }
@@ -113,7 +113,7 @@ impl ColourEditor {
             samples: RefCell::new(vec![]),
             auto_match_btn: gtk::Button::new_with_label("Auto Match"),
             auto_match_on_paste_btn: gtk::CheckButton::new_with_label("On Paste?"),
-            popup_menu: WrappedMenu::new(&vec![]),
+            popup_menu: WrappedMenu::new(&[]),
             popup_menu_posn: Cell::new((0.0, 0.0).into()),
             change_callbacks: RefCell::new(Vec::new()),
         });
@@ -250,21 +250,20 @@ impl ColourEditor {
         let ced_c = Rc::clone(&ced);
         ced.drawing_area
             .connect_button_press_event(move |_, event| {
-                if event.get_event_type() == gdk::EventType::ButtonPress {
-                    if event.get_button() == 3 {
-                        let position = Point::from(event.get_position());
-                        let n_samples = ced_c.samples.borrow().len();
-                        let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
-                        ced_c
-                            .popup_menu
-                            .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
-                        ced_c
-                            .popup_menu
-                            .set_sensitivities(n_samples > 0, &["remove"]);
-                        ced_c.popup_menu_posn.set(position);
-                        ced_c.popup_menu.popup_at_event(event);
-                        return Inhibit(true);
-                    }
+                if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3
+                {
+                    let position = Point::from(event.get_position());
+                    let n_samples = ced_c.samples.borrow().len();
+                    let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+                    ced_c
+                        .popup_menu
+                        .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
+                    ced_c
+                        .popup_menu
+                        .set_sensitivities(n_samples > 0, &["remove"]);
+                    ced_c.popup_menu_posn.set(position);
+                    ced_c.popup_menu.popup_at_event(event);
+                    return Inhibit(true);
                 }
                 Inhibit(false)
             });

@@ -72,7 +72,7 @@ impl<F: ColourComponent> BasicPaintIfce<F> for Mixture<F> {
     }
 
     fn name(&self) -> Option<&str> {
-        if self.name.len() > 0 {
+        if self.name.is_empty() {
             Some(&self.name)
         } else {
             None
@@ -80,7 +80,7 @@ impl<F: ColourComponent> BasicPaintIfce<F> for Mixture<F> {
     }
 
     fn notes(&self) -> Option<&str> {
-        if self.notes.len() > 0 {
+        if self.notes.is_empty() {
             Some(&self.notes)
         } else {
             None
@@ -169,12 +169,18 @@ pub struct MixingSession<F: ColourComponent> {
     mixtures: Vec<Rc<Mixture<F>>>,
 }
 
-impl<F: ColourComponent> MixingSession<F> {
-    pub fn new() -> Self {
+impl<F: ColourComponent> Default for MixingSession<F> {
+    fn default() -> Self {
         Self {
             notes: String::new(),
             mixtures: vec![],
         }
+    }
+}
+
+impl<F: ColourComponent> MixingSession<F> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn notes(&self) -> &str {
@@ -379,8 +385,8 @@ impl<F: ColourComponent> MixtureBuilder<F> {
             components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts));
         }
         let divisor: F = F::from_u64(total_adjusted_parts).expect("should succeed");
-        for i in 0..3 {
-            rgb_sum[i] /= divisor;
+        for item in &mut rgb_sum {
+            *item /= divisor;
         }
         let divisor = total_adjusted_parts as f64;
         let mp = Mixture::<F> {
@@ -627,11 +633,7 @@ pub struct SaveableMixingSession<F: ColourComponent> {
 
 impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
     fn from(session: &MixingSession<F>) -> Self {
-        let mixtures = session
-            .mixtures
-            .iter()
-            .map(|p| SaveableMixture::from(p))
-            .collect();
+        let mixtures = session.mixtures.iter().map(SaveableMixture::from).collect();
         Self {
             notes: session.notes.to_string(),
             mixtures,

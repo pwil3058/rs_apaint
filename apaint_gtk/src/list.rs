@@ -80,12 +80,10 @@ impl ColouredItemListView {
 
         let rgb_l_v_c = Rc::clone(&rgb_l_v);
         rgb_l_v.view.connect_button_press_event(move |_, event| {
-            if event.get_event_type() == gdk::EventType::ButtonPress {
-                if event.get_button() == 3 {
-                    rgb_l_v_c.set_selected_id(event.get_position());
-                    rgb_l_v_c.popup_menu.popup_at_event(event);
-                    return gtk::Inhibit(true);
-                }
+            if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3 {
+                rgb_l_v_c.set_selected_id(event.get_position());
+                rgb_l_v_c.popup_menu.popup_at_event(event);
+                return gtk::Inhibit(true);
             };
             gtk::Inhibit(false)
         });

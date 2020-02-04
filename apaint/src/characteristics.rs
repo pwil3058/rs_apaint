@@ -2,11 +2,13 @@
 
 //! Types to describe paint characteristics that cannot be derived from their colour.
 
-use std::str::FromStr;
+use std::{fmt, str::FromStr};
 
 use apaint_boilerplate::Characteristic;
 
-pub trait CharacteristicIfce: FromStr + PartialEq + PartialOrd + Default {
+pub trait CharacteristicIfce:
+    FromStr<Err = String> + PartialEq + PartialOrd + Default + fmt::Debug
+{
     const NAME: &'static str;
     const PROMPT: &'static str;
     const LIST_HEADER_NAME: &'static str;

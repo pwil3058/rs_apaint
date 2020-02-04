@@ -79,14 +79,12 @@ where
 
         let psb_c = Rc::clone(&psb);
         psb.event_box.connect_button_press_event(move |_, event| {
-            if event.get_event_type() == gdk::EventType::ButtonPress {
-                if event.get_button() == 3 {
-                    psb_c
-                        .popup_menu
-                        .set_sensitivities(psb_c.parts() == 0, &["remove"]);
-                    psb_c.popup_menu.popup_at_event(event);
-                    return Inhibit(true);
-                }
+            if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3 {
+                psb_c
+                    .popup_menu
+                    .set_sensitivities(psb_c.parts() == 0, &["remove"]);
+                psb_c.popup_menu.popup_at_event(event);
+                return Inhibit(true);
             };
             gtk::Inhibit(false)
         });

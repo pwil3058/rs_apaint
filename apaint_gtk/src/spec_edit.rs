@@ -39,7 +39,7 @@ pub struct BasicPaintSpecEditor {
 }
 
 impl BasicPaintSpecEditor {
-    pub const SAV_EDITING: u64 = SAV_NEXT_CONDN << 0;
+    pub const SAV_EDITING: u64 = SAV_NEXT_CONDN;
     pub const SAV_NOT_EDITING: u64 = SAV_NEXT_CONDN << 1;
     pub const SAV_ID_READY: u64 = SAV_NEXT_CONDN << 2;
     pub const SAV_NAME_READY: u64 = SAV_NEXT_CONDN << 3;

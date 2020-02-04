@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::{error, fmt, io};
+use std::{error, fmt, io, result};
 
 use serde_json;
 
@@ -120,3 +120,5 @@ impl From<serde_json::Error> for Error {
         Error::SerdeJsonError(err)
     }
 }
+
+pub type Result<T> = result::Result<T, Error>;

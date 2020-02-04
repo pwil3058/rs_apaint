@@ -18,7 +18,7 @@ use pw_gix::{
 use crate::{colour::RGB, icon_image};
 use pw_gix::sav_state::MaskedCondns;
 
-const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN << 0;
+const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN;
 const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
 const SAV_SESSION_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 2;
 const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
@@ -32,28 +32,22 @@ pub struct StorageManager {
     file_name_label: gtk::Label,
     current_file_path: RefCell<Option<PathBuf>>,
     current_file_digest: RefCell<Vec<u8>>,
-    load_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
-    save_callback: RefCell<Box<dyn Fn(&Path) -> Result<Vec<u8>, apaint::Error>>>,
-    reset_callback: RefCell<Box<dyn Fn() -> Result<Vec<u8>, apaint::Error>>>,
+    load_callback: RefCell<Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>>,
+    save_callback: RefCell<Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>>,
+    reset_callback: RefCell<Box<dyn Fn() -> apaint::Result<Vec<u8>>>>,
     last_file_key: String,
 }
 
 impl StorageManager {
-    pub fn connect_load<F: Fn(&Path) -> Result<Vec<u8>, apaint::Error> + 'static>(
-        &self,
-        callback: F,
-    ) {
+    pub fn connect_load<F: Fn(&Path) -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.load_callback.borrow_mut() = Box::new(callback);
     }
 
-    pub fn connect_save<F: Fn(&Path) -> Result<Vec<u8>, apaint::Error> + 'static>(
-        &self,
-        callback: F,
-    ) {
+    pub fn connect_save<F: Fn(&Path) -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.save_callback.borrow_mut() = Box::new(callback);
     }
 
-    pub fn connect_reset<F: Fn() -> Result<Vec<u8>, apaint::Error> + 'static>(&self, callback: F) {
+    pub fn connect_reset<F: Fn() -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.reset_callback.borrow_mut() = Box::new(callback);
     }
 
@@ -117,7 +111,8 @@ impl StorageManager {
     fn ok_to_reset(&self) -> bool {
         let status = self.buttons.current_condns();
         if status & (SAV_SESSION_NEEDS_SAVING + SAV_TOOL_NEEDS_SAVING) != 0 {
-            if status & SAV_SESSION_IS_SAVEABLE + SAV_TOOL_NEEDS_SAVING == SAV_SESSION_IS_SAVEABLE {
+            if status & (SAV_SESSION_IS_SAVEABLE + SAV_TOOL_NEEDS_SAVING) == SAV_SESSION_IS_SAVEABLE
+            {
                 let buttons = [
                     ("Cancel", gtk::ResponseType::Other(0)),
                     ("Save and Continue", gtk::ResponseType::Other(1)),
@@ -257,8 +252,8 @@ pub struct StorageManagerBuilder {
     last_file_key: String,
 }
 
-impl StorageManagerBuilder {
-    pub fn new() -> Self {
+impl Default for StorageManagerBuilder {
+    fn default() -> Self {
         Self {
             reset_tooltip_text: "Reset in preparation for a new session".to_string(),
             load_tooltip_text: "Load data from a nominated file to start a new session".to_string(),
@@ -266,6 +261,12 @@ impl StorageManagerBuilder {
             save_as_tooltip_text: "Save the current session to a new (nominated) file".to_string(),
             last_file_key: "generic".to_string(),
         }
+    }
+}
+
+impl StorageManagerBuilder {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn tooltip_text(mut self, name: &str, text: &str) -> Self {

@@ -11,8 +11,7 @@ pub mod angles {
 }
 
 pub mod characteristics {
-    use std::cell::RefCell;
-    use std::rc::Rc;
+    use std::{cell::RefCell, rc::Rc};
 
     use pw_gix::wrapper::*;
 
@@ -64,10 +63,7 @@ pub mod characteristics {
 
         pub fn value(&self) -> C {
             if let Some(text) = self.combo_box_text.get_active_text() {
-                match C::from_str(&text) {
-                    Ok(c) => c,
-                    Err(_) => panic!("all strings should be valid"),
-                }
+                C::from_str(&text).expect("all strings should be valid")
             } else {
                 C::default()
             }
@@ -206,13 +202,19 @@ pub mod window {
         is_iconified: Cell<bool>,
     }
 
-    impl PersistentWindowButtonBuilder {
-        pub fn new() -> Self {
+    impl Default for PersistentWindowButtonBuilder {
+        fn default() -> Self {
             Self {
                 button: gtk::ButtonBuilder::new().build(),
                 window: gtk::WindowBuilder::new().destroy_with_parent(true).build(),
                 is_iconified: Cell::new(false),
             }
+        }
+    }
+
+    impl PersistentWindowButtonBuilder {
+        pub fn new() -> Self {
+            Self::default()
         }
 
         pub fn icon<P: IsA<gtk::Widget>>(self, image: &P) -> Self {

@@ -42,6 +42,7 @@ impl MixtureDisplay {
     }
 }
 
+#[derive(Default)]
 pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -51,12 +52,7 @@ pub struct MixtureDisplayBuilder {
 
 impl MixtureDisplayBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-            target_rgb: None,
-            list_spec: ComponentsListViewSpec::new(&[], &[]),
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
@@ -248,6 +244,7 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
     }
 }
 
+#[derive(Default)]
 pub struct ComponentsListViewSpec {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,

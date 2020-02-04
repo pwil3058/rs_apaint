@@ -267,7 +267,7 @@ impl SeriesBinder {
                 let mut file = File::open(&loaded_files_data_path).expect("unrecoverable");
                 let mut string = String::new();
                 file.read_to_string(&mut string).expect("unrecoverable");
-                return string.lines().map(|s| PathBuf::from(s)).collect();
+                return string.lines().map(PathBuf::from).collect();
             }
         }
         vec![]
@@ -280,7 +280,7 @@ impl SeriesBinder {
                 string += (pw_pathux::path_to_string(&path_buf) + "\n").as_str();
             }
             let mut file = File::create(loaded_files_data_path).expect("unrecoverable");
-            file.write(&string.into_bytes()).expect("unrecoverable");
+            file.write_all(&string.into_bytes()).expect("unrecoverable");
         }
     }
 }
@@ -374,7 +374,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
+    ) -> apaint::Result<Rc<SeriesPaint<f64>>> {
         if let Some(series_id) = series_id {
             let bsr = self
                 .pages
@@ -451,11 +451,12 @@ impl SeriesPaintFinder<f64> for PaintSeriesManager {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> Result<Rc<SeriesPaint<f64>>, apaint::Error> {
+    ) -> apaint::Result<Rc<SeriesPaint<f64>>> {
         self.binder.get_series_paint(paint_id, series_id)
     }
 }
 
+#[derive(Default)]
 pub struct PaintSeriesManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -464,11 +465,7 @@ pub struct PaintSeriesManagerBuilder {
 
 impl PaintSeriesManagerBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-            loaded_files_data_path: None,
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
@@ -588,6 +585,7 @@ impl PaintStandardsManager {
     }
 }
 
+#[derive(Default)]
 pub struct PaintStandardsManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -596,11 +594,7 @@ pub struct PaintStandardsManagerBuilder {
 
 impl PaintStandardsManagerBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-            loaded_files_data_path: None,
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {

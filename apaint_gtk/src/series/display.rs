@@ -38,6 +38,7 @@ impl PaintDisplay {
     }
 }
 
+#[derive(Default)]
 pub struct PaintDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -46,11 +47,7 @@ pub struct PaintDisplayBuilder {
 
 impl PaintDisplayBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-            target_rgb: None,
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {

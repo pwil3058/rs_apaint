@@ -168,7 +168,7 @@ pub struct TargetedPaintMixer {
 }
 
 impl TargetedPaintMixer {
-    const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN << 0;
+    const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN;
     const SAV_HAS_TARGET: u64 = SAV_NEXT_CONDN << 1;
     pub const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
     const HAS_TARGET_MASK: u64 = Self::SAV_HAS_TARGET + Self::SAV_NOT_HAS_TARGET;
@@ -244,17 +244,17 @@ impl TargetedPaintMixer {
 
     fn update_session_is_saveable(&self) {
         self.file_manager
-            .update_session_is_saveable(self.mixing_session.borrow().notes().len() > 0);
+            .update_session_is_saveable(!self.mixing_session.borrow().notes().is_empty());
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
         Ok(new_digest)
     }
 
-    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> Result<Vec<u8>, apaint::Error> {
+    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(path)?;
         let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
@@ -318,8 +318,20 @@ impl TargetedPaintMixer {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
         let mixed_paint = MixtureBuilder::<f64>::new(&mix_id)
-            .name(&self.mix_entry.name_entry.get_text().unwrap_or("".into()))
-            .notes(&self.mix_entry.notes_entry.get_text().unwrap_or("".into()))
+            .name(
+                &self
+                    .mix_entry
+                    .name_entry
+                    .get_text()
+                    .unwrap_or_else(|| "".into()),
+            )
+            .notes(
+                &self
+                    .mix_entry
+                    .notes_entry
+                    .get_text()
+                    .unwrap_or_else(|| "".into()),
+            )
             .targeted_rgb(
                 &self
                     .mix_entry
@@ -350,7 +362,7 @@ impl TargetedPaintMixer {
         self.series_paint_spinner_box.zero_all_parts();
     }
 
-    pub fn full_reset(&self) -> Result<Vec<u8>, apaint::Error> {
+    pub fn full_reset(&self) -> apaint::Result<Vec<u8>> {
         self.notes_entry.set_text("");
         self.cancel_current_mixture();
         *self.mixing_session.borrow_mut() = MixingSession::new();
@@ -372,6 +384,7 @@ impl TargetedPaintMixer {
     }
 }
 
+#[derive(Default)]
 pub struct TargetedPaintMixerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
@@ -380,11 +393,7 @@ pub struct TargetedPaintMixerBuilder {
 
 impl TargetedPaintMixerBuilder {
     pub fn new() -> Self {
-        Self {
-            attributes: vec![],
-            characteristics: vec![],
-            config_dir_path: None,
-        }
+        Self::default()
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
@@ -689,11 +698,17 @@ impl TargetPaintEntry {
     }
 
     fn name(&self) -> String {
-        self.name_entry.get_text().unwrap_or("".into()).to_string()
+        self.name_entry
+            .get_text()
+            .unwrap_or_else(|| "".into())
+            .to_string()
     }
 
     fn notes(&self) -> String {
-        self.notes_entry.get_text().unwrap_or("".into()).to_string()
+        self.notes_entry
+            .get_text()
+            .unwrap_or_else(|| "".into())
+            .to_string()
     }
 
     fn rgb(&self) -> RGB {
