@@ -7,20 +7,24 @@ use gtk::prelude::*;
 use pw_gix::{
     glibx::*,
     gtkx::{
-        list_store::ListRowOps,
+        list_store::{ListRowOps, TreeModelRowOps},
         menu::{ManagedMenu, ManagedMenuBuilder},
     },
     sav_state::MaskedCondns,
     wrapper::*,
 };
 
-use apaint::characteristics::CharacteristicType;
-use apaint::BasicPaintIfce;
-use pw_gix::gtkx::list_store::TreeModelRowOps;
+use apaint::{
+    characteristics::CharacteristicType,
+    mixtures::{Mixture, Paint},
+    series::{BasicPaintSpec, SeriesPaint},
+    BasicPaintIfce,
+};
 
-use crate::colour::{ColourInterface, ScalarAttribute};
-use crate::managed_menu::MenuItemSpec;
-use apaint::series::{BasicPaintSpec, SeriesPaint};
+use crate::{
+    colour::{ColourInterface, ScalarAttribute},
+    managed_menu::MenuItemSpec,
+};
 
 #[derive(PWO)]
 pub struct ColouredItemListView {
@@ -310,3 +314,8 @@ pub trait PaintListRow: BasicPaintIfce<f64> {
 impl PaintListRow for SeriesPaint<f64> {}
 
 impl PaintListRow for BasicPaintSpec<f64> {}
+
+// TODO: modify PaintListRow for Mixture to included target RGB
+impl PaintListRow for Mixture<f64> {}
+
+impl PaintListRow for Paint<f64> {}

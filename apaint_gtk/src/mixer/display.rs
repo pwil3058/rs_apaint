@@ -10,7 +10,11 @@ use pw_gix::{gtkx::coloured::*, gtkx::dialog::dialog_user::TopGtkWindow, wrapper
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
-use crate::{attributes::ColourAttributeDisplayStack, colour::RGB};
+use crate::{
+    attributes::ColourAttributeDisplayStack,
+    colour::RGB,
+    list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
+};
 
 #[derive(PWO)]
 pub struct MixtureDisplay {
@@ -42,6 +46,7 @@ pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
+    list_spec: ComponentsListViewSpec,
 }
 
 impl MixtureDisplayBuilder {
@@ -50,16 +55,19 @@ impl MixtureDisplayBuilder {
             attributes: vec![],
             characteristics: vec![],
             target_rgb: None,
+            list_spec: ComponentsListViewSpec::new(&[], &[]),
         }
     }
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
         self.attributes = attributes.to_vec();
+        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.characteristics);
         self
     }
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.characteristics);
         self
     }
 
@@ -122,6 +130,17 @@ impl MixtureDisplayBuilder {
             label.set_widget_colour_rgb(rgb);
             vbox.pack_start(&label, false, false, 0);
         }
+
+        let list_view = ColouredItemListView::new(&self.list_spec, &[]);
+        vbox.pack_start(&list_view.pwo(), false, false, 0);
+        for (paint, parts) in mixture.components() {
+            println!("{}: {:?}", parts, paint);
+            let mut row = paint.row(&self.attributes, &self.characteristics);
+            let value: glib::Value = (*parts as u64).to_value();
+            row.insert(7, value);
+            list_view.add_row(&row);
+        }
+
         vbox.show_all();
 
         MixtureDisplay {
@@ -227,5 +246,137 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
             mixture_display_builder,
             dialogs: BTreeMap::new(),
         }
+    }
+}
+
+pub struct ComponentsListViewSpec {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+}
+
+impl ComponentsListViewSpec {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
+        Self {
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
+        }
+    }
+}
+
+impl ColouredItemListViewSpec for ComponentsListViewSpec {
+    fn column_types(&self) -> Vec<glib::Type> {
+        let mut column_types = vec![
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            glib::Type::String,
+            f64::static_type(),
+            u64::static_type(),
+        ];
+        for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
+            column_types.push(glib::Type::String);
+        }
+        column_types
+    }
+
+    fn columns(&self) -> Vec<gtk::TreeViewColumn> {
+        let mut cols = vec![];
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Parts")
+            .resizable(false)
+            .sort_column_id(7)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 7);
+        //col.add_attribute(&cell, "background", 1);
+        //col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Id")
+            .resizable(false)
+            .sort_column_id(0)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 0);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Name")
+            .resizable(true)
+            .sort_column_id(3)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 3);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Notes")
+            .resizable(true)
+            .sort_column_id(4)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "text", 4);
+        col.add_attribute(&cell, "background", 1);
+        col.add_attribute(&cell, "foreground", 2);
+        cols.push(col);
+
+        let col = gtk::TreeViewColumnBuilder::new()
+            .title("Hue")
+            .sort_column_id(6)
+            .sort_indicator(true)
+            .build();
+        let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+        col.pack_start(&cell, false);
+        col.add_attribute(&cell, "background", 5);
+        cols.push(col);
+
+        let mut index = 8;
+        for attr in self.attributes.iter() {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title(&attr.to_string())
+                .sort_column_id(index)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "text", index);
+            col.add_attribute(&cell, "background", index + 1);
+            col.add_attribute(&cell, "foreground", index + 2);
+            cols.push(col);
+            index += 3;
+        }
+
+        for characteristic in self.characteristics.iter() {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title(&characteristic.list_header_name())
+                .sort_column_id(index)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "text", index);
+            col.add_attribute(&cell, "background", 1);
+            col.add_attribute(&cell, "foreground", 2);
+            cols.push(col);
+            index += 1;
+        }
+
+        cols
     }
 }

@@ -26,7 +26,7 @@ use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     hue_wheel::MakeColouredShape,
-    mixtures::{MixingSession, Mixture, MixtureBuilder, Paint},
+    mixtures::{MixingSession, MixtureBuilder, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
 };
@@ -49,9 +49,6 @@ use crate::{
     storage::{StorageManager, StorageManagerBuilder},
     window::PersistentWindowButtonBuilder,
 };
-
-// TODO: modify PaintListRow for Mixture to included target RGB
-impl PaintListRow for Mixture<f64> {}
 
 #[derive(PWO)]
 pub struct TargetedPaintEntry {
