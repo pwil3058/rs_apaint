@@ -73,8 +73,8 @@ pub enum Characteristic {
 }
 
 impl Characteristic {
-    pub fn name(&self) -> &'static str {
-        match *self {
+    pub fn name(self) -> &'static str {
+        match self {
             Characteristic::Finish(_) => Finish::NAME,
             Characteristic::Transparency(_) => Transparency::NAME,
             Characteristic::Permanence(_) => Permanence::NAME,
@@ -83,8 +83,8 @@ impl Characteristic {
         }
     }
 
-    pub fn prompt(&self) -> &'static str {
-        match *self {
+    pub fn prompt(self) -> &'static str {
+        match self {
             Characteristic::Finish(_) => Finish::PROMPT,
             Characteristic::Transparency(_) => Transparency::PROMPT,
             Characteristic::Permanence(_) => Permanence::PROMPT,
@@ -93,8 +93,8 @@ impl Characteristic {
         }
     }
 
-    pub fn list_header_name(&self) -> &'static str {
-        match *self {
+    pub fn list_header_name(self) -> &'static str {
+        match self {
             Characteristic::Finish(_) => Finish::LIST_HEADER_NAME,
             Characteristic::Transparency(_) => Transparency::LIST_HEADER_NAME,
             Characteristic::Permanence(_) => Permanence::LIST_HEADER_NAME,
@@ -103,8 +103,8 @@ impl Characteristic {
         }
     }
 
-    pub fn str_values(&self) -> Vec<&'static str> {
-        match *self {
+    pub fn str_values(self) -> Vec<&'static str> {
+        match self {
             Characteristic::Finish(_) => Finish::str_values(),
             Characteristic::Transparency(_) => Transparency::str_values(),
             Characteristic::Permanence(_) => Permanence::str_values(),
@@ -113,8 +113,8 @@ impl Characteristic {
         }
     }
 
-    pub fn abbrev(&self) -> &'static str {
-        match *self {
+    pub fn abbrev(self) -> &'static str {
+        match self {
             Characteristic::Finish(value) => value.abbrev(),
             Characteristic::Transparency(value) => value.abbrev(),
             Characteristic::Permanence(value) => value.abbrev(),
@@ -122,8 +122,8 @@ impl Characteristic {
             Characteristic::Metallicness(value) => value.abbrev(),
         }
     }
-    pub fn full(&self) -> &'static str {
-        match *self {
+    pub fn full(self) -> &'static str {
+        match self {
             Characteristic::Finish(value) => value.full(),
             Characteristic::Transparency(value) => value.full(),
             Characteristic::Permanence(value) => value.full(),
@@ -143,8 +143,8 @@ pub enum CharacteristicType {
 }
 
 impl CharacteristicType {
-    pub fn name(&self) -> &'static str {
-        match *self {
+    pub fn name(self) -> &'static str {
+        match self {
             CharacteristicType::Finish => Finish::NAME,
             CharacteristicType::Transparency => Transparency::NAME,
             CharacteristicType::Permanence => Permanence::NAME,
@@ -153,8 +153,8 @@ impl CharacteristicType {
         }
     }
 
-    pub fn prompt(&self) -> &'static str {
-        match *self {
+    pub fn prompt(self) -> &'static str {
+        match self {
             CharacteristicType::Finish => Finish::PROMPT,
             CharacteristicType::Transparency => Transparency::PROMPT,
             CharacteristicType::Permanence => Permanence::PROMPT,
@@ -163,8 +163,8 @@ impl CharacteristicType {
         }
     }
 
-    pub fn list_header_name(&self) -> &'static str {
-        match *self {
+    pub fn list_header_name(self) -> &'static str {
+        match self {
             CharacteristicType::Finish => Finish::LIST_HEADER_NAME,
             CharacteristicType::Transparency => Transparency::LIST_HEADER_NAME,
             CharacteristicType::Permanence => Permanence::LIST_HEADER_NAME,
@@ -173,8 +173,8 @@ impl CharacteristicType {
         }
     }
 
-    pub fn str_values(&self) -> Vec<&'static str> {
-        match *self {
+    pub fn str_values(self) -> Vec<&'static str> {
+        match self {
             CharacteristicType::Finish => Finish::str_values(),
             CharacteristicType::Transparency => Transparency::str_values(),
             CharacteristicType::Permanence => Permanence::str_values(),

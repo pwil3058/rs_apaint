@@ -205,7 +205,7 @@ where
             }
             self.vbox.remove(&row);
         }
-        if self.spinners.borrow().len() > 0 {
+        if !self.spinners.borrow().is_empty() {
             let mut current_row = gtk::Box::new(gtk::Orientation::Horizontal, 1);
             self.vbox.pack_start(&current_row, false, false, 0);
             for (count, spinner) in self.spinners.borrow().iter().enumerate() {

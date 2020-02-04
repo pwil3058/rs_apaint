@@ -70,7 +70,7 @@ pub trait ColourAttributeDisplayIfce<F: ColourComponent> {
     }
 
     fn draw_label(&self, drawer: &impl Draw<F>) {
-        if Self::LABEL.len() > 0 {
+        if !Self::LABEL.is_empty() {
             let posn = TextPosn::Centre(drawer.size().centre());
             let font_size = F::from(15.0).unwrap();
             drawer.set_text_colour(self.label_colour());

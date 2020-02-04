@@ -186,7 +186,7 @@ pub trait Graticule<F: ColourComponent + ShapeConsts> {
         cartesian.set_line_colour(RGB::WHITE); // * F::from(0.25).unwrap());
         let divisor = F::from_u32(num_rings).unwrap();
         let centre = Point::<F>::default();
-        for num in 1..num_rings + 1 {
+        for num in 1..=num_rings {
             let radius: F = F::from(num).unwrap() / divisor;
             cartesian.draw_circle(centre, radius, false);
         }
@@ -217,14 +217,20 @@ pub struct HueWheel<F: ColourComponent + ShapeConsts> {
     target: Option<ColouredShape<F>>,
 }
 
-impl<F: ColourComponent + ShapeConsts> Graticule<F> for HueWheel<F> {}
-
-impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
-    pub fn new() -> Self {
+impl<F: ColourComponent + ShapeConsts> Default for HueWheel<F> {
+    fn default() -> Self {
         Self {
             shapes: vec![],
             target: None,
         }
+    }
+}
+
+impl<F: ColourComponent + ShapeConsts> Graticule<F> for HueWheel<F> {}
+
+impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn draw(&self, scalar_attribute: ScalarAttribute, cartesian: &impl Cartesian<F>) {
@@ -299,7 +305,7 @@ impl<F: ColourComponent + ShapeConsts> HueWheel<F> {
     pub fn remove_item(&mut self, id: &str) -> ColouredShape<F> {
         match self.shapes.binary_search_by_key(&id, |s| s.id()) {
             Ok(index) => self.shapes.remove(index),
-            Err(_) => panic!("{}: shape with this id not found", id),
+            Err(_) => unreachable!("{}: shape with this id not found", id),
         }
     }
 

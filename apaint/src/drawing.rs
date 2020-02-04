@@ -20,7 +20,7 @@ impl<F: ColourComponent> Point<F> {
         if let Some(degrees) = Degrees::atan2(self.y, self.x) {
             degrees
         } else {
-            Degrees::DEG_0.into()
+            Degrees::DEG_0
         }
     }
 }

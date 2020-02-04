@@ -8,12 +8,18 @@ pub struct ColourMixer<F: ColourComponent> {
     pub total_parts: u64,
 }
 
-impl<F: ColourComponent> ColourMixer<F> {
-    pub fn new() -> Self {
+impl<F: ColourComponent> Default for ColourMixer<F> {
+    fn default() -> Self {
         Self {
             rgb_sum: [F::ZERO, F::ZERO, F::ZERO],
             total_parts: 0,
         }
+    }
+}
+
+impl<F: ColourComponent> ColourMixer<F> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn reset(&mut self) {
