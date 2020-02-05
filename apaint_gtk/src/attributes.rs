@@ -119,10 +119,12 @@ where
     }
 }
 
+type SelectionCallback = Box<dyn Fn(ScalarAttribute)>;
+
 #[derive(PWO)]
 pub struct AttributeSelectorRadioButtons {
     gtk_box: gtk::Box,
-    callbacks: RefCell<Vec<Box<dyn Fn(ScalarAttribute)>>>,
+    callbacks: RefCell<Vec<SelectionCallback>>,
 }
 
 impl AttributeSelectorRadioButtons {

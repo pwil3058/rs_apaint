@@ -21,6 +21,8 @@ use colour_math::ScalarAttribute;
 use crate::attributes::AttributeSelectorRadioButtons;
 use crate::managed_menu::MenuItemSpec;
 
+type PopupCallback = Box<dyn Fn(&str)>;
+
 #[derive(PWO, Wrapper)]
 pub struct GtkHueWheel {
     vbox: gtk::Box,
@@ -30,7 +32,7 @@ pub struct GtkHueWheel {
     attribute_selector: Rc<AttributeSelectorRadioButtons>,
     attribute: Cell<ScalarAttribute>,
     popup_menu: ManagedMenu,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&str)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
     zoom: Cell<f64>,
     origin_offset: Cell<Point>,
     last_xy: Cell<Option<Point>>,

@@ -18,6 +18,11 @@ use apaint::{LabelText, TooltipText};
 
 use crate::colour::{ColourInterface, RGB};
 
+//type RemovalCallback<P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static> =
+//    Box<dyn Fn(&Rc<P>)>;
+
+type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
+
 #[derive(PWO)]
 pub struct PartsSpinButton<P>
 where
@@ -28,7 +33,7 @@ where
     popup_menu: WrappedMenu,
     paint: Rc<P>,
     changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
-    remove_me_callbacks: RefCell<Vec<Box<dyn Fn(&Rc<P>)>>>,
+    remove_me_callbacks: RefCell<Vec<RemoveCallback<P>>>,
 }
 
 impl<P> PartsSpinButton<P>
@@ -146,7 +151,7 @@ where
     sensitive: Cell<bool>,
     n_cols: Cell<u32>,
     contributions_changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
-    removal_requested_callbacks: RefCell<Vec<Box<dyn Fn(&Rc<P>)>>>,
+    removal_requested_callbacks: RefCell<Vec<RemoveCallback<P>>>,
 }
 
 impl<P> PartsSpinButtonBox<P>

@@ -19,6 +19,10 @@ use crate::characteristics::{
 };
 use crate::colour_edit::ColourEditor;
 
+type AddCallback = Box<dyn Fn(&BasicPaintSpec<f64>)>;
+type AcceptCallback = Box<dyn Fn(&str, &BasicPaintSpec<f64>)>;
+type ChangeCallback = Box<dyn Fn(u64)>;
+
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintSpecEditor {
     vbox: gtk::Box,
@@ -33,9 +37,9 @@ pub struct BasicPaintSpecEditor {
     metallicness_entry: Rc<MetallicnessEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
-    add_callbacks: RefCell<Vec<Box<dyn Fn(&BasicPaintSpec<f64>)>>>,
-    accept_callbacks: RefCell<Vec<Box<dyn Fn(&str, &BasicPaintSpec<f64>)>>>,
-    change_callbacks: RefCell<Vec<Box<dyn Fn(u64)>>>,
+    add_callbacks: RefCell<Vec<AddCallback>>,
+    accept_callbacks: RefCell<Vec<AcceptCallback>>,
+    change_callbacks: RefCell<Vec<ChangeCallback>>,
 }
 
 impl BasicPaintSpecEditor {

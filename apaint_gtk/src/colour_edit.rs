@@ -73,6 +73,8 @@ struct Sample {
     position: Point,
 }
 
+type ChangeCallback = Box<dyn Fn(RGB)>;
+
 #[derive(PWO, Wrapper)]
 pub struct ColourEditor {
     vbox: gtk::Box,
@@ -92,7 +94,7 @@ pub struct ColourEditor {
     auto_match_on_paste_btn: gtk::CheckButton,
     popup_menu: WrappedMenu,
     popup_menu_posn: Cell<Point>,
-    change_callbacks: RefCell<Vec<Box<dyn Fn(RGB)>>>,
+    change_callbacks: RefCell<Vec<ChangeCallback>>,
 }
 
 impl ColourEditor {

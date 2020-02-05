@@ -26,13 +26,15 @@ use crate::{
     managed_menu::MenuItemSpec,
 };
 
+type PopupCallback = Box<dyn Fn(&str)>;
+
 #[derive(PWO)]
 pub struct ColouredItemListView {
     view: gtk::TreeView,
     list_store: gtk::ListStore,
     selected_id: RefCell<Option<String>>,
     popup_menu: ManagedMenu,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(&str)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
 }
 
 pub trait ColouredItemListViewSpec {

@@ -39,13 +39,15 @@ pub mod display;
 
 use crate::series::display::*;
 
+type PopupCallback = Box<dyn Fn(Rc<SeriesPaint<f64>>)>;
+
 #[derive(PWO, Wrapper)]
 struct SeriesPage {
     paned: gtk::Paned,
     paint_series: SeriesPaintSeries<f64>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
 }
 
 impl SeriesPage {
@@ -145,7 +147,7 @@ struct SeriesBinder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: RefCell<Option<RGB>>,
-    callbacks: RefCell<HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>>>,
+    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
     loaded_files_data_path: Option<PathBuf>,
 }
 
@@ -158,7 +160,7 @@ impl SeriesBinder {
     ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
-        let mut hash_map: HashMap<String, Vec<Box<dyn Fn(Rc<SeriesPaint<f64>>)>>> = HashMap::new();
+        let mut hash_map: HashMap<String, Vec<PopupCallback>> = HashMap::new();
         for menu_item in menu_items.iter() {
             let item_name = menu_item.name();
             hash_map.insert(item_name.to_string(), vec![]);

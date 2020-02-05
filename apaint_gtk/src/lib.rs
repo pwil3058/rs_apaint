@@ -21,10 +21,12 @@ pub mod characteristics {
     };
     use gtk::{ComboBoxExt, ComboBoxTextExt};
 
+    type ChangeCallback<T> = Box<dyn Fn(&T)>;
+
     #[derive(PWO)]
     pub struct CharacteristicEntry<C: 'static + CharacteristicIfce> {
         combo_box_text: gtk::ComboBoxText,
-        callbacks: RefCell<Vec<Box<dyn Fn(&Self)>>>,
+        callbacks: RefCell<Vec<ChangeCallback<Self>>>,
         marker: std::marker::PhantomData<C>,
     }
 

@@ -25,6 +25,9 @@ const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
 
 const BTN_IMAGE_SIZE: i32 = 24;
 
+type PathCallback = Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>;
+type ResetCallback = Box<dyn Fn() -> apaint::Result<Vec<u8>>>;
+
 #[derive(PWO, Wrapper)]
 pub struct StorageManager {
     hbox: gtk::Box,
@@ -32,9 +35,9 @@ pub struct StorageManager {
     file_name_label: gtk::Label,
     current_file_path: RefCell<Option<PathBuf>>,
     current_file_digest: RefCell<Vec<u8>>,
-    load_callback: RefCell<Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>>,
-    save_callback: RefCell<Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>>,
-    reset_callback: RefCell<Box<dyn Fn() -> apaint::Result<Vec<u8>>>>,
+    load_callback: RefCell<PathCallback>,
+    save_callback: RefCell<PathCallback>,
+    reset_callback: RefCell<ResetCallback>,
     last_file_key: String,
 }
 
