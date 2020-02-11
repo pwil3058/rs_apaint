@@ -1,8 +1,8 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
 use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
-use float_plus::FloatPlus;
 use normalised_angles::Degrees;
+use num_traits_plus::float_plus::FloatPlus;
 
 use crate::drawing::{Cartesian, Point};
 use std::cmp::Ordering;

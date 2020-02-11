@@ -17,8 +17,8 @@ pub mod series;
 pub mod xpm;
 
 pub use colour_math::*;
-pub use float_plus::*;
 pub use normalised_angles::*;
+pub use num_traits_plus::float_plus::*;
 
 use crate::characteristics::*;
 
