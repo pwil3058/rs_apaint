@@ -10,10 +10,11 @@ use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
 use pw_gix::gtkx::menu::WrappedMenu;
 use pw_gix::wrapper::*;
 
+use apaint_cairo::Point;
+
 use crate::angles::Degrees;
 use crate::attributes::ColourAttributeDisplayStack;
 use crate::colour::*;
-use apaint_cairo::Point;
 
 macro_rules! connect_button {
     ( $ed:ident, $btn:ident, $delta:ident, $apply:ident ) => {
@@ -22,7 +23,7 @@ macro_rules! connect_button {
             let delta = ced_c.delta_size.get().$delta();
             let changed = ced_c.rgb_manipulator.borrow_mut().$apply(delta);
             if changed {
-                let new_rgb = ced_c.rgb_manipulator.borrow().rgb();
+                let new_rgb = *ced_c.rgb_manipulator.borrow().rgb();
                 ced_c.set_rgb_and_inform(new_rgb);
             } else {
                 btn.error_bell();
@@ -279,7 +280,7 @@ impl ColourEditor {
 impl ColourEditor {
     pub fn set_rgb(&self, rgb: RGB) {
         self.rgb_entry.set_rgb(rgb);
-        self.rgb_manipulator.borrow_mut().set_rgb(rgb);
+        self.rgb_manipulator.borrow_mut().set_rgb(&rgb);
         self.cads.set_colour(Some(&rgb));
         self.incr_value_btn
             .set_widget_colour_rgb(rgb * 0.8 + RGB::WHITE * 0.2);
@@ -311,7 +312,7 @@ impl ColourEditor {
     }
 
     fn draw(&self, cairo_context: &cairo::Context) {
-        let rgb = self.rgb_manipulator.borrow().rgb();
+        let rgb = *self.rgb_manipulator.borrow().rgb();
         cairo_context.set_source_rgb(rgb[0], rgb[1], rgb[2]);
         cairo_context.paint();
         for sample in self.samples.borrow().iter() {
@@ -368,7 +369,7 @@ impl ColourEditor {
     }
 
     pub fn rgb(&self) -> RGB {
-        self.rgb_manipulator.borrow().rgb()
+        *self.rgb_manipulator.borrow().rgb()
     }
 
     pub fn connect_changed<F: Fn(RGB) + 'static>(&self, callback: F) {

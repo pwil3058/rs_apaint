@@ -24,5 +24,6 @@ apaint_cairo = { path = "../apaint_cairo" }
 pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
 normalised_angles = { git = "https://github.com/pwil3058/rs_normalised_angles.git" }
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+colour_math_gtk = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 num_traits_plus = { git = "https://github.com/pwil3058/rs_num_traits_plus.git" }
 pw_pathux = { git = "https://github.com/pwil3058/rs_pw_pathux.git" }
