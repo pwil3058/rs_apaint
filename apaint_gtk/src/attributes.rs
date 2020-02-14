@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use gtk::{BoxExt, RadioButtonExt, ToggleButtonExt, WidgetExt};
+use gtk::{BoxExt, WidgetExt};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -116,53 +116,5 @@ where
     fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.attribute.borrow_mut().set_target_colour(rgb);
         self.drawing_area.queue_draw();
-    }
-}
-
-type SelectionCallback = Box<dyn Fn(ScalarAttribute)>;
-
-#[derive(PWO)]
-pub struct AttributeSelectorRadioButtons {
-    gtk_box: gtk::Box,
-    callbacks: RefCell<Vec<SelectionCallback>>,
-}
-
-impl AttributeSelectorRadioButtons {
-    pub fn new(orientation: gtk::Orientation, attributes: &[ScalarAttribute]) -> Rc<Self> {
-        let asrb = Rc::new(Self {
-            gtk_box: gtk::Box::new(orientation, 0),
-            callbacks: RefCell::new(vec![]),
-        });
-
-        let mut first: Option<gtk::RadioButton> = None;
-        for attr in attributes.iter() {
-            let button = gtk::RadioButton::new_with_label(&attr.to_string());
-            asrb.gtk_box.pack_start(&button, false, false, 0);
-            if let Some(ref first) = first {
-                button.join_group(Some(first))
-            } else {
-                first = Some(button.clone())
-            }
-            let asrb_c = Rc::clone(&asrb);
-            let attr = *attr;
-            button.connect_toggled(move |button| {
-                let its_us = button.get_active();
-                if its_us {
-                    asrb_c.notify(attr);
-                }
-            });
-        }
-
-        asrb
-    }
-
-    pub fn connect_changed<F: Fn(ScalarAttribute) + 'static>(&self, callback: F) {
-        self.callbacks.borrow_mut().push(Box::new(callback))
-    }
-
-    fn notify(&self, attr: ScalarAttribute) {
-        for callback in self.callbacks.borrow().iter() {
-            callback(attr);
-        }
     }
 }

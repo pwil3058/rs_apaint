@@ -16,9 +16,11 @@ use pw_gix::{
 
 use apaint::hue_wheel::{ColouredShape, HueWheel};
 use apaint_cairo::*;
+
 use colour_math::ScalarAttribute;
 
-use crate::attributes::AttributeSelectorRadioButtons;
+use colour_math_gtk::attributes::{AttributeSelector, AttributeSelectorBuilder};
+
 use crate::managed_menu::MenuItemSpec;
 
 type PopupCallback = Box<dyn Fn(&str)>;
@@ -29,7 +31,7 @@ pub struct GtkHueWheel {
     drawing_area: gtk::DrawingArea,
     coloured_items: RefCell<HueWheel<f64>>,
     chosen_item: RefCell<Option<String>>,
-    attribute_selector: Rc<AttributeSelectorRadioButtons>,
+    attribute_selector: Rc<AttributeSelector>,
     attribute: Cell<ScalarAttribute>,
     popup_menu: ManagedMenu,
     callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
@@ -45,10 +47,10 @@ impl GtkHueWheel {
             drawing_area: gtk::DrawingArea::new(),
             coloured_items: RefCell::new(HueWheel::new()),
             chosen_item: RefCell::new(None),
-            attribute_selector: AttributeSelectorRadioButtons::new(
-                gtk::Orientation::Horizontal,
-                attributes,
-            ),
+            attribute_selector: AttributeSelectorBuilder::new()
+                .orientation(gtk::Orientation::Horizontal)
+                .attributes(attributes)
+                .build(),
             attribute: Cell::new(*attributes.first().unwrap()),
             popup_menu: ManagedMenuBuilder::new().build(),
             callbacks: RefCell::new(HashMap::new()),

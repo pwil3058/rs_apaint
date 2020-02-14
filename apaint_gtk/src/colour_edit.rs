@@ -5,10 +5,12 @@ use std::rc::Rc;
 
 use gtk::{prelude::*, BoxExt, WidgetExt};
 
-use pw_gix::gtkx::entry::{RGBEntryInterface, RGBHexEntryBox};
 use pw_gix::wrapper::*;
 
-use colour_math_gtk::manipulator::{ChromaLabel, RGBManipulatorGUI, RGBManipulatorGUIBuilder};
+use colour_math_gtk::{
+    manipulator::{ChromaLabel, RGBManipulatorGUI, RGBManipulatorGUIBuilder},
+    rgb_entry::{RGBHexEntry, RGBHexEntryBuilder},
+};
 
 use crate::attributes::ColourAttributeDisplayStack;
 use crate::colour::*;
@@ -20,7 +22,7 @@ pub struct ColourEditor {
     vbox: gtk::Box,
     rgb_manipulator: Rc<RGBManipulatorGUI>,
     cads: ColourAttributeDisplayStack,
-    rgb_entry: RGBHexEntryBox,
+    rgb_entry: Rc<RGBHexEntry<u16>>,
     change_callbacks: RefCell<Vec<ChangeCallback>>,
 }
 
@@ -38,11 +40,12 @@ impl ColourEditor {
                 ChromaLabel::Chroma
             })
             .build();
+        let rgb_entry = RGBHexEntryBuilder::new().editable(true).build();
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator,
             cads: ColourAttributeDisplayStack::new(scalar_attributes),
-            rgb_entry: RGBHexEntryBox::create(),
+            rgb_entry,
             change_callbacks: RefCell::new(Vec::new()),
         });
 
@@ -55,7 +58,7 @@ impl ColourEditor {
 
         let ced_c = Rc::clone(&ced);
         ced.rgb_entry
-            .connect_value_changed(move |rgb| ced_c.set_rgb_and_inform(rgb));
+            .connect_value_changed(move |rgb| ced_c.set_rgb_and_inform(rgb.into()));
 
         let ced_c = Rc::clone(&ced);
         ced.rgb_manipulator
@@ -69,7 +72,7 @@ impl ColourEditor {
 
 impl ColourEditor {
     pub fn set_rgb(&self, rgb: RGB) {
-        self.rgb_entry.set_rgb(rgb);
+        self.rgb_entry.set_rgb(&rgb.into());
         self.rgb_manipulator.set_rgb(&rgb);
         self.cads.set_colour(Some(&rgb));
     }
