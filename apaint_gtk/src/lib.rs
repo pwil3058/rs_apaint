@@ -300,7 +300,6 @@ pub mod window {
     }
 }
 
-pub mod attributes;
 pub mod colour_edit;
 pub mod factory;
 pub mod hue_wheel;

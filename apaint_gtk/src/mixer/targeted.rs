@@ -22,6 +22,10 @@ use pw_gix::{
 
 use colour_math::{ColourInterface, ScalarAttribute};
 
+use colour_math_gtk::attributes::{
+    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
+};
+
 use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
@@ -32,7 +36,6 @@ use apaint::{
 };
 
 use crate::{
-    attributes::ColourAttributeDisplayStack,
     colour::RGB,
     colour_edit::ColourEditor,
     hue_wheel::GtkHueWheel,
@@ -68,7 +71,9 @@ impl TargetedPaintEntry {
         let id_label = gtk::LabelBuilder::new().label("MIX#???").build();
         let name_entry = gtk::EntryBuilder::new().build();
         let notes_entry = gtk::EntryBuilder::new().build();
-        let cads = ColourAttributeDisplayStack::new(attributes);
+        let cads = ColourAttributeDisplayStackBuilder::new()
+            .attributes(attributes)
+            .build();
         let drawing_area = gtk::DrawingAreaBuilder::new().height_request(100).build();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&id_label, false, false, 0);

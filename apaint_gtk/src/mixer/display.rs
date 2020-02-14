@@ -5,13 +5,15 @@ use std::{collections::BTreeMap, rc::Rc};
 use gtk::prelude::*;
 
 use colour_math::{ColourInterface, ScalarAttribute};
+use colour_math_gtk::attributes::{
+    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
+};
 
 use pw_gix::{gtkx::coloured::*, gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
-    attributes::ColourAttributeDisplayStack,
     colour::RGB,
     list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
 };
@@ -98,7 +100,9 @@ impl MixtureDisplayBuilder {
         label.set_widget_colour_rgb(rgb);
         vbox.pack_start(&label, false, false, 0);
 
-        let cads = ColourAttributeDisplayStack::new(&self.attributes);
+        let cads = ColourAttributeDisplayStackBuilder::new()
+            .attributes(&self.attributes)
+            .build();
         cads.set_colour(Some(&rgb));
         let target_label = if let Some(target_rgb) = self.target_rgb {
             let label = gtk::LabelBuilder::new().label("Target").build();

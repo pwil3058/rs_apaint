@@ -8,11 +8,11 @@ use gtk::{prelude::*, BoxExt, WidgetExt};
 use pw_gix::wrapper::*;
 
 use colour_math_gtk::{
+    attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     manipulator::{ChromaLabel, RGBManipulatorGUI, RGBManipulatorGUIBuilder},
     rgb_entry::{RGBHexEntry, RGBHexEntryBuilder},
 };
 
-use crate::attributes::ColourAttributeDisplayStack;
 use crate::colour::*;
 
 type ChangeCallback = Box<dyn Fn(RGB)>;
@@ -41,10 +41,13 @@ impl ColourEditor {
             })
             .build();
         let rgb_entry = RGBHexEntryBuilder::new().editable(true).build();
+        let cads = ColourAttributeDisplayStackBuilder::new()
+            .attributes(scalar_attributes)
+            .build();
         let ced = Rc::new(Self {
             vbox: gtk::Box::new(gtk::Orientation::Vertical, 0),
             rgb_manipulator,
-            cads: ColourAttributeDisplayStack::new(scalar_attributes),
+            cads,
             rgb_entry,
             change_callbacks: RefCell::new(Vec::new()),
         });
