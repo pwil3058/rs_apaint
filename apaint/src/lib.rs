@@ -10,7 +10,6 @@ pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
 pub mod drawing;
-pub mod hue_wheel;
 pub mod legacy;
 pub mod mixtures;
 pub mod series;

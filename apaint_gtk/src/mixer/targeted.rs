@@ -20,16 +20,16 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::{ColourInterface, ScalarAttribute};
+use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, ScalarAttribute};
 
-use colour_math_gtk::attributes::{
-    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
+use colour_math_gtk::{
+    attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
+    hue_wheel::GtkHueWheel,
 };
 
 use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
-    hue_wheel::MakeColouredShape,
     mixtures::{MixingSession, MixtureBuilder, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
@@ -38,7 +38,6 @@ use apaint::{
 use crate::{
     colour::RGB,
     colour_edit::ColourEditor,
-    hue_wheel::GtkHueWheel,
     icon_image::{paint_standard_image, series_paint_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::{

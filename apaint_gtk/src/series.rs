@@ -13,6 +13,7 @@ use gtk::prelude::*;
 use pw_gix::{
     gtkx::{
         dialog::dialog_user::TopGtkWindow,
+        menu::MenuItemSpec,
         notebook::{TabRemoveLabel, TabRemoveLabelInterface},
     },
     recollections::{recall, remember},
@@ -20,18 +21,18 @@ use pw_gix::{
     wrapper::*,
 };
 
+use colour_math::attributes::hue_wheel::MakeColouredShape;
+use colour_math_gtk::hue_wheel::GtkHueWheel;
+
 use apaint::{
     characteristics::CharacteristicType,
-    hue_wheel::MakeColouredShape,
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
 
 use crate::{
     colour::{ScalarAttribute, RGB},
-    hue_wheel::GtkHueWheel,
     icon_image::{paint_standard_load_image, series_paint_load_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
-    managed_menu::MenuItemSpec,
 };
 use pw_gix::gtkx::paned::RememberPosition;
 

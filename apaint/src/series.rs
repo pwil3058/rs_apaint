@@ -12,11 +12,13 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use apaint_boilerplate::{BasicPaint, Colour};
 
-use colour_math::{ColourComponent, ColourInterface, ScalarAttribute, RGB};
+use colour_math::{
+    attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
+    ColourComponent, ColourInterface, ScalarAttribute, RGB,
+};
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
-    hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
     BasicPaintIfce, LabelText, TooltipText,
 };
 use std::cmp::Ordering;

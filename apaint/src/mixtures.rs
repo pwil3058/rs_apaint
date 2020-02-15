@@ -11,13 +11,15 @@ use serde::{de::DeserializeOwned, Serialize};
 use crypto_hash::{Algorithm, Hasher};
 use num::Integer;
 
-use colour_math::{ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB};
+use colour_math::{
+    attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
+    ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB,
+};
 
 use apaint_boilerplate::Colour;
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
-    hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, LabelText, TooltipText,
 };

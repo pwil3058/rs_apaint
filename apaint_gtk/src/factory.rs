@@ -7,21 +7,23 @@ use std::rc::Rc;
 
 use gtk::prelude::*;
 
-use pw_gix::{gtkx::paned::RememberPosition, sav_state::SAV_HOVER_OK, wrapper::*};
+use pw_gix::{
+    gtkx::{menu::MenuItemSpec, paned::RememberPosition},
+    sav_state::SAV_HOVER_OK,
+    wrapper::*,
+};
 
-use colour_math::{ColourInterface, ScalarAttribute};
+use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, ScalarAttribute};
+use colour_math_gtk::hue_wheel::GtkHueWheel;
 
 use apaint::{
     characteristics::CharacteristicType,
-    hue_wheel::MakeColouredShape,
     series::{BasicPaintSpec, SeriesPaintSeriesSpec},
     BasicPaintIfce,
 };
 
 use crate::{
-    hue_wheel::GtkHueWheel,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
-    managed_menu::MenuItemSpec,
     spec_edit::BasicPaintSpecEditor,
     storage::{StorageManager, StorageManagerBuilder},
 };

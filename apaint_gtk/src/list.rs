@@ -8,7 +8,7 @@ use pw_gix::{
     glibx::*,
     gtkx::{
         list_store::{ListRowOps, TreeModelRowOps},
-        menu::{ManagedMenu, ManagedMenuBuilder},
+        menu::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},
     },
     sav_state::MaskedCondns,
     wrapper::*,
@@ -21,10 +21,7 @@ use apaint::{
     BasicPaintIfce,
 };
 
-use crate::{
-    colour::{ColourInterface, ScalarAttribute},
-    managed_menu::MenuItemSpec,
-};
+use crate::colour::{ColourInterface, ScalarAttribute};
 
 type PopupCallback = Box<dyn Fn(&str)>;
 
