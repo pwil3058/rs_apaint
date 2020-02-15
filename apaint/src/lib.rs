@@ -6,10 +6,8 @@ use std::{error, fmt, io, result};
 
 use serde_json;
 
-pub mod attributes;
 pub mod characteristics;
 pub mod colour_mix;
-pub mod drawing;
 pub mod legacy;
 pub mod mixtures;
 pub mod series;

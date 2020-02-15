@@ -3,7 +3,6 @@
 members = [
     "apaint",
     "apaint_boilerplate",
-    "apaint_cairo",
     "apaint_gtk",
     "mcmmtk_gtk",
     "gtk_test_gui",
