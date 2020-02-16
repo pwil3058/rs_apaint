@@ -397,7 +397,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::series::{BasicPaintSpec, SeriesPaintSeriesSpec};
-    use colour_math::RGB;
+    use colour_math::{HueConstants, RGB};
 
     #[test]
     fn save_and_recover() {

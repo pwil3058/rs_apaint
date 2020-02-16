@@ -15,7 +15,10 @@ use pw_gix::{
     wrapper::*,
 };
 
-use crate::{colour::RGB, icon_image};
+use crate::{
+    colour::{RGBConstants, RGB},
+    icon_image,
+};
 use pw_gix::sav_state::MaskedCondns;
 
 const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN;

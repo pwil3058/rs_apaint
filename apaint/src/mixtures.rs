@@ -723,7 +723,7 @@ mod test {
         BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
         SeriesPaintSeriesSpec,
     };
-    use colour_math::RGB;
+    use colour_math::{HueConstants, RGB};
 
     impl SeriesPaintFinder<f64> for SeriesPaintSeries<f64> {
         fn get_series_paint(

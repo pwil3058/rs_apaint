@@ -95,7 +95,7 @@ pub mod characteristics {
 pub mod colour {
     pub use colour_math::{
         rgb::{RGBError, RGB16, RGB8},
-        ColourInterface, ScalarAttribute,
+        ColourInterface, HueConstants, RGBConstants, ScalarAttribute,
     };
     use gdk;
     pub use normalised_angles;

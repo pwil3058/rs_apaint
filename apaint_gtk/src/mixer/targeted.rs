@@ -36,7 +36,7 @@ use apaint::{
 };
 
 use crate::{
-    colour::RGB,
+    colour::{RGBConstants, RGB},
     colour_edit::ColourEditor,
     icon_image::{paint_standard_image, series_paint_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
