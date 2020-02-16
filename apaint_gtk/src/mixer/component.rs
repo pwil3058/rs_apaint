@@ -5,7 +5,7 @@ use std::{
     rc::Rc,
 };
 
-use num::Integer;
+use gcd::Gcd;
 
 use gtk::{prelude::*, ContainerExt, WidgetExt};
 
@@ -262,7 +262,7 @@ where
         self.spinners
             .borrow()
             .iter()
-            .fold(0, |gcd, s| gcd.gcd(&s.parts()))
+            .fold(0, |gcd, s| gcd.gcd(s.parts()))
     }
 
     pub fn zero_all_parts(&self) {

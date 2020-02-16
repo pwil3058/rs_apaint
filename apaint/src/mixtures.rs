@@ -9,7 +9,7 @@ use std::{
 use serde::{de::DeserializeOwned, Serialize};
 
 use crypto_hash::{Algorithm, Hasher};
-use num::Integer;
+use gcd::Gcd;
 
 use colour_math::{
     attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
@@ -339,11 +339,11 @@ impl<F: ColourComponent> MixtureBuilder<F> {
         let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(parts);
+            gcd = gcd.gcd(*parts);
         }
         for (_, parts) in self.mixture_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(parts);
+            gcd = gcd.gcd(*parts);
         }
         debug_assert!(gcd > 0);
         let mut components = vec![];
