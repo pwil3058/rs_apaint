@@ -97,10 +97,11 @@ pub mod colour {
         rgb::{RGBError, RGB16, RGB8},
         ColourInterface, HueConstants, RGBConstants, ScalarAttribute,
     };
+    pub use colour_math_gtk::coloured::*;
+
     use gdk;
     pub use normalised_angles;
 
-    pub type Colour = colour_math::Colour<f64>;
     pub type Hue = colour_math::hue::Hue<f64>;
     pub type RGB = colour_math::rgb::RGB<f64>;
     pub type RGBManipulator = colour_math::manipulator::RGBManipulator<f64>;
@@ -114,7 +115,12 @@ pub mod colour {
 
     impl GdkConvert for RGB {
         fn into_gdk_rgba(&self) -> gdk::RGBA {
-            pw_gix::colour::rgba_from_rgb(*self)
+            gdk::RGBA {
+                red: self[0],
+                blue: self[1],
+                green: self[2],
+                alpha: 1.0,
+            }
         }
     }
 }

@@ -9,14 +9,11 @@ use gcd::Gcd;
 
 use gtk::{prelude::*, ContainerExt, WidgetExt};
 
-use pw_gix::{
-    gtkx::{coloured::Colourable, menu::WrappedMenu},
-    wrapper::*,
-};
+use pw_gix::{gtkx::menu::WrappedMenu, wrapper::*};
 
 use apaint::{LabelText, TooltipText};
 
-use crate::colour::{ColourInterface, RGB};
+use crate::colour::{ColourInterface, Colourable, RGB};
 
 //type RemovalCallback<P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static> =
 //    Box<dyn Fn(&Rc<P>)>;
@@ -53,7 +50,7 @@ where
             .numeric(true)
             .build();
         let label = gtk::Label::new(Some(&paint.label_text()));
-        label.set_widget_colour_rgb(paint.rgb());
+        label.set_widget_colour_rgb(&paint.rgb());
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&label, true, true, 0);
         hbox.pack_start(&spin_button, false, false, 0);

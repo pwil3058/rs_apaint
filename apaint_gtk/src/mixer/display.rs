@@ -9,12 +9,12 @@ use colour_math_gtk::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
 
-use pw_gix::{gtkx::coloured::*, gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
+use pw_gix::{gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
-    colour::RGB,
+    colour::{Colourable, RGB},
     list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
 };
 
@@ -30,11 +30,11 @@ impl MixtureDisplay {
     pub fn set_target(&self, new_target: Option<&RGB>) {
         if let Some(rgb) = new_target {
             self.target_label.set_label("Current Target");
-            self.target_label.set_widget_colour_rgb(*rgb);
+            self.target_label.set_widget_colour_rgb(&rgb);
             self.cads.set_target_colour(Some(rgb));
         } else {
             self.target_label.set_label("");
-            self.target_label.set_widget_colour_rgb(self.mixture.rgb());
+            self.target_label.set_widget_colour_rgb(&self.mixture.rgb());
             self.cads.set_target_colour(Option::<&RGB>::None);
         };
     }
@@ -85,19 +85,19 @@ impl MixtureDisplayBuilder {
             .build();
 
         let label = gtk::LabelBuilder::new().label(mixture.id()).build();
-        label.set_widget_colour_rgb(rgb);
+        label.set_widget_colour_rgb(&rgb);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(mixture.name().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(rgb);
+        label.set_widget_colour_rgb(&rgb);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(mixture.notes().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(rgb);
+        label.set_widget_colour_rgb(&rgb);
         vbox.pack_start(&label, false, false, 0);
 
         let cads = ColourAttributeDisplayStackBuilder::new()
@@ -106,19 +106,19 @@ impl MixtureDisplayBuilder {
         cads.set_colour(Some(&rgb));
         let target_label = if let Some(target_rgb) = self.target_rgb {
             let label = gtk::LabelBuilder::new().label("Target").build();
-            label.set_widget_colour_rgb(target_rgb);
+            label.set_widget_colour_rgb(&target_rgb);
             cads.set_target_colour(Some(&target_rgb));
             label
         } else {
             let label = gtk::LabelBuilder::new().build();
-            label.set_widget_colour_rgb(rgb);
+            label.set_widget_colour_rgb(&rgb);
             label
         };
         vbox.pack_start(&target_label, true, true, 0);
 
         if let Some(targeted_rgb) = mixture.targeted_rgb() {
             let label = gtk::LabelBuilder::new().label("Matched Colour").build();
-            label.set_widget_colour_rgb(*targeted_rgb);
+            label.set_widget_colour_rgb(&targeted_rgb);
             vbox.pack_start(&label, true, true, 0);
         }
 
@@ -127,7 +127,7 @@ impl MixtureDisplayBuilder {
         for characteristic_type in self.characteristics.iter() {
             let value = mixture.characteristic(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(&value).build();
-            label.set_widget_colour_rgb(rgb);
+            label.set_widget_colour_rgb(&rgb);
             vbox.pack_start(&label, false, false, 0);
         }
 

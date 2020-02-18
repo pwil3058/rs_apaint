@@ -12,7 +12,6 @@ use gtk::prelude::*;
 use cairo;
 
 use pw_gix::{
-    cairox::*,
     gtkx::paned::RememberPosition,
     sav_state::{
         ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
@@ -24,6 +23,7 @@ use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, Sca
 
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
+    colour_math_cairo::CairoSetColour,
     hue_wheel::GtkHueWheel,
 };
 
@@ -107,13 +107,13 @@ impl TargetedPaintEntry {
 
     pub fn draw(&self, drawing_area: &gtk::DrawingArea, cairo_context: &cairo::Context) {
         if let Some(ref rgb) = *self.mix_rgb.borrow() {
-            cairo_context.set_source_colour_rgb(*rgb);
+            cairo_context.set_source_colour_rgb(rgb);
         } else {
-            cairo_context.set_source_colour_rgb(RGB::BLACK);
+            cairo_context.set_source_colour_rgb(&RGB::BLACK);
         };
         cairo_context.paint();
         if let Some(ref rgb) = *self.target_rgb.borrow() {
-            cairo_context.set_source_colour_rgb(*rgb);
+            cairo_context.set_source_colour_rgb(rgb);
             let width = drawing_area.get_allocated_width() as f64;
             let height = drawing_area.get_allocated_height() as f64;
             cairo_context.rectangle(width / 4.0, height / 4.0, width / 2.0, height / 2.0);

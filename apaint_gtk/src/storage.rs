@@ -9,14 +9,13 @@ use std::{
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::coloured::Colourable,
     recollections::{recall, remember},
     sav_state::{ConditionalWidgetGroups, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
 };
 
 use crate::{
-    colour::{RGBConstants, RGB},
+    colour::{Colourable, RGBConstants, RGB},
     icon_image,
 };
 use pw_gix::sav_state::MaskedCondns;
@@ -362,7 +361,7 @@ impl StorageManagerBuilder {
             .pack_start(&gtk::Label::new(Some("Current File:")), false, false, 1);
         storage_manager
             .file_name_label
-            .set_widget_colour_rgb(RGB::WHITE);
+            .set_widget_colour_rgb(&RGB::WHITE);
         storage_manager
             .hbox
             .pack_start(&storage_manager.file_name_label, true, true, 1);
