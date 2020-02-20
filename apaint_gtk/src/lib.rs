@@ -94,7 +94,7 @@ pub mod characteristics {
 
 pub mod colour {
     pub use colour_math::{
-        rgb::{RGBError, RGB16, RGB8},
+        urgb::{RGB16, RGB8},
         ColourInterface, HueConstants, RGBConstants, ScalarAttribute,
     };
     pub use colour_math_gtk::coloured::*;
