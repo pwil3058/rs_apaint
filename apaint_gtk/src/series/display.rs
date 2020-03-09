@@ -183,7 +183,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
             let pdd = PaintDisplayDialog { dialog, display };
             self.dialogs.insert(Rc::clone(paint), pdd);
         };
-        let pdd = self.dialogs.get(paint).expect("we just pit it there");
+        let pdd = self.dialogs.get(paint).expect("we just put it there");
         pdd.dialog.present();
     }
 

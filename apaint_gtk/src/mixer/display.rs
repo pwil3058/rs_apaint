@@ -158,7 +158,7 @@ struct MixtureDisplayDialog {
 
 pub struct MixtureDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, gtk::ResponseType)>,
+    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     mixture_display_builder: MixtureDisplayBuilder,
     dialogs: BTreeMap<Rc<Mixture<f64>>, MixtureDisplayDialog>,
 }
@@ -169,8 +169,10 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         if let Some(parent) = self.caller.get_toplevel_gtk_window() {
             dialog.set_transient_for(Some(&parent));
         }
-        for (label, response) in self.buttons.iter() {
-            dialog.add_button(label, *response);
+        for (label, tooltip_text, response) in self.buttons.iter() {
+            dialog
+                .add_button(label, gtk::ResponseType::Other(*response))
+                .set_tooltip_text(*tooltip_text);
         }
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
@@ -190,7 +192,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
             let pdd = MixtureDisplayDialog { dialog, display };
             self.dialogs.insert(Rc::clone(mixture), pdd);
         };
-        let pdd = self.dialogs.get(mixture).expect("we just pit it there");
+        let pdd = self.dialogs.get(mixture).expect("we just put it there");
         pdd.dialog.present();
     }
 
@@ -204,7 +206,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
 
 pub struct MixtureDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, gtk::ResponseType)>,
+    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
@@ -228,6 +230,11 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn buttons(&mut self, buttons: &[(&'static str, Option<&'static str>, u16)]) -> &mut Self {
+        self.buttons = buttons.to_vec();
         self
     }
 
