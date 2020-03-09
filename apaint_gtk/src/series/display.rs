@@ -149,7 +149,7 @@ struct PaintDisplayDialog {
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, u16)>,
+    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     paint_display_builder: PaintDisplayBuilder,
     dialogs: BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>,
 }
@@ -160,8 +160,10 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         if let Some(parent) = self.caller.get_toplevel_gtk_window() {
             dialog.set_transient_for(Some(&parent));
         }
-        for (label, response) in self.buttons.iter() {
-            dialog.add_button(label, gtk::ResponseType::Other(*response));
+        for (label, tooltip_text, response) in self.buttons.iter() {
+            dialog
+                .add_button(label, gtk::ResponseType::Other(*response))
+                .set_tooltip_text(*tooltip_text);
         }
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
@@ -195,7 +197,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
 
 pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, u16)>,
+    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
@@ -219,6 +221,11 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn buttons(&mut self, buttons: &[(&'static str, Option<&'static str>, u16)]) -> &mut Self {
+        self.buttons = buttons.to_vec();
         self
     }
 
