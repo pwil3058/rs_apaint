@@ -149,7 +149,7 @@ struct PaintDisplayDialog {
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, gtk::ResponseType)>,
+    buttons: Vec<(String, u16)>,
     paint_display_builder: PaintDisplayBuilder,
     dialogs: BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>,
 }
@@ -161,7 +161,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
             dialog.set_transient_for(Some(&parent));
         }
         for (label, response) in self.buttons.iter() {
-            dialog.add_button(label, *response);
+            dialog.add_button(label, gtk::ResponseType::Other(*response));
         }
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
@@ -195,7 +195,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
 
 pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(String, gtk::ResponseType)>,
+    buttons: Vec<(String, u16)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
