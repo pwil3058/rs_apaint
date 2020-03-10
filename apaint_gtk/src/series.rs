@@ -569,6 +569,7 @@ pub struct PaintStandardsManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
     display_dialog_manager: Rc<PaintDisplayDialogManager<gtk::Box>>,
+    set_as_target_callbacks: RefCell<Vec<PaintActionCallback>>,
 }
 
 impl PaintStandardsManager {
@@ -594,8 +595,17 @@ impl PaintStandardsManager {
         self.display_dialog_manager.display_paint(paint);
     }
 
+    fn inform_set_as_target(&self, paint: &Rc<SeriesPaint<f64>>) {
+        for callback in self.set_as_target_callbacks.borrow().iter() {
+            callback(Rc::clone(paint));
+        }
+    }
+
     pub fn connect_set_as_target<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
-        self.binder.connect_popup_menu_item("set target", callback);
+        self.set_as_target_callbacks
+            .borrow_mut()
+            .push(Box::new(callback));
+        // self.binder.connect_popup_menu_item("set target", callback);
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
@@ -611,6 +621,7 @@ pub struct PaintStandardsManagerBuilder {
 }
 
 impl PaintStandardsManagerBuilder {
+    // TODO: Turn off set as target from dialog when target already set
     pub fn new() -> Self {
         Self::default()
     }
@@ -668,17 +679,33 @@ impl PaintStandardsManagerBuilder {
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
+            .buttons(&[(
+                "Set as Target",
+                Some("Set this colour as the mixer target"),
+                0,
+            )])
             .build();
 
         let psm = Rc::new(PaintStandardsManager {
             vbox,
             binder,
             display_dialog_manager,
+            set_as_target_callbacks: RefCell::new(vec![]),
         });
 
         let psm_c = Rc::clone(&psm);
         psm.binder
             .connect_popup_menu_item("info", move |paint| psm_c.display_paint_information(&paint));
+
+        let psm_c = Rc::clone(&psm);
+        psm.binder
+            .connect_popup_menu_item("set target", move |paint| {
+                psm_c.inform_set_as_target(&paint)
+            });
+
+        let psm_c = Rc::clone(&psm);
+        psm.display_dialog_manager
+            .connect_action_button(0, move |paint| psm_c.inform_set_as_target(&paint));
 
         let psm_c = Rc::clone(&psm);
         load_file_btn.connect_clicked(move |_| {
