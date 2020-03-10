@@ -14,6 +14,9 @@ use pw_gix::{gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
 use crate::colour::{Colourable, RGB};
+use crate::series::PaintActionCallback;
+use std::cell::RefCell;
+use std::collections::HashMap;
 
 #[derive(PWO)]
 pub struct PaintDisplay {
@@ -150,8 +153,9 @@ struct PaintDisplayDialog {
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
-    paint_display_builder: PaintDisplayBuilder,
-    dialogs: BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>,
+    button_callbacks: RefCell<HashMap<u16, Vec<PaintActionCallback>>>,
+    paint_display_builder: RefCell<PaintDisplayBuilder>,
+    dialogs: RefCell<BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>>,
 }
 
 impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
@@ -173,25 +177,62 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn display_paint(&mut self, paint: &Rc<SeriesPaint<f64>>) {
-        if !self.dialogs.contains_key(paint) {
+    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+        self.paint_display_builder.borrow_mut().target_rgb(rgb);
+        for pdd in self.dialogs.borrow().values() {
+            pdd.display.set_target(rgb);
+        }
+    }
+
+    fn inform_button_action(&self, action: u16, paint: Rc<SeriesPaint<f64>>) {
+        let button_callbacks = self.button_callbacks.borrow();
+        for callback in button_callbacks
+            .get(&action)
+            .expect("programmer error")
+            .iter()
+        {
+            callback(Rc::clone(&paint))
+        }
+    }
+
+    pub fn connect_action_button<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+        &self,
+        action: u16,
+        callback: F,
+    ) {
+        self.button_callbacks
+            .borrow_mut()
+            .get_mut(&action)
+            .expect("programmer error")
+            .push(Box::new(callback));
+    }
+}
+
+pub trait DisplayPaint {
+    fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>);
+}
+
+impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>> {
+    fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+        if !self.dialogs.borrow().contains_key(paint) {
             let dialog = self.new_dialog();
-            let display = self.paint_display_builder.build(paint);
+            let display = self.paint_display_builder.borrow().build(paint);
             dialog
                 .get_content_area()
                 .pack_start(&display.pwo(), true, true, 0);
+            let paint_c = Rc::clone(paint);
+            let self_c = Rc::clone(self);
+            dialog.connect_response(move |_, response| {
+                if let gtk::ResponseType::Other(code) = response {
+                    self_c.inform_button_action(code, Rc::clone(&paint_c));
+                }
+            });
             let pdd = PaintDisplayDialog { dialog, display };
-            self.dialogs.insert(Rc::clone(paint), pdd);
+            self.dialogs.borrow_mut().insert(Rc::clone(paint), pdd);
         };
-        let pdd = self.dialogs.get(paint).expect("we just put it there");
+        let dialogs = self.dialogs.borrow();
+        let pdd = dialogs.get(paint).expect("we just put it there");
         pdd.dialog.present();
-    }
-
-    pub fn set_target_rgb(&mut self, rgb: Option<&RGB>) {
-        self.paint_display_builder.target_rgb(rgb);
-        for pdd in self.dialogs.values() {
-            pdd.display.set_target(rgb);
-        }
     }
 }
 
@@ -229,7 +270,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn build(&self) -> PaintDisplayDialogManager<W> {
+    pub fn build(&self) -> Rc<PaintDisplayDialogManager<W>> {
         let mut paint_display_builder = PaintDisplayBuilder::new();
         paint_display_builder
             .attributes(&self.attributes)
@@ -237,11 +278,16 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         if let Some(target_rgb) = self.target_rgb {
             paint_display_builder.target_rgb(Some(&target_rgb));
         }
-        PaintDisplayDialogManager {
+        let mut hash_map: HashMap<u16, Vec<PaintActionCallback>> = HashMap::new();
+        for (_, _, id) in self.buttons.iter() {
+            hash_map.insert(*id, vec![]);
+        }
+        Rc::new(PaintDisplayDialogManager {
             caller: self.caller.clone(),
             buttons: self.buttons.clone(),
-            paint_display_builder,
-            dialogs: BTreeMap::new(),
-        }
+            button_callbacks: RefCell::new(hash_map),
+            paint_display_builder: RefCell::new(paint_display_builder),
+            dialogs: RefCell::new(BTreeMap::new()),
+        })
     }
 }

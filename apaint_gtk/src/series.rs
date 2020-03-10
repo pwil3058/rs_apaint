@@ -40,7 +40,7 @@ pub mod display;
 
 use crate::series::display::*;
 
-type PopupCallback = Box<dyn Fn(Rc<SeriesPaint<f64>>)>;
+type PaintActionCallback = Box<dyn Fn(Rc<SeriesPaint<f64>>)>;
 
 #[derive(PWO, Wrapper)]
 struct SeriesPage {
@@ -48,7 +48,7 @@ struct SeriesPage {
     paint_series: SeriesPaintSeries<f64>,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
-    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
+    callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
 }
 
 impl SeriesPage {
@@ -148,7 +148,7 @@ struct SeriesBinder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: RefCell<Option<RGB>>,
-    callbacks: RefCell<HashMap<String, Vec<PopupCallback>>>,
+    callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
     loaded_files_data_path: Option<PathBuf>,
 }
 
@@ -161,7 +161,7 @@ impl SeriesBinder {
     ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
-        let mut hash_map: HashMap<String, Vec<PopupCallback>> = HashMap::new();
+        let mut hash_map: HashMap<String, Vec<PaintActionCallback>> = HashMap::new();
         for menu_item in menu_items.iter() {
             let item_name = menu_item.name();
             hash_map.insert(item_name.to_string(), vec![]);
@@ -408,7 +408,8 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
 pub struct PaintSeriesManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
-    display_dialog_manager: RefCell<PaintDisplayDialogManager<gtk::Box>>,
+    display_dialog_manager: Rc<PaintDisplayDialogManager<gtk::Box>>,
+    add_paint_callbacks: RefCell<Vec<PaintActionCallback>>,
 }
 
 impl PaintSeriesManager {
@@ -430,18 +431,24 @@ impl PaintSeriesManager {
     }
 
     fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
-        self.display_dialog_manager
-            .borrow_mut()
-            .display_paint(paint);
+        self.display_dialog_manager.display_paint(paint);
+    }
+
+    fn inform_add_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+        for callback in self.add_paint_callbacks.borrow().iter() {
+            callback(Rc::clone(paint));
+        }
     }
 
     pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
-        self.binder.connect_popup_menu_item("add", callback);
+        self.add_paint_callbacks
+            .borrow_mut()
+            .push(Box::new(callback));
     }
 
     pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
         self.binder.set_target_rgb(rgb);
-        self.display_dialog_manager.borrow_mut().set_target_rgb(rgb);
+        self.display_dialog_manager.set_target_rgb(rgb);
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
@@ -524,17 +531,27 @@ impl PaintSeriesManagerBuilder {
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
+            .buttons(&[("Add", Some("Add this paint to the mixer/palette"), 0)])
             .build();
 
         let psm = Rc::new(PaintSeriesManager {
             vbox,
             binder,
-            display_dialog_manager: RefCell::new(display_dialog_manager),
+            display_dialog_manager,
+            add_paint_callbacks: RefCell::new(vec![]),
         });
 
         let psm_c = Rc::clone(&psm);
         psm.binder
             .connect_popup_menu_item("info", move |paint| psm_c.display_paint_information(&paint));
+
+        let psm_c = Rc::clone(&psm);
+        psm.binder
+            .connect_popup_menu_item("add", move |paint| psm_c.inform_add_paint(&paint));
+
+        let psm_c = Rc::clone(&psm);
+        psm.display_dialog_manager
+            .connect_action_button(0, move |paint| psm_c.inform_add_paint(&paint));
 
         let psm_c = Rc::clone(&psm);
         load_file_btn.connect_clicked(move |_| {
@@ -551,7 +568,7 @@ impl PaintSeriesManagerBuilder {
 pub struct PaintStandardsManager {
     vbox: gtk::Box,
     binder: Rc<SeriesBinder>,
-    display_dialog_manager: RefCell<PaintDisplayDialogManager<gtk::Box>>,
+    display_dialog_manager: Rc<PaintDisplayDialogManager<gtk::Box>>,
 }
 
 impl PaintStandardsManager {
@@ -574,9 +591,7 @@ impl PaintStandardsManager {
     }
 
     fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
-        self.display_dialog_manager
-            .borrow_mut()
-            .display_paint(paint);
+        self.display_dialog_manager.display_paint(paint);
     }
 
     pub fn connect_set_as_target<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
@@ -658,7 +673,7 @@ impl PaintStandardsManagerBuilder {
         let psm = Rc::new(PaintStandardsManager {
             vbox,
             binder,
-            display_dialog_manager: RefCell::new(display_dialog_manager),
+            display_dialog_manager,
         });
 
         let psm_c = Rc::clone(&psm);
