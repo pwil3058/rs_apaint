@@ -531,7 +531,7 @@ impl PaintSeriesManagerBuilder {
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
-            .buttons(&[("Add", Some("Add this paint to the mixer/palette"), 0)])
+            .buttons(&[(0, "Add", Some("Add this paint to the mixer/palette"))])
             .build();
 
         let psm = Rc::new(PaintSeriesManager {
@@ -680,9 +680,9 @@ impl PaintStandardsManagerBuilder {
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
             .buttons(&[(
+                0,
                 "Set as Target",
                 Some("Set this colour as the mixer target"),
-                0,
             )])
             .build();
 

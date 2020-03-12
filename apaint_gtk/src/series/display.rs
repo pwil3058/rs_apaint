@@ -152,7 +152,7 @@ struct PaintDisplayDialog {
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
+    buttons: Vec<(u16, &'static str, Option<&'static str>)>,
     button_callbacks: RefCell<HashMap<u16, Vec<PaintActionCallback>>>,
     paint_display_builder: RefCell<PaintDisplayBuilder>,
     dialogs: RefCell<BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>>,
@@ -164,7 +164,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         if let Some(parent) = self.caller.get_toplevel_gtk_window() {
             dialog.set_transient_for(Some(&parent));
         }
-        for (label, tooltip_text, response) in self.buttons.iter() {
+        for (response, label, tooltip_text) in self.buttons.iter() {
             dialog
                 .add_button(label, gtk::ResponseType::Other(*response))
                 .set_tooltip_text(*tooltip_text);
@@ -238,7 +238,7 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
 
 pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(&'static str, Option<&'static str>, u16)>,
+    buttons: Vec<(u16, &'static str, Option<&'static str>)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
@@ -265,7 +265,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn buttons(&mut self, buttons: &[(&'static str, Option<&'static str>, u16)]) -> &mut Self {
+    pub fn buttons(&mut self, buttons: &[(u16, &'static str, Option<&'static str>)]) -> &mut Self {
         self.buttons = buttons.to_vec();
         self
     }
@@ -279,7 +279,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
             paint_display_builder.target_rgb(Some(&target_rgb));
         }
         let mut hash_map: HashMap<u16, Vec<PaintActionCallback>> = HashMap::new();
-        for (_, _, id) in self.buttons.iter() {
+        for (id, _, _) in self.buttons.iter() {
             hash_map.insert(*id, vec![]);
         }
         Rc::new(PaintDisplayDialogManager {
