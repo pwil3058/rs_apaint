@@ -43,24 +43,24 @@ pub struct BasicPaintSpecEditor {
 }
 
 impl BasicPaintSpecEditor {
-    pub const SAV_EDITING: u64 = SAV_NEXT_CONDN;
-    pub const SAV_NOT_EDITING: u64 = SAV_NEXT_CONDN << 1;
-    pub const SAV_ID_READY: u64 = SAV_NEXT_CONDN << 2;
-    pub const SAV_NAME_READY: u64 = SAV_NEXT_CONDN << 3;
-    pub const SAV_NOTES_READY: u64 = SAV_NEXT_CONDN << 4;
-    pub const SAV_HAS_CHANGES: u64 = SAV_NEXT_CONDN << 5;
-    pub const SAV_ID_CHANGED: u64 = SAV_NEXT_CONDN << 6;
-    pub const SAV_NAME_CHANGED: u64 = SAV_NEXT_CONDN << 7;
-    pub const SAV_NOTES_CHANGED: u64 = SAV_NEXT_CONDN << 8;
-    pub const SAV_RGB_CHANGED: u64 = SAV_NEXT_CONDN << 9;
+    const SAV_EDITING: u64 = SAV_NEXT_CONDN;
+    const SAV_NOT_EDITING: u64 = SAV_NEXT_CONDN << 1;
+    const SAV_ID_READY: u64 = SAV_NEXT_CONDN << 2;
+    const SAV_NAME_READY: u64 = SAV_NEXT_CONDN << 3;
+    const SAV_NOTES_READY: u64 = SAV_NEXT_CONDN << 4;
+    const SAV_HAS_CHANGES: u64 = SAV_NEXT_CONDN << 5;
+    const SAV_ID_CHANGED: u64 = SAV_NEXT_CONDN << 6;
+    const SAV_NAME_CHANGED: u64 = SAV_NEXT_CONDN << 7;
+    const SAV_NOTES_CHANGED: u64 = SAV_NEXT_CONDN << 8;
+    const SAV_RGB_CHANGED: u64 = SAV_NEXT_CONDN << 9;
 
-    pub const SAV_FINISH_CHANGED: u64 = SAV_NEXT_CONDN << 10;
-    pub const SAV_PERMANENCE_CHANGED: u64 = SAV_NEXT_CONDN << 11;
-    pub const SAV_TRANSPARENCY_CHANGED: u64 = SAV_NEXT_CONDN << 12;
-    pub const SAV_FLUORESCENCE_CHANGED: u64 = SAV_NEXT_CONDN << 13;
-    pub const SAV_METALLICNESS_CHANGED: u64 = SAV_NEXT_CONDN << 14;
+    const SAV_FINISH_CHANGED: u64 = SAV_NEXT_CONDN << 10;
+    const SAV_PERMANENCE_CHANGED: u64 = SAV_NEXT_CONDN << 11;
+    const SAV_TRANSPARENCY_CHANGED: u64 = SAV_NEXT_CONDN << 12;
+    const SAV_FLUORESCENCE_CHANGED: u64 = SAV_NEXT_CONDN << 13;
+    const SAV_METALLICNESS_CHANGED: u64 = SAV_NEXT_CONDN << 14;
 
-    pub const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
+    const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
         + Self::SAV_NAME_CHANGED
         + Self::SAV_NOTES_CHANGED
         + Self::SAV_RGB_CHANGED
