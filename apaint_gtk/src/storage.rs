@@ -10,7 +10,7 @@ use gtk::prelude::*;
 
 use pw_gix::{
     recollections::{recall, remember},
-    sav_state::{ConditionalWidgetGroups, WidgetStatesControlled, SAV_NEXT_CONDN},
+    sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
 };
 
@@ -18,7 +18,6 @@ use crate::{
     colour::{Colourable, RGBConstants, RGB},
     icon_image,
 };
-use pw_gix::sav_state::MaskedCondns;
 
 const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN;
 const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
