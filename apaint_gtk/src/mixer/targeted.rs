@@ -14,7 +14,8 @@ use cairo;
 use pw_gix::{
     gtkx::paned::RememberPosition,
     sav_state::{
-        ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
+        ChangedCondnsNotifier, ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled,
+        SAV_HOVER_OK, SAV_NEXT_CONDN,
     },
     wrapper::*,
 };
@@ -165,6 +166,7 @@ pub struct TargetedPaintMixer {
     mix_entry: Rc<TargetedPaintEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
+    change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
     paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
@@ -201,19 +203,18 @@ impl TargetedPaintMixer {
         for (rgb, parts) in self.series_paint_spinner_box.rgb_contributions() {
             colour_mixer.add(&rgb, parts);
         }
+        let mut condns = MaskedCondns {
+            condns: 0,
+            mask: Self::SAV_HAS_COLOUR,
+        };
         if let Some(rgb) = colour_mixer.mixture() {
             self.mix_entry.set_mix_rgb(Some(&rgb));
-            self.buttons.update_condns(MaskedCondns {
-                condns: Self::SAV_HAS_COLOUR,
-                mask: Self::SAV_HAS_COLOUR,
-            });
+            condns.condns = Self::SAV_HAS_COLOUR;
         } else {
             self.mix_entry.set_mix_rgb(None);
-            self.buttons.update_condns(MaskedCondns {
-                condns: 0,
-                mask: Self::SAV_HAS_COLOUR,
-            });
         }
+        self.buttons.update_condns(condns);
+        self.change_notifier.notify_changed_condns(condns);
     }
 
     fn ask_start_new_mixture(&self) {
@@ -305,6 +306,7 @@ impl TargetedPaintMixer {
             self.buttons.update_condns(masked_condns);
             self.paint_standards_manager
                 .update_popup_condns(masked_condns);
+            self.change_notifier.notify_changed_condns(masked_condns);
             self.file_manager.update_tool_needs_saving(true);
         } else {
             let masked_condns = MaskedCondns {
@@ -314,6 +316,7 @@ impl TargetedPaintMixer {
             self.buttons.update_condns(masked_condns);
             self.paint_standards_manager
                 .update_popup_condns(masked_condns);
+            self.change_notifier.notify_changed_condns(masked_condns);
             self.file_manager.update_tool_needs_saving(false);
         }
     }
@@ -424,6 +427,7 @@ impl TargetedPaintMixerBuilder {
                 "Reset the mixer in preparation for a new mixing session",
             )
             .build();
+        let change_notifier = ChangedCondnsNotifier::new(TargetedPaintMixer::SAV_NOT_HAS_TARGET);
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheel::new(&[], &self.attributes);
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
@@ -450,7 +454,8 @@ impl TargetedPaintMixerBuilder {
         let mut builder = PaintSeriesManagerBuilder::new();
         builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics);
+            .characteristics(&self.characteristics)
+            .change_notifier(&change_notifier);
         if let Some(ref config_dir_path) = self.config_dir_path {
             builder.loaded_files_data_path(&config_dir_path.join("paint_series_files"));
         }
@@ -467,7 +472,8 @@ impl TargetedPaintMixerBuilder {
         let mut builder = PaintStandardsManagerBuilder::new();
         builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics);
+            .characteristics(&self.characteristics)
+            .change_notifier(&change_notifier);
         if let Some(ref config_dir_path) = self.config_dir_path {
             builder.loaded_files_data_path(&config_dir_path.join("paint_standards_files"));
         }
@@ -576,6 +582,7 @@ impl TargetedPaintMixerBuilder {
             mix_entry,
             buttons,
             series_paint_spinner_box,
+            change_notifier,
             paint_series_manager,
             paint_standards_manager,
             next_mix_id: Cell::new(1),
@@ -583,18 +590,17 @@ impl TargetedPaintMixerBuilder {
         });
 
         let buttons_c = Rc::clone(&tpm.buttons);
+        let change_notifier_c = Rc::clone(&tpm.change_notifier);
         tpm.mix_entry.name_entry.connect_changed(move |entry| {
+            let mut condns = MaskedCondns {
+                condns: 0,
+                mask: TargetedPaintMixer::SAV_HAS_NAME,
+            };
             if entry.get_text_length() > 0 {
-                buttons_c.update_condns(MaskedCondns {
-                    condns: TargetedPaintMixer::SAV_HAS_NAME,
-                    mask: TargetedPaintMixer::SAV_HAS_NAME,
-                });
-            } else {
-                buttons_c.update_condns(MaskedCondns {
-                    condns: 0,
-                    mask: TargetedPaintMixer::SAV_HAS_NAME,
-                });
-            }
+                condns.condns = TargetedPaintMixer::SAV_HAS_NAME;
+            };
+            buttons_c.update_condns(condns);
+            change_notifier_c.notify_changed_condns(condns);
         });
 
         let tpm_c = Rc::clone(&tpm);

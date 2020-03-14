@@ -9,7 +9,11 @@ use colour_math_gtk::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
 
-use pw_gix::{gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
+use pw_gix::{
+    gtkx::dialog::dialog_user::TopGtkWindow,
+    sav_state::{ChangedCondnsNotifier, ConditionalWidgets, ConditionalWidgetsBuilder},
+    wrapper::*,
+};
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
@@ -146,15 +150,17 @@ impl PaintDisplayBuilder {
 }
 
 struct PaintDisplayDialog {
-    pub dialog: gtk::Dialog,
-    pub display: PaintDisplay,
+    dialog: gtk::Dialog,
+    display: PaintDisplay,
+    _managed_buttons: Rc<ConditionalWidgets<u16, gtk::Widget>>,
 }
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(u16, &'static str, Option<&'static str>)>,
+    buttons: Vec<(u16, &'static str, Option<&'static str>, u64)>,
     button_callbacks: RefCell<HashMap<u16, Vec<PaintActionCallback>>>,
     paint_display_builder: RefCell<PaintDisplayBuilder>,
+    conditional_widgets_builder: ConditionalWidgetsBuilder,
     dialogs: RefCell<BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>>,
 }
 
@@ -163,11 +169,6 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         let dialog = gtk::DialogBuilder::new().build();
         if let Some(parent) = self.caller.get_toplevel_gtk_window() {
             dialog.set_transient_for(Some(&parent));
-        }
-        for (response, label, tooltip_text) in self.buttons.iter() {
-            dialog
-                .add_button(label, gtk::ResponseType::Other(*response))
-                .set_tooltip_text(*tooltip_text);
         }
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
@@ -217,6 +218,12 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
         if !self.dialogs.borrow().contains_key(paint) {
             let dialog = self.new_dialog();
             let display = self.paint_display_builder.borrow().build(paint);
+            let _managed_buttons = self.conditional_widgets_builder.build::<u16, gtk::Widget>();
+            for (response, label, tooltip_text, condns) in self.buttons.iter() {
+                let button = dialog.add_button(label, gtk::ResponseType::Other(*response));
+                button.set_tooltip_text(*tooltip_text);
+                _managed_buttons.add_widget(*response, &button, *condns);
+            }
             dialog
                 .get_content_area()
                 .pack_start(&display.pwo(), true, true, 0);
@@ -227,7 +234,11 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
                     self_c.inform_button_action(code, Rc::clone(&paint_c));
                 }
             });
-            let pdd = PaintDisplayDialog { dialog, display };
+            let pdd = PaintDisplayDialog {
+                dialog,
+                display,
+                _managed_buttons,
+            };
             self.dialogs.borrow_mut().insert(Rc::clone(paint), pdd);
         };
         let dialogs = self.dialogs.borrow();
@@ -238,20 +249,23 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
 
 pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
-    buttons: Vec<(u16, &'static str, Option<&'static str>)>,
+    buttons: Vec<(u16, &'static str, Option<&'static str>, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: Option<RGB>,
+    change_notifier: Rc<ChangedCondnsNotifier>,
 }
 
 impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
     pub fn new(caller: &W) -> Self {
+        let change_notifier = Rc::new(ChangedCondnsNotifier::default());
         Self {
             caller: caller.clone(),
             buttons: vec![],
             attributes: vec![],
             characteristics: vec![],
             target_rgb: None,
+            change_notifier,
         }
     }
 
@@ -265,8 +279,16 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn buttons(&mut self, buttons: &[(u16, &'static str, Option<&'static str>)]) -> &mut Self {
+    pub fn buttons(
+        &mut self,
+        buttons: &[(u16, &'static str, Option<&'static str>, u64)],
+    ) -> &mut Self {
         self.buttons = buttons.to_vec();
+        self
+    }
+
+    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
+        self.change_notifier = Rc::clone(change_notifier);
         self
     }
 
@@ -279,14 +301,17 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
             paint_display_builder.target_rgb(Some(&target_rgb));
         }
         let mut hash_map: HashMap<u16, Vec<PaintActionCallback>> = HashMap::new();
-        for (id, _, _) in self.buttons.iter() {
+        for (id, _, _, _) in self.buttons.iter() {
             hash_map.insert(*id, vec![]);
         }
+        let mut conditional_widgets_builder = ConditionalWidgetsBuilder::new();
+        conditional_widgets_builder.change_notifier(&self.change_notifier);
         Rc::new(PaintDisplayDialogManager {
             caller: self.caller.clone(),
             buttons: self.buttons.clone(),
             button_callbacks: RefCell::new(hash_map),
             paint_display_builder: RefCell::new(paint_display_builder),
+            conditional_widgets_builder,
             dialogs: RefCell::new(BTreeMap::new()),
         })
     }

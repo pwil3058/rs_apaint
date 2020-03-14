@@ -15,9 +15,10 @@ use pw_gix::{
         dialog::dialog_user::TopGtkWindow,
         menu::MenuItemSpec,
         notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+        paned::RememberPosition,
     },
     recollections::{recall, remember},
-    sav_state::{MaskedCondns, SAV_HOVER_OK},
+    sav_state::{ChangedCondnsNotifier, MaskedCondns, SAV_HOVER_OK},
     wrapper::*,
 };
 
@@ -34,7 +35,6 @@ use crate::{
     icon_image::{paint_standard_load_image, series_paint_load_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
 };
-use pw_gix::gtkx::paned::RememberPosition;
 
 pub mod display;
 
@@ -452,7 +452,7 @@ impl PaintSeriesManager {
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
-        self.binder.update_popup_condns(changed_condns)
+        self.binder.update_popup_condns(changed_condns);
     }
 }
 
@@ -471,6 +471,7 @@ pub struct PaintSeriesManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     loaded_files_data_path: Option<PathBuf>,
+    change_notifier: Rc<ChangedCondnsNotifier>,
 }
 
 impl PaintSeriesManagerBuilder {
@@ -485,6 +486,11 @@ impl PaintSeriesManagerBuilder {
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
+        self.change_notifier = Rc::clone(change_notifier);
         self
     }
 
@@ -531,7 +537,8 @@ impl PaintSeriesManagerBuilder {
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
-            .buttons(&[(0, "Add", Some("Add this paint to the mixer/palette"))])
+            .change_notifier(&self.change_notifier)
+            .buttons(&[(0, "Add", Some("Add this paint to the mixer/palette"), 0)])
             .build();
 
         let psm = Rc::new(PaintSeriesManager {
@@ -605,11 +612,10 @@ impl PaintStandardsManager {
         self.set_as_target_callbacks
             .borrow_mut()
             .push(Box::new(callback));
-        // self.binder.connect_popup_menu_item("set target", callback);
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {
-        self.binder.update_popup_condns(changed_condns)
+        self.binder.update_popup_condns(changed_condns);
     }
 }
 
@@ -618,6 +624,7 @@ pub struct PaintStandardsManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     loaded_files_data_path: Option<PathBuf>,
+    change_notifier: Rc<ChangedCondnsNotifier>,
 }
 
 impl PaintStandardsManagerBuilder {
@@ -633,6 +640,11 @@ impl PaintStandardsManagerBuilder {
 
     pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
         self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
+        self.change_notifier = Rc::clone(change_notifier);
         self
     }
 
@@ -679,10 +691,12 @@ impl PaintStandardsManagerBuilder {
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
+            .change_notifier(&self.change_notifier)
             .buttons(&[(
                 0,
                 "Set as Target",
                 Some("Set this colour as the mixer target"),
+                crate::mixer::targeted::TargetedPaintMixer::SAV_NOT_HAS_TARGET,
             )])
             .build();
 
