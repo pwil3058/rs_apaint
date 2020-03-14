@@ -11,7 +11,7 @@ use colour_math_gtk::attributes::{
 
 use pw_gix::{
     gtkx::dialog::dialog_user::TopGtkWindow,
-    sav_state::{ChangedCondnsNotifier, ConditionalWidgets, ConditionalWidgetsBuilder},
+    sav_state::{ChangedCondnsNotifier, ConditionalWidgetsBuilder},
     wrapper::*,
 };
 
@@ -152,7 +152,6 @@ impl PaintDisplayBuilder {
 struct PaintDisplayDialog {
     dialog: gtk::Dialog,
     display: PaintDisplay,
-    _managed_buttons: Rc<ConditionalWidgets<u16, gtk::Widget>>,
 }
 
 pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
@@ -218,11 +217,11 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
         if !self.dialogs.borrow().contains_key(paint) {
             let dialog = self.new_dialog();
             let display = self.paint_display_builder.borrow().build(paint);
-            let _managed_buttons = self.conditional_widgets_builder.build::<u16, gtk::Widget>();
+            let managed_buttons = self.conditional_widgets_builder.build::<u16, gtk::Widget>();
             for (response, label, tooltip_text, condns) in self.buttons.iter() {
                 let button = dialog.add_button(label, gtk::ResponseType::Other(*response));
                 button.set_tooltip_text(*tooltip_text);
-                _managed_buttons.add_widget(*response, &button, *condns);
+                managed_buttons.add_widget(*response, &button, *condns);
             }
             dialog
                 .get_content_area()
@@ -234,11 +233,7 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
                     self_c.inform_button_action(code, Rc::clone(&paint_c));
                 }
             });
-            let pdd = PaintDisplayDialog {
-                dialog,
-                display,
-                _managed_buttons,
-            };
+            let pdd = PaintDisplayDialog { dialog, display };
             self.dialogs.borrow_mut().insert(Rc::clone(paint), pdd);
         };
         let dialogs = self.dialogs.borrow();

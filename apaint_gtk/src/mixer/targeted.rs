@@ -164,7 +164,6 @@ pub struct TargetedPaintMixer {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     mix_entry: Rc<TargetedPaintEntry>,
-    buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
@@ -213,7 +212,6 @@ impl TargetedPaintMixer {
         } else {
             self.mix_entry.set_mix_rgb(None);
         }
-        self.buttons.update_condns(condns);
         self.change_notifier.notify_changed_condns(condns);
     }
 
@@ -303,7 +301,6 @@ impl TargetedPaintMixer {
                 condns: Self::SAV_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
             };
-            self.buttons.update_condns(masked_condns);
             self.paint_standards_manager
                 .update_popup_condns(masked_condns);
             self.change_notifier.notify_changed_condns(masked_condns);
@@ -313,7 +310,6 @@ impl TargetedPaintMixer {
                 condns: Self::SAV_NOT_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,
             };
-            self.buttons.update_condns(masked_condns);
             self.paint_standards_manager
                 .update_popup_condns(masked_condns);
             self.change_notifier.notify_changed_condns(masked_condns);
@@ -504,12 +500,8 @@ impl TargetedPaintMixerBuilder {
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
             None,
-            None,
+            Some(&change_notifier),
         );
-        buttons.update_condns(MaskedCondns {
-            condns: TargetedPaintMixer::SAV_NOT_HAS_TARGET,
-            mask: TargetedPaintMixer::HAS_TARGET_MASK,
-        });
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
 
         let new_mix_btn = gtk::ButtonBuilder::new()
@@ -580,7 +572,6 @@ impl TargetedPaintMixerBuilder {
             attributes: self.attributes.clone(),
             characteristics: self.characteristics.clone(),
             mix_entry,
-            buttons,
             series_paint_spinner_box,
             change_notifier,
             paint_series_manager,
@@ -589,7 +580,6 @@ impl TargetedPaintMixerBuilder {
             display_dialog_manager: RefCell::new(display_dialog_manager),
         });
 
-        let buttons_c = Rc::clone(&tpm.buttons);
         let change_notifier_c = Rc::clone(&tpm.change_notifier);
         tpm.mix_entry.name_entry.connect_changed(move |entry| {
             let mut condns = MaskedCondns {
@@ -599,7 +589,6 @@ impl TargetedPaintMixerBuilder {
             if entry.get_text_length() > 0 {
                 condns.condns = TargetedPaintMixer::SAV_HAS_NAME;
             };
-            buttons_c.update_condns(condns);
             change_notifier_c.notify_changed_condns(condns);
         });
 
