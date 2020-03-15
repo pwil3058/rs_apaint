@@ -8,7 +8,7 @@ use pw_gix::{
     glibx::*,
     gtkx::{
         list_store::{ListRowOps, TreeModelRowOps},
-        menu::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},
+        menu_ng::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},
     },
     sav_state::MaskedCondns,
     wrapper::*,
@@ -40,7 +40,10 @@ pub trait ColouredItemListViewSpec {
 }
 
 impl ColouredItemListView {
-    pub fn new(spec: &impl ColouredItemListViewSpec, menu_items: &[MenuItemSpec]) -> Rc<Self> {
+    pub fn new(
+        spec: &impl ColouredItemListViewSpec,
+        menu_items: &[(&'static str, MenuItemSpec, u64)],
+    ) -> Rc<Self> {
         let list_store = gtk::ListStore::new(&spec.column_types());
         let view = gtk::TreeViewBuilder::new().headers_visible(true).build();
         view.set_model(Some(&list_store));
@@ -58,23 +61,17 @@ impl ColouredItemListView {
             callbacks: RefCell::new(HashMap::new()),
         });
 
-        for spec in menu_items.iter() {
+        for (name, menu_item_spec, condns) in menu_items.iter() {
             let rgb_l_v_c = Rc::clone(&rgb_l_v);
-            let name_c = spec.name().to_string();
+            let name_c = (*name).to_string();
             rgb_l_v
                 .popup_menu
-                .append_item(
-                    spec.name(),
-                    spec.label(),
-                    spec.image(),
-                    spec.tooltip(),
-                    spec.condns(),
-                )
+                .append_item(name, menu_item_spec, *condns)
                 .connect_activate(move |_| rgb_l_v_c.menu_item_selected(&name_c));
             rgb_l_v
                 .callbacks
                 .borrow_mut()
-                .insert(spec.name().to_string(), vec![]);
+                .insert((*name).to_string(), vec![]);
         }
 
         let rgb_l_v_c = Rc::clone(&rgb_l_v);

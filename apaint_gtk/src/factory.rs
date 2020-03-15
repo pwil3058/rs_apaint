@@ -8,13 +8,13 @@ use std::rc::Rc;
 use gtk::prelude::*;
 
 use pw_gix::{
-    gtkx::{menu::MenuItemSpec, paned::RememberPosition},
+    gtkx::{menu_ng::MenuItemSpec, paned::RememberPosition},
     sav_state::SAV_HOVER_OK,
     wrapper::*,
 };
 
 use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, ScalarAttribute};
-use colour_math_gtk::hue_wheel::GtkHueWheel;
+use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 
 use apaint::{
     characteristics::CharacteristicType,
@@ -220,23 +220,22 @@ impl BasicPaintFactoryBuilder {
     }
 
     pub fn build(&self) -> Rc<BasicPaintFactory> {
-        let menu_items: &[MenuItemSpec] = &[
+        let menu_items: &[(&'static str, MenuItemSpec, u64)] = &[
             (
                 "edit",
-                "Edit",
-                None,
-                "Edit the indicated paint",
+                ("Edit", None, Some("Edit the indicated paint")).into(),
                 SAV_HOVER_OK,
-            )
-                .into(),
+            ),
             (
                 "remove",
-                "Remove",
-                None,
-                "Remove the indicated paint from the series.",
+                (
+                    "Remove",
+                    None,
+                    Some("Remove the indicated paint from the series."),
+                )
+                    .into(),
                 SAV_HOVER_OK,
-            )
-                .into(),
+            ),
         ];
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
@@ -257,7 +256,10 @@ impl BasicPaintFactoryBuilder {
         grid.attach(&proprietor_entry, 1, 1, 1, 1);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
         let paint_editor = BasicPaintSpecEditor::new(&self.attributes, &self.characteristics);
-        let hue_wheel = GtkHueWheel::new(menu_items, &self.attributes);
+        let hue_wheel = GtkHueWheelBuilder::new()
+            .menu_item_specs(menu_items)
+            .attributes(&self.attributes)
+            .build();
         let paint_list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ColouredItemListView::new(&paint_list_spec, menu_items);
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();

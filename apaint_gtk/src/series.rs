@@ -13,7 +13,7 @@ use gtk::prelude::*;
 use pw_gix::{
     gtkx::{
         dialog::dialog_user::TopGtkWindow,
-        menu::MenuItemSpec,
+        menu_ng::MenuItemSpec,
         notebook::{TabRemoveLabel, TabRemoveLabelInterface},
         paned::RememberPosition,
     },
@@ -23,7 +23,7 @@ use pw_gix::{
 };
 
 use colour_math::attributes::hue_wheel::MakeColouredShape;
-use colour_math_gtk::hue_wheel::GtkHueWheel;
+use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 
 use apaint::{
     characteristics::CharacteristicType,
@@ -54,13 +54,16 @@ struct SeriesPage {
 impl SeriesPage {
     fn new(
         paint_series: SeriesPaintSeries<f64>,
-        menu_items: &[MenuItemSpec],
+        menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Rc<Self> {
         let paned = gtk::PanedBuilder::new().build();
         paned.set_position_from_recollections("SeriesPage:paned_position", 200);
-        let hue_wheel = GtkHueWheel::new(menu_items, attributes);
+        let hue_wheel = GtkHueWheelBuilder::new()
+            .menu_item_specs(menu_items)
+            .attributes(attributes)
+            .build();
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
         let list_view = ColouredItemListView::new(&list_spec, menu_items);
         for paint in paint_series.paints() {
@@ -79,22 +82,20 @@ impl SeriesPage {
             list_view,
             callbacks: RefCell::new(HashMap::new()),
         });
-        for menu_item in menu_items.iter() {
+        for (name, _, _) in menu_items.iter() {
             let sp_c = Rc::clone(&sp);
-            let item_name_c = menu_item.name().to_string();
-            sp.hue_wheel
-                .connect_popup_menu_item(menu_item.name(), move |id| {
-                    sp_c.invoke_named_callback(&item_name_c, id)
-                });
+            let item_name_c = (*name).to_string();
+            sp.hue_wheel.connect_popup_menu_item(name, move |id| {
+                sp_c.invoke_named_callback(&item_name_c, id)
+            });
             let sp_c = Rc::clone(&sp);
-            let item_name_c = menu_item.name().to_string();
-            sp.list_view
-                .connect_popup_menu_item(menu_item.name(), move |id| {
-                    sp_c.invoke_named_callback(&item_name_c, id)
-                });
+            let item_name_c = (*name).to_string();
+            sp.list_view.connect_popup_menu_item(name, move |id| {
+                sp_c.invoke_named_callback(&item_name_c, id)
+            });
             sp.callbacks
                 .borrow_mut()
-                .insert(menu_item.name().to_string(), vec![]);
+                .insert((*name).to_string(), vec![]);
         }
 
         sp
@@ -144,7 +145,7 @@ impl SeriesPage {
 struct SeriesBinder {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<(Rc<SeriesPage>, PathBuf)>>,
-    menu_items: Vec<MenuItemSpec>,
+    menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_rgb: RefCell<Option<RGB>>,
@@ -154,7 +155,7 @@ struct SeriesBinder {
 
 impl SeriesBinder {
     fn new(
-        menu_items: &[MenuItemSpec],
+        menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
         loaded_files_data_path: Option<PathBuf>,
@@ -163,7 +164,7 @@ impl SeriesBinder {
         let pages = RefCell::new(vec![]);
         let mut hash_map: HashMap<String, Vec<PaintActionCallback>> = HashMap::new();
         for menu_item in menu_items.iter() {
-            let item_name = menu_item.name();
+            let item_name = menu_item.0;
             hash_map.insert(item_name.to_string(), vec![]);
         }
         let callbacks = RefCell::new(hash_map);
@@ -340,8 +341,8 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                 };
                 for menu_item in self.menu_items.iter() {
                     let self_c = Rc::clone(self);
-                    let item_name_c = menu_item.name().to_string();
-                    new_page.connect_popup_menu_item(menu_item.name(), move |paint| {
+                    let item_name_c = menu_item.0.to_string();
+                    new_page.connect_popup_menu_item(menu_item.0, move |paint| {
                         self_c.invoke_named_callback(&item_name_c, paint)
                     });
                 }
@@ -503,20 +504,24 @@ impl PaintSeriesManagerBuilder {
         let menu_items = &[
             (
                 "info",
-                "Paint Information",
-                None,
-                "Display information for the indicated paint",
+                (
+                    "Paint Information",
+                    None,
+                    Some("Display information for the indicated paint"),
+                )
+                    .into(),
                 SAV_HOVER_OK,
-            )
-                .into(),
+            ),
             (
                 "add",
-                "Add",
-                None,
-                "Add the indicated paint to the mixer/palette",
+                (
+                    "Add",
+                    None,
+                    Some("Add the indicated paint to the mixer/palette"),
+                )
+                    .into(),
                 SAV_HOVER_OK,
-            )
-                .into(),
+            ),
         ];
         let binder = SeriesBinder::new(
             menu_items,
@@ -657,20 +662,24 @@ impl PaintStandardsManagerBuilder {
         let menu_items = &[
             (
                 "info",
-                "Paint Information",
-                None,
-                "Display information for the indicated paint",
+                (
+                    "Paint Information",
+                    None,
+                    Some("Display information for the indicated paint"),
+                )
+                    .into(),
                 SAV_HOVER_OK,
-            )
-                .into(),
+            ),
             (
                 "set target",
-                "Set As Target",
-                None,
-                "Set the indicated standard as the target in the mixer",
+                (
+                    "Set As Target",
+                    None,
+                    Some("Set the indicated standard as the target in the mixer"),
+                )
+                    .into(),
                 SAV_HOVER_OK + crate::mixer::targeted::TargetedPaintMixer::SAV_NOT_HAS_TARGET,
-            )
-                .into(),
+            ),
         ];
         let binder = SeriesBinder::new(
             menu_items,

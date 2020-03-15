@@ -25,7 +25,7 @@ use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, Sca
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     colour_math_cairo::CairoSetColour,
-    hue_wheel::GtkHueWheel,
+    hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
 };
 
 use apaint::{
@@ -425,18 +425,22 @@ impl TargetedPaintMixerBuilder {
             .build();
         let change_notifier = ChangedCondnsNotifier::new(TargetedPaintMixer::SAV_NOT_HAS_TARGET);
         let notes_entry = gtk::EntryBuilder::new().build();
-        let hue_wheel = GtkHueWheel::new(&[], &self.attributes);
+        let hue_wheel = GtkHueWheelBuilder::new()
+            .attributes(&self.attributes)
+            .build();
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ColouredItemListView::new(
             &list_spec,
             &[(
                 "info",
-                "Paint Information",
-                None,
-                "Display information for the indicated paint",
+                (
+                    "Paint Information",
+                    None,
+                    Some("Display information for the indicated paint"),
+                )
+                    .into(),
                 SAV_HOVER_OK,
-            )
-                .into()],
+            )],
         );
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
         let series_paint_spinner_box =
