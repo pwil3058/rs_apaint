@@ -158,7 +158,7 @@
       "rgb": [
         0.2627450980392157,
         0.27450980392156865,
-        0.24705882352941178
+        0.24705882352941175
       ],
       "id": "71.011",
       "name": "Dark Green RLM83",
@@ -187,8 +187,8 @@
     {
       "rgb": [
         0.2235294117647059,
-        0.23921568627450981,
-        0.23529411764705882
+        0.2392156862745098,
+        0.2352941176470588
       ],
       "id": "71.013",
       "name": "Yellow Olive",
@@ -248,7 +248,7 @@
       "rgb": [
         0.2784313725490196,
         0.2901960784313726,
-        0.24313725490196078
+        0.2431372549019608
       ],
       "id": "71.017",
       "name": "Russian Green 4BO",
@@ -261,7 +261,7 @@
     },
     {
       "rgb": [
-        0.23529411764705882,
+        0.2352941176470588,
         0.27058823529411763,
         0.28627450980392155
       ],
@@ -293,7 +293,7 @@
       "rgb": [
         0.26666666666666666,
         0.2627450980392157,
-        0.24705882352941178
+        0.24705882352941175
       ],
       "id": "71.020",
       "name": "Green Brown",
@@ -306,8 +306,8 @@
     },
     {
       "rgb": [
-        0.22745098039215686,
-        0.24705882352941178,
+        0.2274509803921569,
+        0.24705882352941175,
         0.2549019607843137
       ],
       "id": "71.021",
@@ -321,7 +321,7 @@
     },
     {
       "rgb": [
-        0.24705882352941178,
+        0.24705882352941175,
         0.2823529411764706,
         0.2235294117647059
       ],
@@ -337,7 +337,7 @@
     {
       "rgb": [
         0.4470588235294118,
-        0.44313725490196076,
+        0.4431372549019608,
         0.3803921568627451
       ],
       "id": "71.023",
@@ -367,7 +367,7 @@
     {
       "rgb": [
         0.5254901960784314,
-        0.44313725490196076,
+        0.4431372549019608,
         0.2627450980392157
       ],
       "id": "71.025",
@@ -413,7 +413,7 @@
       "rgb": [
         0.5843137254901961,
         0.5137254901960784,
-        0.40784313725490196
+        0.4078431372549019
       ],
       "id": "71.028",
       "name": "Sand Yellow",
@@ -442,7 +442,7 @@
     {
       "rgb": [
         0.5058823529411764,
-        0.39215686274509803,
+        0.392156862745098,
         0.2784313725490196
       ],
       "id": "71.030",
@@ -457,7 +457,7 @@
     {
       "rgb": [
         0.5411764705882353,
-        0.45098039215686275,
+        0.4509803921568627,
         0.28627450980392155
       ],
       "id": "71.031",
@@ -531,7 +531,7 @@
     },
     {
       "rgb": [
-        0.24313725490196078,
+        0.2431372549019608,
         0.19215686274509805,
         0.1843137254901961
       ],
@@ -546,7 +546,7 @@
     },
     {
       "rgb": [
-        0.49411764705882355,
+        0.4941176470588235,
         0.34509803921568627,
         0.27058823529411763
       ],
@@ -576,9 +576,9 @@
     },
     {
       "rgb": [
-        0.23921568627450981,
+        0.2392156862745098,
         0.20784313725490197,
-        0.19607843137254902
+        0.19607843137254904
       ],
       "id": "71.039",
       "name": "Hull Red",
@@ -591,7 +591,7 @@
     },
     {
       "rgb": [
-        0.23529411764705882,
+        0.2352941176470588,
         0.20784313725490197,
         0.1843137254901961
       ],
@@ -608,7 +608,7 @@
       "rgb": [
         0.25882352941176473,
         0.2196078431372549,
-        0.22745098039215686
+        0.2274509803921569
       ],
       "id": "71.041",
       "name": "Armour Brown",
@@ -621,8 +621,8 @@
     },
     {
       "rgb": [
-        0.24705882352941178,
-        0.23921568627450981,
+        0.24705882352941175,
+        0.2392156862745098,
         0.2549019607843137
       ],
       "id": "71.042",
@@ -638,7 +638,7 @@
       "rgb": [
         0.2980392156862745,
         0.2784313725490196,
-        0.24705882352941178
+        0.24705882352941175
       ],
       "id": "71.043",
       "name": "US Olive Drab",
@@ -651,8 +651,8 @@
     },
     {
       "rgb": [
-        0.42745098039215684,
-        0.45098039215686275,
+        0.4274509803921568,
+        0.4509803921568627,
         0.4
       ],
       "id": "71.044",
@@ -757,8 +757,8 @@
     {
       "rgb": [
         0.396078431372549,
-        0.44313725490196076,
-        0.49019607843137253
+        0.4431372549019608,
+        0.4901960784313726
       ],
       "id": "71.051",
       "name": "Neutral Gray",
@@ -801,7 +801,7 @@
     },
     {
       "rgb": [
-        0.24705882352941178,
+        0.24705882352941175,
         0.27058823529411763,
         0.30980392156862746
       ],
@@ -831,8 +831,8 @@
     },
     {
       "rgb": [
-        0.22745098039215686,
-        0.23921568627450981,
+        0.2274509803921569,
+        0.2392156862745098,
         0.25882352941176473
       ],
       "id": "71.056",
@@ -848,7 +848,7 @@
       "rgb": [
         0.14901960784313725,
         0.15294117647058825,
-        0.16470588235294117
+        0.16470588235294115
       ],
       "id": "71.057",
       "name": "Black",
@@ -966,7 +966,7 @@
     },
     {
       "rgb": [
-        0.49019607843137253,
+        0.4901960784313726,
         0.3568627450980392,
         0.32941176470588235
       ],
@@ -996,8 +996,8 @@
     },
     {
       "rgb": [
-        0.19607843137254902,
-        0.21176470588235294,
+        0.19607843137254904,
+        0.21176470588235297,
         0.2901960784313726
       ],
       "id": "71.071",
@@ -1011,8 +1011,8 @@
     },
     {
       "rgb": [
-        0.43529411764705883,
-        0.45098039215686275,
+        0.4352941176470588,
+        0.4509803921568627,
         0.4980392156862745
       ],
       "id": "71.072",
@@ -1043,7 +1043,7 @@
       "rgb": [
         0.8509803921568627,
         0.7176470588235294,
-        0.44313725490196076
+        0.4431372549019608
       ],
       "id": "71.074",
       "name": "Beige",
@@ -1058,7 +1058,7 @@
       "rgb": [
         0.7019607843137254,
         0.6470588235294118,
-        0.48627450980392156
+        0.4862745098039216
       ],
       "id": "71.075",
       "name": "Ivory",
@@ -1071,12 +1071,822 @@
     },
     {
       "rgb": [
-        0.9725490196078431,
+        0.9725490196078432,
         0.7058823529411765,
         0.4823529411764706
       ],
       "id": "71.076",
       "name": "Skin Tone",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.611764705882353,
+        0.4117647058823529,
+        0.21568627450980393
+      ],
+      "id": "71.077",
+      "name": "Wood",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9019607843137256,
+        0.5843137254901961,
+        0.13333333333333333
+      ],
+      "id": "71.078",
+      "name": "Yellow RLM04",
+      "notes": "FS33538-RLM04-ANA614-BS356",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.615686274509804,
+        0.4509803921568627,
+        0.3686274509803922
+      ],
+      "id": "71.079",
+      "name": "Tan Earth",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.396078431372549,
+        0.2901960784313726,
+        0.2823529411764706
+      ],
+      "id": "71.080",
+      "name": "Rust",
+      "notes": "FS30111-BS435",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4392156862745098,
+        0.4078431372549019,
+        0.2274509803921569
+      ],
+      "id": "71.081",
+      "name": "Ochre",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9490196078431372,
+        0.3058823529411765,
+        0.2901960784313726
+      ],
+      "id": "71.082",
+      "name": "Fluorescent Red",
+      "notes": "FS38903-RAL2005",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "Fluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9215686274509804,
+        0.25098039215686274,
+        0.15294117647058825
+      ],
+      "id": "71.083",
+      "name": "Orange",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4823529411764706,
+        0.19607843137254904,
+        0.1843137254901961
+      ],
+      "id": "71.084",
+      "name": "Fire Red",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6705882352941176,
+        0.1803921568627451,
+        0.19215686274509805
+      ],
+      "id": "71.085",
+      "name": "Ferrari Red",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.9098039215686274,
+        0.2352941176470588,
+        0.14901960784313725
+      ],
+      "id": "71.086",
+      "name": "Light Red",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.17647058823529413,
+        0.3333333333333333,
+        0.4588235294117647
+      ],
+      "id": "71.087",
+      "name": "Steel Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.18823529411764703,
+        0.3058823529411765,
+        0.5137254901960784
+      ],
+      "id": "71.088",
+      "name": "French Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.25882352941176473,
+        0.6627450980392157,
+        0.8627450980392157
+      ],
+      "id": "71.089",
+      "name": "Light Sea Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2,
+        0.2352941176470588,
+        0.35294117647058826
+      ],
+      "id": "71.090",
+      "name": "Deep Sky",
+      "notes": "FS35056",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1843137254901961,
+        0.1843137254901961,
+        0.2274509803921569
+      ],
+      "id": "71.091",
+      "name": "Signal Blue",
+      "notes": "FS35044-RAL5004-ANA605-BS106",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.26666666666666666,
+        0.29411764705882354,
+        0.2431372549019608
+      ],
+      "id": "71.092",
+      "name": "Medium Olive",
+      "notes": "RAL6003",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2784313725490196,
+        0.3176470588235294,
+        0.2823529411764706
+      ],
+      "id": "71.093",
+      "name": "NATO Green",
+      "notes": "FS34094",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2823529411764706,
+        0.34901960784313724,
+        0.2196078431372549
+      ],
+      "id": "71.094",
+      "name": "Green Zinc Chromate",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.39215686274509803,
+        0.5098039215686274,
+        0.3568627450980392
+      ],
+      "id": "71.095",
+      "name": "Pale Green",
+      "notes": "RAL6011",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3686274509803922,
+        0.3568627450980392,
+        0.34901960784313724
+      ],
+      "id": "71.096",
+      "name": "Olive Grey",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3215686274509804,
+        0.35294117647058826,
+        0.41568627450980394
+      ],
+      "id": "71.097",
+      "name": "Medium Gunship Gray",
+      "notes": "FS36118-ANA603",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4588235294117647,
+        0.5647058823529412,
+        0.5647058823529412
+      ],
+      "id": "71.101",
+      "name": "Light Blue RLM78",
+      "notes": "RLM78",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6901960784313725,
+        0.1450980392156863,
+        0.21568627450980393
+      ],
+      "id": "71.102",
+      "name": "Red",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5764705882352941,
+        0.611764705882353,
+        0.5686274509803921
+      ],
+      "id": "71.103",
+      "name": "Grey Blue RLM84",
+      "notes": "FS36559-RLM84",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.30196078431372547,
+        0.33725490196078434,
+        0.27058823529411763
+      ],
+      "id": "71.104",
+      "name": "Green RLM62",
+      "notes": "RLM62",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4823529411764706,
+        0.21176470588235294,
+        0.20392156862745098
+      ],
+      "id": "71.105",
+      "name": "Brown RLM26",
+      "notes": "RLM26",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7215686274509804,
+        0.6823529411764706,
+        0.3686274509803922
+      ],
+      "id": "71.106",
+      "name": "Ivory RLM05",
+      "notes": "RLM05",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7529411764705882,
+        0.611764705882353,
+        0.2823529411764706
+      ],
+      "id": "71.107",
+      "name": "US Interior Yellow",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.41568627450980394,
+        0.5294117647058824,
+        0.6862745098039216
+      ],
+      "id": "71.108",
+      "name": "UK Azure Blue",
+      "notes": "FS35231-ANA609",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.27450980392156865,
+        0.3764705882352941,
+        0.4470588235294118
+      ],
+      "id": "71.109",
+      "name": "Faded P.R.U. Blue",
+      "notes": "FS35189-BS636",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.29411764705882354,
+        0.3254901960784314,
+        0.3764705882352941
+      ],
+      "id": "71.110",
+      "name": "Dark Gray",
+      "notes": "BS640",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.30196078431372547,
+        0.39215686274509803,
+        0.4823529411764706
+      ],
+      "id": "71.111",
+      "name": "USAF Light Blue",
+      "notes": "FS35109",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5686274509803921,
+        0.4823529411764706,
+        0.4549019607843137
+      ],
+      "id": "71.112",
+      "name": "Sand",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3254901960784314,
+        0.4470588235294118,
+        0.5568627450980392
+      ],
+      "id": "71.113",
+      "name": "IDF Blue",
+      "notes": "FS35177",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.37254901960784315,
+        0.47058823529411764,
+        0.5372549019607843
+      ],
+      "id": "71.114",
+      "name": "Medium Gray",
+      "notes": "FS35237",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.23529411764705882,
+        0.2627450980392157,
+        0.30196078431372547
+      ],
+      "id": "71.115",
+      "name": "Blue Grey",
+      "notes": "RAL701",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4235294117647059,
+        0.3764705882352941,
+        0.2823529411764706
+      ],
+      "id": "71.116",
+      "name": "Camouflage Grey Green",
+      "notes": "RAL7008",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6352941176470588,
+        0.5215686274509804,
+        0.396078431372549
+      ],
+      "id": "71.117",
+      "name": "Camouflage Brown",
+      "notes": "RAL8020",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4666666666666667,
+        0.44313725490196076,
+        0.3803921568627451
+      ],
+      "id": "71.118",
+      "name": "Camouflage Grey",
+      "notes": "RAL7027",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8196078431372549,
+        0.8196078431372549,
+        0.7529411764705882
+      ],
+      "id": "71.119",
+      "name": "White Grey",
+      "notes": "RAL9002",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4980392156862745,
+        0.5647058823529412,
+        0.6196078431372549
+      ],
+      "id": "71.120",
+      "name": "Dark Ghost Gray",
+      "notes": "FS36320",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.611764705882353,
+        0.6392156862745098,
+        0.611764705882353
+      ],
+      "id": "71.121",
+      "name": "Light Gull Gray",
+      "notes": "FS36440-ANA620",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6078431372549019,
+        0.5490196078431373,
+        0.45098039215686275
+      ],
+      "id": "71.122",
+      "name": "US Desert Armour 686",
+      "notes": "FS33446",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2784313725490196,
+        0.29411764705882354,
+        0.3176470588235294
+      ],
+      "id": "71.123",
+      "name": "Dark Grey RLM42",
+      "notes": "RLM42",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2549019607843137,
+        0.3137254901960784,
+        0.3137254901960784
+      ],
+      "id": "71.124",
+      "name": "USAF Green",
+      "notes": "FS34092-ANA612",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.48627450980392156,
+        0.403921568627451,
+        0.34509803921568627
+      ],
+      "id": "71.125",
+      "name": "USAF Brown",
+      "notes": "FS30219-ANA628",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.41568627450980394,
+        0.5137254901960784,
+        0.4117647058823529
+      ],
+      "id": "71.126",
+      "name": "IDF/IAF Green",
+      "notes": "FS34227-BS283",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.34901960784313724,
+        0.3686274509803922,
+        0.3764705882352941
+      ],
+      "id": "71.128",
+      "name": "Gray Violet",
+      "notes": "FS36134",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5098039215686274,
+        0.3215686274509804,
+        0.24705882352941178
+      ],
+      "id": "71.129",
+      "name": "Light Rust",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7647058823529411,
+        0.3568627450980392,
+        0.19215686274509805
+      ],
+      "id": "71.130",
+      "name": "Orange Rust",
+      "notes": "RAL2010",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.40784313725490196,
+        0.4,
+        0.36470588235294116
+      ],
+      "id": "71.131",
+      "name": "Concrete",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8666666666666667,
+        0.792156862745098,
+        0.6274509803921569
+      ],
+      "id": "71.132",
+      "name": "Aged White",
+      "notes": "FS37769-RAL1015",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5098039215686274,
+        0.3215686274509804,
+        0.24705882352941178
+      ],
+      "id": "71.133",
+      "name": "Dirt",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.21176470588235294,
+        0.25882352941176473,
+        0.2196078431372549
+      ],
+      "id": "71.134",
+      "name": "IJA Midouri Green",
       "notes": "",
       "finish": "Flat",
       "transparency": "Opaque",
