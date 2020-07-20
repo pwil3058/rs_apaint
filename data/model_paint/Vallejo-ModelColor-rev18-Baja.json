@@ -231,6 +231,21 @@
     },
     {
       "rgb": [
+        0.6980392156862745,
+        0.5803921568627451,
+        0.4470588235294118
+      ],
+      "id": "70.819",
+      "name": "Iraqi Sand",
+      "notes": "FS30475",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.9098039215686274,
         0.9098039215686274,
         0.8392156862745098
@@ -456,6 +471,21 @@
     },
     {
       "rgb": [
+        0.7764705882352941,
+        0.6549019607843137,
+        0.4588235294117647
+      ],
+      "id": "70.847",
+      "name": "Dark Sand",
+      "notes": "RAL1001",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.18823529411764706,
         0.4235294117647059,
         0.18823529411764706
@@ -546,6 +576,81 @@
     },
     {
       "rgb": [
+        0.6627450980392157,
+        0.47843137254901963,
+        0.24705882352941178
+      ],
+      "id": "70.877",
+      "name": "Gold Brown",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4588235294117647,
+        0.3843137254901961,
+        0.24705882352941178
+      ],
+      "id": "70.879",
+      "name": "Green Brown",
+      "notes": "RAL8000",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4627450980392157,
+        0.38823529411764707,
+        0.27058823529411763
+      ],
+      "id": "70.880",
+      "name": "Khaki Grey",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4,
+        0.396078431372549,
+        0.24313725490196078
+      ],
+      "id": "70.881",
+      "name": "Yellow Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5137254901960784,
+        0.4627450980392157,
+        0.2901960784313726
+      ],
+      "id": "70.882",
+      "name": "Middle Stone",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.5764705882352941,
         0.5647058823529412,
         0.49411764705882355
@@ -555,6 +660,21 @@
       "notes": "FS36357",
       "finish": "Flat",
       "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.587682764731945,
+        0.6268567506754585,
+        0.5445976352437297
+      ],
+      "id": "70.885",
+      "name": "Pastel Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
@@ -906,6 +1026,51 @@
     },
     {
       "rgb": [
+        0.7098039215686275,
+        0.5529411764705883,
+        0.38823529411764707
+      ],
+      "id": "70.912",
+      "name": "Tan Yellow",
+      "notes": "FS33245-RAL1011",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7215686274509804,
+        0.5294117647058824,
+        0.2627450980392157
+      ],
+      "id": "70.913",
+      "name": "Yellow Ochre",
+      "notes": "FS33434",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6,
+        0.48627450980392156,
+        0.3215686274509804
+      ],
+      "id": "70.914",
+      "name": "Green Ochre",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.976470588235294,
         0.8980392156862745,
         0.10980392156862744
@@ -1005,6 +1170,21 @@
       "notes": "",
       "finish": "Flat",
       "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5647058823529412,
+        0.45098039215686275,
+        0.2196078431372549
+      ],
+      "id": "70.923",
+      "name": "Japanese Uniform WWII",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
@@ -1559,7 +1739,7 @@
       "name": "Light Sea Grey",
       "notes": "",
       "finish": "Flat",
-      "transparency": "Opaque",
+      "transparency": "Transparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
@@ -1596,6 +1776,51 @@
     },
     {
       "rgb": [
+        0.7568627450980392,
+        0.6509803921568628,
+        0.4392156862745098
+      ],
+      "id": "70.976",
+      "name": "Buff",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6627450980392157,
+        0.5176470588235295,
+        0.35294117647058826
+      ],
+      "id": "70.977",
+      "name": "Desert Yellow",
+      "notes": "FS30257",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5098039215686274,
+        0.49019607843137253,
+        0.27450980392156865
+      ],
+      "id": "70.978",
+      "name": "Dark Yellow",
+      "notes": "RAL7028",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.25098039215686274,
         0.26666666666666666,
         0.2627450980392157
@@ -1620,6 +1845,51 @@
       "notes": "",
       "finish": "Flat",
       "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6470588235294118,
+        0.6627450980392157,
+        0.6235294117647059
+      ],
+      "id": "70.986",
+      "name": "Deck Tan",
+      "notes": "FS36440",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5450980392156862,
+        0.5098039215686274,
+        0.4666666666666667
+      ],
+      "id": "70.987",
+      "name": "Medium Grey",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4588235294117647,
+        0.43529411764705883,
+        0.34509803921568627
+      ],
+      "id": "70.988",
+      "name": "Khaki",
+      "notes": "FS30277",
+      "finish": "Flat",
+      "transparency": "Transparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
