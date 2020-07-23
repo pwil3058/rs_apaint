@@ -231,6 +231,21 @@
     },
     {
       "rgb": [
+        0.5058823529411764,
+        0.2901960784313726,
+        0.23921568627450981
+      ],
+      "id": "70.818",
+      "name": "Red Leathe",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.6980392156862745,
         0.5803921568627451,
         0.4470588235294118
