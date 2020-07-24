@@ -233,7 +233,7 @@
       "rgb": [
         0.5058823529411764,
         0.2901960784313726,
-        0.23921568627450981
+        0.2392156862745098
       ],
       "id": "70.818",
       "name": "Red Leathe",
@@ -313,6 +313,21 @@
       "id": "70.824",
       "name": "Ger. Cam. Orange Ochre",
       "notes": "FS30266-ANA615",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.44313725490196076,
+        0.3607843137254902,
+        0.32941176470588235
+      ],
+      "id": "70.825",
+      "name": "Ger. Cam. Pale Brown",
+      "notes": "",
       "finish": "Flat",
       "transparency": "Opaque",
       "permanence": "Permanent",
@@ -531,6 +546,21 @@
     },
     {
       "rgb": [
+        0.4,
+        0.2823529411764706,
+        0.27450980392156865
+      ],
+      "id": "70.846",
+      "name": "Mahogany Brown",
+      "notes": "RAL8002",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.7764705882352941,
         0.6549019607843137,
         0.4588235294117647
@@ -642,6 +672,21 @@
       ],
       "id": "70.860",
       "name": "Medium Flesh Tone",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.42745098039215684,
+        0.3568627450980392,
+        0.28627450980392155
+      ],
+      "id": "70.873",
+      "name": "US Field Drab",
       "notes": "",
       "finish": "Flat",
       "transparency": "Opaque",
@@ -1281,6 +1326,21 @@
     },
     {
       "rgb": [
+        0.38823529411764707,
+        0.3215686274509804,
+        0.23529411764705882
+      ],
+      "id": "70.921",
+      "name": "English Uniform",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.3058823529411765,
         0.396078431372549,
         0.27450980392156865
@@ -1408,6 +1468,21 @@
       "id": "70.930",
       "name": "Dark Blue",
       "notes": "FS35095",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.396078431372549,
+        0.2901960784313726,
+        0.28627450980392155
+      ],
+      "id": "70.940",
+      "name": "Saddle Brown",
+      "notes": "FS30111",
       "finish": "Flat",
       "transparency": "Opaque",
       "permanence": "Permanent",
@@ -1988,11 +2063,56 @@
       "rgb": [
         0.6980392156862745,
         0.3764705882352941,
-        0.21176470588235294
+        0.21176470588235297
       ],
       "id": "70.981",
       "name": "Orange Brown",
       "notes": "RAL8023",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.47843137254901963,
+        0.16470588235294117,
+        0.1803921568627451
+      ],
+      "id": "70.982",
+      "name": "Cavalry Brown",
+      "notes": "FS30109",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.396078431372549,
+        0.3058823529411765,
+        0.23137254901960785
+      ],
+      "id": "70.983",
+      "name": "Flat Earth",
+      "notes": "FS30145",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3254901960784314,
+        0.23529411764705882,
+        0.2196078431372549
+      ],
+      "id": "70.984",
+      "name": "Flat Brown",
+      "notes": "FS30108-RAL8011",
       "finish": "Flat",
       "transparency": "Opaque",
       "permanence": "Permanent",
