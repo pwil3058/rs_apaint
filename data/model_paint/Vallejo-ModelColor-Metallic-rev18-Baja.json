@@ -1,0 +1,158 @@
+{
+  "series_id": {
+    "proprietor": "Vallejo",
+    "series_name": "Model Color (Metallic) Rev18-Baja"
+  },
+  "paint_list": [
+    {
+      "rgb": [
+        0.18823529411764706,
+        0.27450980392156865,
+        0.3607843137254902
+      ],
+      "id": "70.800",
+      "name": "Gunmetal Blue",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.5333333333333333,
+        0.39215686274509803,
+        0.17254901960784313
+      ],
+      "id": "70.801",
+      "name": "Brass",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.3411764705882353,
+        0.3764705882352941,
+        0.37254901960784315
+      ],
+      "id": "70.863",
+      "name": "Gunmetal Grey",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.48627450980392156,
+        0.5098039215686274,
+        0.5019607843137255
+      ],
+      "id": "70.864",
+      "name": "Natural Steel",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.403921568627451,
+        0.4196078431372549,
+        0.4549019607843137
+      ],
+      "id": "70.865",
+      "name": "Oily Steel",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.5490196078431373,
+        0.48627450980392156,
+        0.26666666666666666
+      ],
+      "id": "70.878",
+      "name": "Old Gold",
+      "notes": "FS27043",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.7607843137254902,
+        0.6588235294117647,
+        0.2784313725490196
+      ],
+      "id": "70.996",
+      "name": "Gold",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.7686274509803922,
+        0.8156862745098039,
+        0.8
+      ],
+      "id": "70.997",
+      "name": "Silver",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.403921568627451,
+        0.39215686274509803,
+        0.20392156862745098
+      ],
+      "id": "70.998",
+      "name": "Bronze",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    },
+    {
+      "rgb": [
+        0.5529411764705883,
+        0.3058823529411765,
+        0.20784313725490197
+      ],
+      "id": "70.999",
+      "name": "Copper",
+      "notes": "",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "Metallic"
+    }
+  ]
+}
