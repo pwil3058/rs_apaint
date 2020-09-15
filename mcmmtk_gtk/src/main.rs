@@ -56,7 +56,7 @@ mod icon {
     ];
 
     pub fn mcmmtkrs_pixbuf(size: i32) -> Option<gdk_pixbuf::Pixbuf> {
-        gdk_pixbuf::Pixbuf::new_from_xpm_data(MCMMTKRS_XPM).scale_simple(
+        gdk_pixbuf::Pixbuf::from_xpm_data(MCMMTKRS_XPM).scale_simple(
             size,
             size,
             gdk_pixbuf::InterpType::Tiles,
@@ -65,7 +65,7 @@ mod icon {
 
     pub fn _mcmmtkrs_image(size: i32) -> Option<gtk::Image> {
         if let Some(pixbuf) = mcmmtkrs_pixbuf(size) {
-            Some(gtk::Image::new_from_pixbuf(Some(&pixbuf)))
+            Some(gtk::Image::from_pixbuf(Some(&pixbuf)))
         } else {
             None
         }

@@ -186,7 +186,7 @@ impl BasicPaintSpecEditor {
                 masked_condns.condns += Self::SAV_ID_READY;
             };
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
-                if spec.id != entry.get_text().unwrap() {
+                if spec.id != entry.get_text() {
                     masked_condns.condns += Self::SAV_ID_CHANGED;
                 }
             }
@@ -205,7 +205,7 @@ impl BasicPaintSpecEditor {
                 masked_condns.condns += Self::SAV_NAME_READY;
             };
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
-                if spec.name != entry.get_text().unwrap() {
+                if spec.name != entry.get_text() {
                     masked_condns.condns += Self::SAV_NAME_CHANGED;
                 }
             }
@@ -224,7 +224,7 @@ impl BasicPaintSpecEditor {
                 masked_condns.condns += Self::SAV_NOTES_READY;
             };
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
-                if spec.notes != entry.get_text().unwrap() {
+                if spec.notes != entry.get_text() {
                     masked_condns.condns += Self::SAV_NOTES_CHANGED;
                 }
             }
@@ -352,18 +352,11 @@ impl BasicPaintSpecEditor {
     }
 
     fn spec_from_entries(&self) -> BasicPaintSpec<f64> {
-        let id = self
-            .id_entry
-            .get_text()
-            .expect("shouldn't be called otherwise");
+        let id = self.id_entry.get_text();
         let rgb = self.colour_editor.rgb();
         let mut paint_spec = BasicPaintSpec::new(rgb, &id);
-        if let Some(name) = self.name_entry.get_text() {
-            paint_spec.name = name.to_string();
-        }
-        if let Some(notes) = self.notes_entry.get_text() {
-            paint_spec.notes = notes.to_string();
-        }
+        paint_spec.name = self.name_entry.get_text().to_string();
+        paint_spec.notes = self.notes_entry.get_text().to_string();
         paint_spec.finish = self.finish_entry.value();
         paint_spec.permanence = self.permanence_entry.value();
         paint_spec.transparency = self.transparency_entry.value();

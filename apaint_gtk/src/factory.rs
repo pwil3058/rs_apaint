@@ -329,20 +329,18 @@ impl BasicPaintFactoryBuilder {
 
         let bpf_c = Rc::clone(&bpf);
         bpf.proprietor_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                bpf_c.paint_series.borrow_mut().set_proprietor(&text);
-                bpf_c.update_saveability();
-                bpf_c.update_series_needs_saving();
-            }
+            let text = entry.get_text();
+            bpf_c.paint_series.borrow_mut().set_proprietor(&text);
+            bpf_c.update_saveability();
+            bpf_c.update_series_needs_saving();
         });
 
         let bpf_c = Rc::clone(&bpf);
         bpf.series_name_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                bpf_c.paint_series.borrow_mut().set_series_name(&text);
-                bpf_c.update_saveability();
-                bpf_c.update_series_needs_saving();
-            }
+            let text = entry.get_text();
+            bpf_c.paint_series.borrow_mut().set_series_name(&text);
+            bpf_c.update_saveability();
+            bpf_c.update_series_needs_saving();
         });
 
         let bpf_c = Rc::clone(&bpf);

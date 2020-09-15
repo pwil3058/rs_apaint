@@ -229,10 +229,10 @@ impl TargetedPaintMixer {
             let rgb = tpe.rgb();
             let name = tpe.name();
             let notes = tpe.notes();
-            dialog.destroy();
+            unsafe { dialog.destroy() };
             self.start_new_mixture(&name, &notes, &rgb);
         } else {
-            dialog.destroy();
+            unsafe { dialog.destroy() };
         }
     }
 
@@ -321,20 +321,8 @@ impl TargetedPaintMixer {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
         let mixed_paint = MixtureBuilder::<f64>::new(&mix_id)
-            .name(
-                &self
-                    .mix_entry
-                    .name_entry
-                    .get_text()
-                    .unwrap_or_else(|| "".into()),
-            )
-            .notes(
-                &self
-                    .mix_entry
-                    .notes_entry
-                    .get_text()
-                    .unwrap_or_else(|| "".into()),
-            )
+            .name(&self.mix_entry.name_entry.get_text())
+            .notes(&self.mix_entry.notes_entry.get_text())
             .targeted_rgb(
                 &self
                     .mix_entry
@@ -598,11 +586,10 @@ impl TargetedPaintMixerBuilder {
 
         let tpm_c = Rc::clone(&tpm);
         tpm.notes_entry.connect_changed(move |entry| {
-            if let Some(text) = entry.get_text() {
-                tpm_c.mixing_session.borrow_mut().set_notes(&text);
-                tpm_c.update_session_needs_saving();
-                tpm_c.update_session_is_saveable();
-            }
+            let text = entry.get_text();
+            tpm_c.mixing_session.borrow_mut().set_notes(&text);
+            tpm_c.update_session_needs_saving();
+            tpm_c.update_session_is_saveable();
         });
 
         let tpm_c = Rc::clone(&tpm);
@@ -701,17 +688,11 @@ impl TargetPaintEntry {
     }
 
     fn name(&self) -> String {
-        self.name_entry
-            .get_text()
-            .unwrap_or_else(|| "".into())
-            .to_string()
+        self.name_entry.get_text().to_string()
     }
 
     fn notes(&self) -> String {
-        self.notes_entry
-            .get_text()
-            .unwrap_or_else(|| "".into())
-            .to_string()
+        self.notes_entry.get_text().to_string()
     }
 
     fn rgb(&self) -> RGB {

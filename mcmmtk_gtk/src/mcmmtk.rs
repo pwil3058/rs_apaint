@@ -71,17 +71,17 @@ impl ModellersColourMixerMatcherTK {
         let seperator = gtk::SeparatorBuilder::new().build();
         hbox.pack_start(&seperator, false, false, 0);
 
-        let button = gtk::Button::new_with_label("PDF Viewer");
+        let button = gtk::Button::with_label("PDF Viewer");
         hbox.pack_start(&button, false, false, 0);
         let mcmmtk_c = Rc::clone(&mcmmtk);
         button.connect_clicked(move |_| mcmmtk_c.launch_pdf_viewer());
 
-        let button = gtk::Button::new_with_label("Image Viewer");
+        let button = gtk::Button::with_label("Image Viewer");
         hbox.pack_start(&button, false, false, 0);
         button.connect_clicked(move |_| launch_image_viewer());
 
         if sample::screen_sampling_available() {
-            let btn = gtk::Button::new_with_label("Take Sample");
+            let btn = gtk::Button::with_label("Take Sample");
             btn.set_tooltip_text(Some("Take a sample of a portion of the screen"));
             let mcmmtk_c = Rc::clone(&mcmmtk);
             btn.connect_clicked(move |_| {

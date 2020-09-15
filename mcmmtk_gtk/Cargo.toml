@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gdk-pixbuf = "0.8.0"
-gtk = "0.8.0"
+gdk-pixbuf = "0.9.0"
+gtk = "0.9.0"
 
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
