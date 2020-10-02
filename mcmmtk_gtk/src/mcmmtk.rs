@@ -2,10 +2,12 @@
 
 use std::{process::Command, rc::Rc};
 
-use gtk::prelude::*;
-
 use pw_gix::{
-    gdk_pixbufx::viewer::PixbufViewBuilder, gtkx::window::RememberGeometry, sample, wrapper::*,
+    gdk_pixbufx::viewer::PixbufViewBuilder,
+    gtk::{self, prelude::*},
+    gtkx::window::RememberGeometry,
+    sample,
+    wrapper::*,
 };
 
 use apaint_gtk::{

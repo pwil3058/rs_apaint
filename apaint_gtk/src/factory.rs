@@ -5,9 +5,8 @@ use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
 
-use gtk::prelude::*;
-
 use pw_gix::{
+    gtk::{self, prelude::*},
     gtkx::{menu_ng::MenuItemSpec, paned::RememberPosition},
     sav_state::SAV_HOVER_OK,
     wrapper::*,

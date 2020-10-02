@@ -2,17 +2,16 @@
 
 use std::{collections::BTreeMap, rc::Rc};
 
-use gtk::prelude::*;
+use pw_gix::{
+    gtk::{self, prelude::*},
+    gtkx::dialog::dialog_user::TopGtkWindow,
+    sav_state::{ChangedCondnsNotifier, ConditionalWidgetsBuilder},
+    wrapper::*,
+};
 
 use colour_math::{ColourInterface, ScalarAttribute};
 use colour_math_gtk::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
-};
-
-use pw_gix::{
-    gtkx::dialog::dialog_user::TopGtkWindow,
-    sav_state::{ChangedCondnsNotifier, ConditionalWidgetsBuilder},
-    wrapper::*,
 };
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};

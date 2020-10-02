@@ -2,10 +2,10 @@
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use gtk::prelude::*;
-
 use pw_gix::{
+    gdk, glib,
     glibx::*,
+    gtk::{self, prelude::*},
     gtkx::{
         list_store::{ListRowOps, TreeModelRowOps},
         menu_ng::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},

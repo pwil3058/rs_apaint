@@ -2,11 +2,11 @@
 
 use std::rc::Rc;
 
-use gtk;
-use gtk::{BoxExt, ContainerExt, WidgetExt};
-
-use pw_gix::recollections;
-use pw_gix::wrapper::*;
+use pw_gix::{
+    gtk::{self, BoxExt, ContainerExt, WidgetExt},
+    recollections,
+    wrapper::*,
+};
 
 use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 

@@ -3,9 +3,10 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use gtk::{prelude::*, BoxExt, WidgetExt};
-
-use pw_gix::wrapper::*;
+use pw_gix::{
+    gtk::{self, prelude::*, BoxExt, WidgetExt},
+    wrapper::*,
+};
 
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},

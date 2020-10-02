@@ -3,11 +3,11 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use gtk::prelude::*;
-use pw_gix::sav_state::{
-    ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN,
+use pw_gix::{
+    gtk::{self, prelude::*},
+    sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
+    wrapper::*,
 };
-use pw_gix::wrapper::*;
 
 use colour_math::ScalarAttribute;
 

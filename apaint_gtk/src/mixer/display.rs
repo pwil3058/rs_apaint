@@ -2,14 +2,17 @@
 
 use std::{collections::BTreeMap, rc::Rc};
 
-use gtk::prelude::*;
+use pw_gix::{
+    glib,
+    gtk::{self, prelude::*},
+    gtkx::dialog::dialog_user::TopGtkWindow,
+    wrapper::*,
+};
 
 use colour_math::{ColourInterface, ScalarAttribute};
 use colour_math_gtk::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
-
-use pw_gix::{gtkx::dialog::dialog_user::TopGtkWindow, wrapper::*};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 

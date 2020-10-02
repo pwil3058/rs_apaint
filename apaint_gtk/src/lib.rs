@@ -13,13 +13,16 @@ pub mod angles {
 pub mod characteristics {
     use std::{cell::RefCell, rc::Rc};
 
-    use pw_gix::wrapper::*;
+    use pw_gix::{
+        gtk,
+        gtk::{ComboBoxExt, ComboBoxTextExt},
+        wrapper::*,
+    };
 
     pub use apaint::characteristics::{
         CharacteristicIfce, CharacteristicType, Finish, Fluorescence, Metallicness, Permanence,
         Transparency,
     };
-    use gtk::{ComboBoxExt, ComboBoxTextExt};
 
     type ChangeCallback<T> = Box<dyn Fn(&T)>;
 
@@ -99,8 +102,8 @@ pub mod colour {
     };
     pub use colour_math_gtk::coloured::*;
 
-    use gdk;
     pub use normalised_angles;
+    use pw_gix::gdk;
 
     pub type Hue = colour_math::hue::Hue<f64>;
     pub type RGB = colour_math::rgb::RGB<f64>;
@@ -128,11 +131,12 @@ pub mod colour {
 pub mod window {
     use std::{cell::Cell, rc::Rc};
 
-    use gtk::prelude::*;
-
-    use pw_gix::wrapper::*;
-
-    use pw_gix::gtkx::window::RememberGeometry;
+    use pw_gix::{
+        gdk, gdk_pixbuf,
+        gtk::{self, prelude::*},
+        gtkx::window::RememberGeometry,
+        wrapper::*,
+    };
 
     #[derive(PWO)]
     pub struct PersistentWindowButton {

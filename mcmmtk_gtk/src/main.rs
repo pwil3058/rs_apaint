@@ -2,9 +2,12 @@
 
 use std::rc::Rc;
 
-use gtk::prelude::*;
-
-use pw_gix::{gtkx::window::RememberGeometry, recollections, wrapper::*};
+use pw_gix::{
+    gtk::{self, prelude::*},
+    gtkx::window::RememberGeometry,
+    recollections,
+    wrapper::*,
+};
 
 mod config;
 mod mcmmtk;
@@ -36,8 +39,7 @@ fn main() {
 }
 
 mod icon {
-    use gdk_pixbuf;
-    use gtk;
+    use pw_gix::{gdk_pixbuf, gtk};
 
     // XPM
     static MCMMTKRS_XPM: &[&str] = &[

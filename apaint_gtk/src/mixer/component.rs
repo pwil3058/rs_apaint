@@ -7,9 +7,12 @@ use std::{
 
 use gcd::Gcd;
 
-use gtk::{prelude::*, ContainerExt, WidgetExt};
-
-use pw_gix::{gtkx::menu::WrappedMenu, wrapper::*};
+use pw_gix::{
+    gdk,
+    gtk::{self, prelude::*, ContainerExt, WidgetExt},
+    gtkx::menu::WrappedMenu,
+    wrapper::*,
+};
 
 use apaint::{LabelText, TooltipText};
 

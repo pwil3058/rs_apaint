@@ -8,9 +8,8 @@ use std::{
     rc::Rc,
 };
 
-use gtk::prelude::*;
-
 use pw_gix::{
+    gtk::{self, prelude::*},
     gtkx::{
         dialog::dialog_user::TopGtkWindow,
         menu_ng::MenuItemSpec,

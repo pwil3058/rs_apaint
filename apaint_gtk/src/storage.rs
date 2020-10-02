@@ -6,9 +6,8 @@ use std::{
     rc::Rc,
 };
 
-use gtk::prelude::*;
-
 use pw_gix::{
+    gtk::{self, prelude::*},
     recollections::{recall, remember},
     sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,

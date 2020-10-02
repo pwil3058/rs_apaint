@@ -7,11 +7,9 @@ use std::{
     rc::Rc,
 };
 
-use gtk::prelude::*;
-
-use cairo;
-
 use pw_gix::{
+    cairo,
+    gtk::{self, prelude::*},
     gtkx::paned::RememberPosition,
     sav_state::{
         ChangedCondnsNotifier, ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled,
