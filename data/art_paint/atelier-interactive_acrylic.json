@@ -1,7 +1,7 @@
 {
   "series_id": {
     "proprietor": "Atelier",
-    "series_name": "Interactive Acrylic"
+    "series_name": "Interactive Acrylic <http://atelieracrylic.com/color-charts/atelier-interactive-color-chart/>"
   },
   "paint_list": [
     {
@@ -30,6 +30,36 @@
       "notes": "PW 6, PY 74LF, Lightfastness: 1",
       "finish": "Gloss",
       "transparency": "SemiTransparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7838267543859649,
+        0.1563531991744066,
+        0.36412861197110424
+      ],
+      "id": "Brilliant Magenta",
+      "name": "Brilliant Magenta",
+      "notes": "PR 122, PW 6, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4533330342052916,
+        0.2335472098831905,
+        0.6084698105023856
+      ],
+      "id": "Brilliant Violet",
+      "name": "Brilliant Violet",
+      "notes": "PW 6, PV 23RS, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Opaque",
       "permanence": "ExtremelyPermanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
@@ -141,6 +171,66 @@
     },
     {
       "rgb": [
+        0.04447779111644658,
+        0.4436624649859944,
+        0.7293267306922769
+      ],
+      "id": "Cerulean Blue",
+      "name": "Cerulean Blue",
+      "notes": "PB 28, PG 50, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.0956275558351683,
+        0.371462724127084,
+        0.6017552689525008
+      ],
+      "id": "Cerulean Blue Hue",
+      "name": "Cerulean Blue Hue",
+      "notes": "PB 29, PB 15.3, PW 6, PG 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2885413424629111,
+        0.2952484697582737,
+        0.512669882767922
+      ],
+      "id": "Cobalt Blue",
+      "name": "Cobalt Blue",
+      "notes": "PB 28, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.26823661578256724,
+        0.24395763119884448,
+        0.5593654120290389
+      ],
+      "id": "Cobalt Blue Hue",
+      "name": "Cobalt Blue Hue",
+      "notes": "PB 29, PW 6, PB 15.3, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiOpaque",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.5918759512937595,
         0.10928350792371744,
         0.02602851642940281
@@ -151,6 +241,36 @@
       "finish": "Gloss",
       "transparency": "SemiTransparent",
       "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.18408190862551918,
+        0.15236646382691008,
+        0.20237612286293827
+      ],
+      "id": "Dioxazine Purple",
+      "name": "Dioxazine Purple",
+      "notes": "PV 23RS, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.09264907609134189,
+        0.03769547325102881,
+        0.2476236585169047
+      ],
+      "id": "French Ultramarine Blue",
+      "name": "French Ultramarine Blue",
+      "notes": "PB 29, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "ModeratelyDurable",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
     },
@@ -231,6 +351,21 @@
     },
     {
       "rgb": [
+        0.6883778372614306,
+        0.1237633566190072,
+        0.08284259319710126
+      ],
+      "id": "Napthol Crimson",
+      "name": "Napthol Crimson",
+      "notes": "PR 170, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.8891494689207375,
         0.14149817433125833,
         0.03168781868777043
@@ -255,6 +390,171 @@
       "notes": "PY 65, PO 5, PO 20, Lightfastness: 2",
       "finish": "Gloss",
       "transparency": "SemiTransparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.41904672838928897,
+        0.3600704510739113,
+        0.7714725105728566
+      ],
+      "id": "Pacific Blue",
+      "name": "Pacific Blue",
+      "notes": "PW 6, PV 23RS, PB 15.3, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.14503579209461562,
+        0.16072206660441954,
+        0.20385932150638034
+      ],
+      "id": "Paynes Grey",
+      "name": "Paynes Grey",
+      "notes": "PB 29, PBk 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.49214460784313724,
+        0.20875408496732026,
+        0.28162173202614377
+      ],
+      "id": "Permanent Alizarine",
+      "name": "Permanent Alizarine",
+      "notes": "PR 175, PR 122, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3403828197945845,
+        0.001979750233426704,
+        0.000987686741363212
+      ],
+      "id": "Permanent Brown Madder",
+      "name": "Permanent Brown Madder",
+      "notes": "PR 175, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.09801481147748711,
+        0.10851519161997016,
+        0.18496982325721098
+      ],
+      "id": "Prussian Blue Hue",
+      "name": "Prussian Blue Hue",
+      "notes": "PB 15, PR 175, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.003781318082788671,
+        0.04036492374727669,
+        0.23877314814814815
+      ],
+      "id": "Pthalo Blue",
+      "name": "Pthalo Blue",
+      "notes": "PB 15.3, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.02745878118226546,
+        0.10502315163064373,
+        0.10165209590514239
+      ],
+      "id": "Pthalo Blue (Red Shade)",
+      "name": "Pthalo Blue (Red Shade)",
+      "notes": "PB 15, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.19603596717517544,
+        0.1810213347204971,
+        0.17799859160412043
+      ],
+      "id": "Purple",
+      "name": "Purple",
+      "notes": "PR 48.4, PB 15.3, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.8079820261437909,
+        0.06470179738562092,
+        0.032476851851851854
+      ],
+      "id": "Pyrrole Red",
+      "name": "Pyrrole Red",
+      "notes": "PR 254, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiOpaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4392644564892096,
+        0.14298983584389097,
+        0.129033795541959
+      ],
+      "id": "Quinacridone Magenta",
+      "name": "Quinacridone Magenta",
+      "notes": "PR 122, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.40464001533889365,
+        0.15395625031721058,
+        0.17959024852391345
+      ],
+      "id": "Quinacridone Red Violet",
+      "name": "Quinacridone Red Violet",
+      "notes": "PV 19, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
       "permanence": "ExtremelyPermanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
