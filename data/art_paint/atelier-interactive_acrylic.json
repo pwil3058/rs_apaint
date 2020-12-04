@@ -111,6 +111,21 @@
     },
     {
       "rgb": [
+        0.8376810383244206,
+        0.5393173462566845,
+        0.16707748440285206
+      ],
+      "id": "0131",
+      "name": "Yellow Ochre",
+      "notes": "PY 42, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiOpaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.9794161689833166,
         0.8100088672785676,
         0.4255236685869317
@@ -133,6 +148,21 @@
       "id": "0137",
       "name": "Indian Yellow",
       "notes": "PY 74LF, PR 101, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.6881976671265521,
+        0.3542177069832908,
+        0.19601990049751244
+      ],
+      "id": "0154",
+      "name": "Raw Sienna Dark",
+      "notes": "PBr 7, Lightfastness: 1",
       "finish": "Gloss",
       "transparency": "SemiTransparent",
       "permanence": "Permanent",
@@ -321,6 +351,126 @@
     },
     {
       "rgb": [
+        0.02397867885018085,
+        0.03889459991116188,
+        0.07292087061361761
+      ],
+      "id": "0315",
+      "name": "Pthalo Turquoise",
+      "notes": "PB 15.3, PG 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.002849764614470497,
+        0.6960292974998857,
+        0.7085378673613968
+      ],
+      "id": "0326",
+      "name": "Cobalt Turquoise Light",
+      "notes": "PG 50, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.00184568586344391,
+        0.6292432276893987,
+        0.5625847823406092
+      ],
+      "id": "0327",
+      "name": "Cobalt Turquoise Light Hue",
+      "notes": "PW 6, PG 7, PB 15.3, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.09867599412549469,
+        0.49950223657215886,
+        0.23035011603269095
+      ],
+      "id": "0356",
+      "name": "Cobalt Green Hue",
+      "notes": "PW 6, PY 74, PG 7, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "SemiOpaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.24855245584002708,
+        0.37724185932767734,
+        0.2650313211309468
+      ],
+      "id": "0357",
+      "name": "Terre Verte",
+      "notes": "PR 7, PB 15.3, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.20890943149447455,
+        0.7295181724470455,
+        0.1867278511178355
+      ],
+      "id": "0361",
+      "name": "Permanent Green Light",
+      "notes": "PY 74LF, PG 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.003445368515483249,
+        0.2965876822005032,
+        0.01291675941102275
+      ],
+      "id": "0364",
+      "name": "Permanent Sap Green",
+      "notes": "PY 74, PB 15.3, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3205760205721633,
+        0.3060803600128576,
+        0.13406878817100612
+      ],
+      "id": "0385",
+      "name": "Green Gold",
+      "notes": "PY 74, PG 7, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.5322089244181569,
         0.270926071397399,
         0.20628539449296343
@@ -361,6 +511,21 @@
       "finish": "Gloss",
       "transparency": "Transparent",
       "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4336276349188831,
+        0.17222344847882867,
+        0.14881911488798147
+      ],
+      "id": "0504",
+      "name": "Mars Violet",
+      "notes": "PR 101, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
     },
@@ -531,6 +696,21 @@
     },
     {
       "rgb": [
+        0.527032679738562,
+        0.15470519435844513,
+        0.12387340901272789
+      ],
+      "id": "1817",
+      "name": "Indian Red Oxide",
+      "notes": "PR 101, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.19603596717517544,
         0.1810213347204971,
         0.17799859160412043
@@ -631,6 +811,66 @@
       "finish": "Gloss",
       "transparency": "Opaque",
       "permanence": "ExtremelyPermanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.010851540616246498,
+        0.18219421101774044,
+        0.21501587301587302
+      ],
+      "id": "3292",
+      "name": "Pthalo Green",
+      "notes": "PG 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.10111149590197728,
+        0.3168637345602665,
+        0.16273850162436715
+      ],
+      "id": "5467",
+      "name": "Forest Green",
+      "notes": "PY 74, PB 15.3, PR 101, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2721764705882353,
+        0.27714950980392156,
+        0.18699509803921568
+      ],
+      "id": "5815",
+      "name": "Olive Green",
+      "notes": "PY 74, PBk 7, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.22576431888544893,
+        0.4483079635362917,
+        0.1669407894736842
+      ],
+      "id": "7483",
+      "name": "Chromium Green Oxide",
+      "notes": "PG 17, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
     },
