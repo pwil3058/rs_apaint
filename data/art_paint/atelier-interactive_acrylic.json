@@ -6,6 +6,51 @@
   "paint_list": [
     {
       "rgb": [
+        0.0810507792860734,
+        0.10969163733869616,
+        0.14602312719959779
+      ],
+      "id": "0000",
+      "name": "Carbon Black",
+      "notes": "PBk 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.21619087474148335,
+        0.15410078661839002,
+        0.1185179794157069
+      ],
+      "id": "0004",
+      "name": "Mars Black",
+      "notes": "PBk 11, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2921072023580674,
+        0.19419934640522876,
+        0.12098231449442522
+      ],
+      "id": "0005",
+      "name": "Burnt Umber",
+      "notes": "PBr 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
         0.9972553189271456,
         0.8585326953748006,
         0.042559756491645034
@@ -396,7 +441,7 @@
     },
     {
       "rgb": [
-        0.09867599412549469,
+        0.09867599412549467,
         0.49950223657215886,
         0.23035011603269095
       ],
@@ -465,6 +510,66 @@
       "notes": "PY 74, PG 7, Lightfastness: 2",
       "finish": "Gloss",
       "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.18731861717433304,
+        0.12964607226538413,
+        0.11872542168509612
+      ],
+      "id": "0412",
+      "name": "Red Black",
+      "notes": "PR 112, PBk 7, Lightfastness: 2",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.23513326686606847,
+        0.16409970089730808,
+        0.112259222333001
+      ],
+      "id": "0440",
+      "name": "Brown Black",
+      "notes": "PR 101, PBk 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3078400972792218,
+        0.1862714698282414,
+        0.10391852865177079
+      ],
+      "id": "0462",
+      "name": "Raw Umber",
+      "notes": "PBr 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.5314441424856082,
+        0.3165936121095234,
+        0.17944536980216827
+      ],
+      "id": "0463",
+      "name": "Raw Umber Yellowish",
+      "notes": "PBr 7, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
@@ -698,7 +803,7 @@
       "rgb": [
         0.527032679738562,
         0.15470519435844513,
-        0.12387340901272789
+        0.12387340901272788
       ],
       "id": "1817",
       "name": "Indian Red Oxide",
@@ -818,7 +923,7 @@
       "rgb": [
         0.010851540616246498,
         0.18219421101774044,
-        0.21501587301587302
+        0.21501587301587305
       ],
       "id": "3292",
       "name": "Pthalo Green",
@@ -840,6 +945,21 @@
       "notes": "PY 74, PB 15.3, PR 101, Lightfastness: 2",
       "finish": "Gloss",
       "transparency": "Transparent",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.10479259894734401,
+        0.14016245836135005,
+        0.1487753792884911
+      ],
+      "id": "5605",
+      "name": "Blue Black (Indigo)",
+      "notes": "PBK 7, PB 15.3, Lightfastness: 1",
+      "finish": "Gloss",
+      "transparency": "SemiTransparent",
       "permanence": "Permanent",
       "fluorescence": "NonFluorescent",
       "metallicness": "NonMetallic"
