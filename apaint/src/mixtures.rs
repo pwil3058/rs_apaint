@@ -431,10 +431,10 @@ impl<F: ColourComponent> ColourInterface<F> for Paint<F> {
         }
     }
 
-    fn rgba(&self, alpha: F) -> [F; 4] {
+    fn rgba(&self) -> RGBA<F> {
         match self {
-            Paint::Series(paint) => paint.rgba(alpha),
-            Paint::Mixed(paint) => paint.rgba(alpha),
+            Paint::Series(paint) => paint.rgba,
+            Paint::Mixed(paint) => paint.rgba,
         }
     }
 
