@@ -205,8 +205,8 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
                 self.#colour.rgb()
             }
 
-            fn rgba(&self, alpha: #component) -> [#component; 4] {
-                self.#colour.rgba(alpha)
+            fn rgba(&self) -> colour_math::RGBA<#component> {
+                self.#colour.rgba()
             }
 
             fn hue(&self) -> Option<colour_math::Hue<#component>> {
