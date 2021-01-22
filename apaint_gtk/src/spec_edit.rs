@@ -11,13 +11,14 @@ use pw_gix::{
 
 use colour_math::ScalarAttribute;
 
+use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
+
 use apaint::series::BasicPaintSpec;
 
 use crate::characteristics::{
     CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
     TransparencyEntry,
 };
-use crate::colour_edit::ColourEditor;
 
 type AddCallback = Box<dyn Fn(&BasicPaintSpec<f64>)>;
 type AcceptCallback = Box<dyn Fn(&str, &BasicPaintSpec<f64>)>;
@@ -132,10 +133,7 @@ impl BasicPaintSpecEditor {
         let add_btn = gtk::ButtonBuilder::new().label("Add").build();
         let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
         let reset_btn = gtk::ButtonBuilder::new().label("Reset").build();
-        let colour_editor = ColourEditor::new(
-            attributes,
-            &[add_btn.clone(), accept_btn.clone(), reset_btn.clone()],
-        );
+        let colour_editor = ColourEditorBuilder::new().attributes(attributes).extra_buttons(&[add_btn.clone(), accept_btn.clone(), reset_btn.clone()]).build();
         vbox.pack_start(&colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
@@ -240,7 +238,7 @@ impl BasicPaintSpecEditor {
                 mask: Self::SAV_RGB_CHANGED,
             };
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
-                if spec.rgb != rgb {
+                if &spec.rgb != rgb {
                     masked_condns.condns += Self::SAV_RGB_CHANGED;
                 }
             }
@@ -448,7 +446,7 @@ impl BasicPaintSpecEditor {
         self.id_entry.set_text(&spec.id);
         self.name_entry.set_text(&spec.name);
         self.notes_entry.set_text(&spec.notes);
-        self.colour_editor.set_rgb(spec.rgb);
+        self.colour_editor.set_rgb(&spec.rgb);
         self.finish_entry.set_value(Some(spec.finish));
         self.permanence_entry.set_value(Some(spec.permanence));
         self.transparency_entry.set_value(Some(spec.transparency));

@@ -247,7 +247,6 @@ pub mod window {
     }
 }
 
-pub mod colour_edit;
 pub mod factory;
 pub mod icon_image;
 pub mod list;

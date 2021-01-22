@@ -24,6 +24,7 @@ use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     colour_math_cairo::CairoSetColour,
     hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
+    colour_edit::{ColourEditor, ColourEditorBuilder}
 };
 
 use apaint::{
@@ -36,7 +37,6 @@ use apaint::{
 
 use crate::{
     colour::{RGBConstants, RGB},
-    colour_edit::ColourEditor,
     icon_image::{paint_standard_image, series_paint_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::{
@@ -666,7 +666,7 @@ impl TargetPaintEntry {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let name_entry = gtk::EntryBuilder::new().hexpand(true).build();
         let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
-        let colour_editor = ColourEditor::new(attributes, &[]);
+        let colour_editor = ColourEditorBuilder::new().attributes(attributes).build();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&gtk::Label::new(Some(" Name:")), false, false, 0);
         hbox.pack_start(&name_entry, true, true, 0);
