@@ -107,7 +107,6 @@ pub mod colour {
 
     pub type Hue = colour_math::hue::Hue<f64>;
     pub type RGB = colour_math::rgb::RGB<f64>;
-    pub type RGBManipulator = colour_math::manipulator::RGBManipulator<f64>;
     pub type Degrees = normalised_angles::Degrees<f64>;
     pub type Radians = normalised_angles::Radians<f64>;
     pub type Angle = normalised_angles::Angle<f64>;
@@ -120,8 +119,8 @@ pub mod colour {
         fn into_gdk_rgba(&self) -> gdk::RGBA {
             gdk::RGBA {
                 red: self[0],
-                blue: self[1],
-                green: self[2],
+                green: self[1],
+                blue: self[2],
                 alpha: 1.0,
             }
         }
