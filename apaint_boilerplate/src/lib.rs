@@ -209,6 +209,10 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
                 self.#colour.rgba()
             }
 
+            fn hcv(&self) -> colour_math::HCV<#component> {
+                self.#colour.hcv()
+            }
+
             fn hue(&self) -> Option<colour_math::Hue<#component>> {
                 self.#colour.hue()
             }

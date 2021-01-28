@@ -13,7 +13,7 @@ use gcd::Gcd;
 
 use colour_math::{
     attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, RGB, RGBA,
+    ColourComponent, ColourInterface, Degrees, HCV, Hue, ScalarAttribute, RGB, RGBA,
 };
 
 use apaint_boilerplate::Colour;
@@ -435,6 +435,13 @@ impl<F: ColourComponent> ColourInterface<F> for Paint<F> {
         match self {
             Paint::Series(paint) => paint.rgba(),
             Paint::Mixed(paint) => paint.rgba(),
+        }
+    }
+
+    fn hcv(&self) -> HCV<F> {
+        match self {
+            Paint::Series(paint) => paint.hcv(),
+            Paint::Mixed(paint) => paint.hcv(),
         }
     }
 
