@@ -44,9 +44,9 @@ impl<F: ColourComponent> ColourMixer<F> {
     pub fn add(&mut self, rgb: &RGB<F>, parts: u64) {
         self.total_parts += parts;
         let multiplier = F::from_u64(parts).expect("should be valid");
-        self.rgb_sum[0] += rgb[0] * multiplier;
-        self.rgb_sum[1] += rgb[1] * multiplier;
-        self.rgb_sum[2] += rgb[2] * multiplier;
+        self.rgb_sum[0] += rgb[CCI::Red] * multiplier;
+        self.rgb_sum[1] += rgb[CCI::Green] * multiplier;
+        self.rgb_sum[2] += rgb[CCI::Blue] * multiplier;
     }
 }
 

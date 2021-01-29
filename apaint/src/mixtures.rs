@@ -13,7 +13,7 @@ use gcd::Gcd;
 
 use colour_math::{
     attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    ColourComponent, ColourInterface, Degrees, HCV, Hue, ScalarAttribute, RGB, RGBA,
+    ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, CCI, HCV, RGB, RGBA,
 };
 
 use apaint_boilerplate::Colour;
@@ -358,9 +358,9 @@ impl<F: ColourComponent> MixtureBuilder<F> {
             let adjusted_parts = parts / gcd;
             total_adjusted_parts += adjusted_parts;
             let rgb = paint.rgb();
-            for i in 0..3 {
+            for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
                 rgb_sum[i] +=
-                    rgb[i as u8] * F::from_u64(adjusted_parts).expect("no problems expected");
+                    rgb[*cci] * F::from_u64(adjusted_parts).expect("no problems expected");
             }
             let fap = adjusted_parts as f64;
             finish += fap * f64::from(paint.finish());
@@ -374,9 +374,9 @@ impl<F: ColourComponent> MixtureBuilder<F> {
             let adjusted_parts = parts / gcd;
             total_adjusted_parts += adjusted_parts;
             let rgb = paint.rgb();
-            for i in 0..3 {
+            for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
                 rgb_sum[i] +=
-                    rgb[i as u8] * F::from_u64(adjusted_parts).expect("no problems expected");
+                    rgb[*cci] * F::from_u64(adjusted_parts).expect("no problems expected");
             }
             let fap = adjusted_parts as f64;
             finish += fap * paint.finish;
