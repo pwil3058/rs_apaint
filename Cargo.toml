@@ -2,6 +2,7 @@
 
 members = [
     "apaint",
+    "apaint_ng",
     "apaint_boilerplate",
     "apaint_gtk",
     "mcmmtk_gtk",
