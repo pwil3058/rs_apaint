@@ -19,7 +19,7 @@ use pw_gix::{
 };
 
 use colour_math_cairo_ng::CairoSetColour;
-use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
+use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute, HCV, LightLevel};
 
 use colour_math_gtk_ng::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
@@ -57,10 +57,10 @@ pub struct TargetedPaintEntry {
     id_label: gtk::Label,
     name_entry: gtk::Entry,
     notes_entry: gtk::Entry,
-    cads: ColourAttributeDisplayStack,
+    cads: Rc<ColourAttributeDisplayStack>,
     drawing_area: gtk::DrawingArea,
-    mix_rgb: RefCell<Option<RGB<f64>>>,
-    target_rgb: RefCell<Option<RGB<f64>>>,
+    mix_colour: RefCell<Option<HCV>>,
+    target_colour: RefCell<Option<HCV>>,
 }
 
 impl TargetedPaintEntry {
@@ -91,8 +91,8 @@ impl TargetedPaintEntry {
             notes_entry,
             cads,
             drawing_area,
-            mix_rgb: RefCell::new(None),
-            target_rgb: RefCell::new(None),
+            mix_colour: RefCell::new(None),
+            target_colour: RefCell::new(None),
         });
 
         let tpe_c = Rc::clone(&tpe);
@@ -105,14 +105,14 @@ impl TargetedPaintEntry {
     }
 
     pub fn draw(&self, drawing_area: &gtk::DrawingArea, cairo_context: &cairo::Context) {
-        if let Some(ref rgb) = *self.mix_rgb.borrow() {
-            cairo_context.set_source_colour_rgb(rgb);
+        if let Some(ref colour) = *self.mix_colour.borrow() {
+            cairo_context.set_source_colour(colour);
         } else {
-            cairo_context.set_source_colour_rgb(&RGB::BLACK);
+            cairo_context.set_source_colour(&HCV::BLACK);
         };
         cairo_context.paint();
-        if let Some(ref rgb) = *self.target_rgb.borrow() {
-            cairo_context.set_source_colour_rgb(rgb);
+        if let Some(ref colour) = *self.target_colour.borrow() {
+            cairo_context.set_source_colour(colour);
             let width = drawing_area.get_allocated_width() as f64;
             let height = drawing_area.get_allocated_height() as f64;
             cairo_context.rectangle(width / 4.0, height / 4.0, width / 2.0, height / 2.0);
@@ -120,31 +120,39 @@ impl TargetedPaintEntry {
         }
     }
 
-    pub fn set_mix_rgb(&self, rgb: Option<&RGB<f64>>) {
-        if let Some(rgb) = rgb {
-            *self.mix_rgb.borrow_mut() = Some(*rgb);
-            self.cads.set_colour(Some(rgb));
+    pub fn set_mix_colour(&self, colour: Option<&impl ColourBasics>) {
+        if let Some(colour) = colour {
+            *self.mix_colour.borrow_mut() = Some(colour.hcv());
+            self.cads.set_colour(Some(colour));
         } else {
-            *self.mix_rgb.borrow_mut() = None;
-            self.cads.set_colour(Option::<&RGB<f64>>::None);
+            *self.mix_colour.borrow_mut() = None;
+            self.cads.set_colour(Option::<&HCV>::None);
         }
         self.drawing_area.queue_draw()
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        if let Some(rgb) = rgb {
-            *self.target_rgb.borrow_mut() = Some(*rgb);
-            self.cads.set_target_colour(Some(rgb));
+    pub fn set_target_colour(&self, colour: Option<&impl ColourBasics>) {
+        if let Some(colour) = colour {
+            *self.target_colour.borrow_mut() = Some(colour.hcv());
+            self.cads.set_target_colour(Some(colour));
         } else {
-            *self.target_rgb.borrow_mut() = None;
-            self.cads.set_target_colour(Option::<&RGB<f64>>::None);
+            *self.target_colour.borrow_mut() = None;
+            self.cads.set_target_colour(Option::<&HCV>::None);
         }
         self.drawing_area.queue_draw()
     }
 
-    pub fn target_rgb(&self) -> Option<RGB<f64>> {
-        if let Some(rgb) = self.target_rgb.borrow().as_ref() {
-            Some(*rgb)
+    pub fn target_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
+        if let Some(colour) = self.target_colour.borrow().as_ref() {
+            Some(colour.rgb::<L>())
+        } else {
+            None
+        }
+    }
+
+    pub fn target_colour(&self) -> Option<HCV> {
+        if let Some(colour) = self.target_colour.borrow().as_ref() {
+            Some(colour.hcv())
         } else {
             None
         }
@@ -154,7 +162,7 @@ impl TargetedPaintEntry {
 #[derive(PWO, Wrapper)]
 pub struct TargetedPaintMixer {
     vbox: gtk::Box,
-    mixing_session: RefCell<MixingSession<f64>>,
+    mixing_session: RefCell<MixingSession>,
     file_manager: Rc<StorageManager>,
     notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
@@ -162,7 +170,7 @@ pub struct TargetedPaintMixer {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     mix_entry: Rc<TargetedPaintEntry>,
-    series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint<f64>>>,
+    series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
     paint_standards_manager: Rc<PaintStandardsManager>,
@@ -185,12 +193,12 @@ impl TargetedPaintMixer {
         self.next_mix_id.set(self.next_mix_id.get() + 1);
     }
 
-    fn add_series_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn add_series_paint(&self, paint: &Rc<SeriesPaint>) {
         self.series_paint_spinner_box.add_paint(paint);
         self.hue_wheel.add_item(paint.coloured_shape());
     }
 
-    fn process_removal_request(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn process_removal_request(&self, paint: &Rc<SeriesPaint>) {
         self.series_paint_spinner_box.remove_paint(paint);
         self.hue_wheel.remove_item(paint.id());
     }
@@ -204,11 +212,11 @@ impl TargetedPaintMixer {
             condns: 0,
             mask: Self::SAV_HAS_COLOUR,
         };
-        if let Some(rgb) = colour_mixer.mixture() {
-            self.mix_entry.set_mix_rgb(Some(&rgb));
+        if let Some(colour) = colour_mixer.mixture() {
+            self.mix_entry.set_mix_colour(Some(&colour));
             condns.condns = Self::SAV_HAS_COLOUR;
         } else {
-            self.mix_entry.set_mix_rgb(None);
+            self.mix_entry.set_mix_colour(Option::<&HCV>::None);
         }
         self.change_notifier.notify_changed_condns(condns);
     }
@@ -258,7 +266,7 @@ impl TargetedPaintMixer {
     fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(path)?;
-        let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
+        let session = MixingSession::read(&mut file, &self.paint_series_manager)?;
         // TODO: completely clear the mixer
         self.notes_entry.set_text(session.notes());
         for mixture in session.mixtures() {
@@ -283,18 +291,18 @@ impl TargetedPaintMixer {
     }
 
     // TODO: review visibility of targeted mixer methods
-    pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB<f64>) {
+    pub fn start_new_mixture(&self, name: &str, notes: &str, target_colour: &impl ColourBasics) {
         self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text(name);
         self.mix_entry.notes_entry.set_text(notes);
-        self.set_target_rgb(Some(target_rgb));
+        self.set_target_colour(Some(target_colour));
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        self.hue_wheel.set_target_rgb(rgb);
-        self.mix_entry.set_target_rgb(rgb);
-        self.paint_series_manager.set_target_rgb(rgb);
-        if rgb.is_some() {
+    pub fn set_target_colour(&self, colour: Option<&impl ColourBasics>) {
+        self.hue_wheel.set_target_colour(colour);
+        self.mix_entry.set_target_colour(colour);
+        self.paint_series_manager.set_target_colour(colour);
+        if colour.is_some() {
             let masked_condns = MaskedCondns {
                 condns: Self::SAV_HAS_TARGET,
                 mask: Self::HAS_TARGET_MASK,

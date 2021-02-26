@@ -20,8 +20,8 @@ use crate::characteristics::{
     TransparencyEntry,
 };
 
-type AddCallback = Box<dyn Fn(&BasicPaintSpec<f64>)>;
-type AcceptCallback = Box<dyn Fn(&str, &BasicPaintSpec<f64>)>;
+type AddCallback = Box<dyn Fn(&BasicPaintSpec)>;
+type AcceptCallback = Box<dyn Fn(&str, &BasicPaintSpec)>;
 type ChangeCallback = Box<dyn Fn(u64)>;
 
 #[derive(PWO, Wrapper)]
@@ -37,7 +37,7 @@ pub struct BasicPaintSpecEditor {
     fluorescence_entry: Rc<FluorescenceEntry>,
     metallicness_entry: Rc<MetallicnessEntry>,
     buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
-    current_spec: RefCell<Option<BasicPaintSpec<f64>>>,
+    current_spec: RefCell<Option<BasicPaintSpec>>,
     add_callbacks: RefCell<Vec<AddCallback>>,
     accept_callbacks: RefCell<Vec<AcceptCallback>>,
     change_callbacks: RefCell<Vec<ChangeCallback>>,
@@ -352,7 +352,7 @@ impl BasicPaintSpecEditor {
         self.buttons.update_condns(masked_condns);
     }
 
-    fn spec_from_entries(&self) -> BasicPaintSpec<f64> {
+    fn spec_from_entries(&self) -> BasicPaintSpec {
         let id = self.id_entry.get_text();
         let rgb = self.colour_editor.rgb();
         let mut paint_spec = BasicPaintSpec::new(rgb, &id);
@@ -429,7 +429,7 @@ impl BasicPaintSpecEditor {
         self.update_has_changes();
     }
 
-    fn set_current_spec(&self, spec: Option<&BasicPaintSpec<f64>>) {
+    fn set_current_spec(&self, spec: Option<&BasicPaintSpec>) {
         let mut masked_condns = MaskedCondns {
             condns: 0,
             mask: Self::SAV_EDITING + Self::SAV_NOT_EDITING + Self::CHANGED_MASK,
@@ -444,7 +444,7 @@ impl BasicPaintSpecEditor {
         self.buttons.update_condns(masked_condns);
     }
 
-    pub fn edit(&self, spec: &BasicPaintSpec<f64>) {
+    pub fn edit(&self, spec: &BasicPaintSpec) {
         self.set_current_spec(Some(spec));
         self.id_entry.set_text(&spec.id);
         self.name_entry.set_text(&spec.name);
@@ -470,11 +470,11 @@ impl BasicPaintSpecEditor {
         }
     }
 
-    pub fn connect_add_action<F: Fn(&BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
+    pub fn connect_add_action<F: Fn(&BasicPaintSpec) + 'static>(&self, callback: F) {
         self.add_callbacks.borrow_mut().push(Box::new(callback))
     }
 
-    pub fn connect_accept_action<F: Fn(&str, &BasicPaintSpec<f64>) + 'static>(&self, callback: F) {
+    pub fn connect_accept_action<F: Fn(&str, &BasicPaintSpec) + 'static>(&self, callback: F) {
         self.accept_callbacks.borrow_mut().push(Box::new(callback))
     }
 

@@ -37,7 +37,7 @@ pub struct BasicPaintFactory {
     list_view: Rc<ColouredItemListView>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    paint_series: RefCell<SeriesPaintSeriesSpec<f64>>,
+    paint_series: RefCell<SeriesPaintSeriesSpec>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
 }
@@ -61,7 +61,7 @@ impl BasicPaintFactory {
             .update_tool_needs_saving(self.paint_editor.has_unsaved_changes());
     }
 
-    fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec<f64>) {
+    fn do_add_paint_work(&self, paint_spec: &BasicPaintSpec) {
         if let Some(old_paint) = self.paint_series.borrow_mut().add(paint_spec) {
             self.hue_wheel.remove_item(old_paint.id());
             self.list_view.remove_row(old_paint.id());
@@ -78,7 +78,7 @@ impl BasicPaintFactory {
         Ok(())
     }
 
-    fn add_paint(&self, paint_spec: &BasicPaintSpec<f64>) {
+    fn add_paint(&self, paint_spec: &BasicPaintSpec) {
         self.do_add_paint_work(paint_spec);
         self.update_series_needs_saving();
         self.update_editor_needs_saving();
@@ -93,7 +93,7 @@ impl BasicPaintFactory {
         }
     }
 
-    fn replace_paint(&self, id: &str, paint_spec: &BasicPaintSpec<f64>) {
+    fn replace_paint(&self, id: &str, paint_spec: &BasicPaintSpec) {
         // should not be called if paint has been removed after being chosen for edit
         self.do_remove_paint_work(id)
             .expect("should not be called if paint has been removed");
@@ -117,7 +117,7 @@ impl BasicPaintFactory {
         }
         let paint_series = self.paint_series.borrow();
         let paint = paint_series.find(id).expect("should be there");
-        let mut spec = BasicPaintSpec::<f64>::new(paint.rgb(), paint.id());
+        let mut spec = BasicPaintSpec::new(&paint.hcv(), paint.id());
         if let Some(name) = paint.name() {
             spec.name = name.to_string();
         }
@@ -159,7 +159,7 @@ impl BasicPaintFactory {
     fn load<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(&path)?;
-        let new_series = match SeriesPaintSeriesSpec::<f64>::read(&mut file) {
+        let new_series = match SeriesPaintSeriesSpec::read(&mut file) {
             Ok(series) => series,
             Err(err) => match &err {
                 apaint_ng::Error::SerdeJsonError(_) => {

@@ -19,7 +19,7 @@ pub trait CharacteristicIfce:
     fn full(&self) -> &'static str;
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
 pub enum Finish {
     Gloss,
     SemiGloss,
@@ -27,7 +27,7 @@ pub enum Finish {
     Flat,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
 pub enum Transparency {
     Opaque,
     SemiOpaque,
@@ -36,7 +36,7 @@ pub enum Transparency {
     Clear,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
 pub enum Permanence {
     ExtremelyPermanent,
     #[default]
@@ -45,7 +45,7 @@ pub enum Permanence {
     Fugitive,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
 pub enum Fluorescence {
     Fluorescent,
     SemiFluorescent,
@@ -54,7 +54,7 @@ pub enum Fluorescence {
     NonFluorescent,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Clone, Copy, Characteristic)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
 pub enum Metallicness {
     Metal,
     Metallic,
@@ -63,7 +63,7 @@ pub enum Metallicness {
     NonMetallic,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Characteristic {
     Finish(Finish),
     Transparency(Transparency),

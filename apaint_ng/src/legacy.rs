@@ -6,8 +6,6 @@ use regex::Regex;
 
 use lazy_static::lazy_static;
 
-use colour_math_ng::{LightLevel, Prop};
-
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     series::{BasicPaintSpec, SeriesPaintSeriesSpec},
@@ -30,14 +28,13 @@ fn extract_header_value(line: Option<&str>) -> Result<String, crate::Error> {
     Err(crate::Error::NotAValidLegacySpec)
 }
 
-fn extract_paint_spec<F: LightLevel>(line: &str) -> Result<BasicPaintSpec<F>, crate::Error> {
+fn extract_paint_spec(line: &str) -> Result<BasicPaintSpec, crate::Error> {
     use crate::Error::NotAValidLegacySpec;
     if let Some(cap) = PAINT_RE.captures(line) {
         let name = cap.name("name").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb_str = cap.name("rgb").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb = colour_math_ng::RGB::<u16>::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
-        let array: [Prop; 3] = rgb.into();
-        let mut bps = BasicPaintSpec::<F>::new(array.into(), name);
+        let mut bps = BasicPaintSpec::new(&rgb, name);
         bps.name = name.to_string();
         bps.notes = cap
             .name("notes")
@@ -80,25 +77,25 @@ fn extract_paint_spec<F: LightLevel>(line: &str) -> Result<BasicPaintSpec<F>, cr
     }
 }
 
-pub fn extract_legacy_paint_series_spec<F: LightLevel>(
+pub fn extract_legacy_paint_series_spec(
     string: &str,
-) -> Result<SeriesPaintSeriesSpec<F>, crate::Error> {
+) -> Result<SeriesPaintSeriesSpec, crate::Error> {
     let mut lines = string.lines();
-    let mut spec = SeriesPaintSeriesSpec::<F>::default();
+    let mut spec = SeriesPaintSeriesSpec::default();
     let series_name = extract_header_value(lines.next())?;
     spec.set_series_name(&series_name);
     let proprieter = extract_header_value(lines.next())?;
     spec.set_proprietor(&proprieter);
     for line in lines {
-        let paint_spec = extract_paint_spec::<F>(line)?;
+        let paint_spec = extract_paint_spec(line)?;
         spec.add(&paint_spec);
     }
     Ok(spec)
 }
 
-pub fn read_legacy_paint_series_spec<R: Read, F: LightLevel>(
+pub fn read_legacy_paint_series_spec<R: Read>(
     reader: &mut R,
-) -> Result<SeriesPaintSeriesSpec<F>, crate::Error> {
+) -> Result<SeriesPaintSeriesSpec, crate::Error> {
     let mut string = String::new();
     reader.read_to_string(&mut string)?;
     let spec = extract_legacy_paint_series_spec(&string)?;
@@ -148,6 +145,6 @@ PaintSpec(name="FS30059", rgb=RGB16(red=0x4700, green=0x3300, blue=0x2800), fini
 
     #[test]
     fn extract_legacy_series() {
-        assert!(extract_legacy_paint_series_spec::<f64>(&TEST_TEXT).is_ok());
+        assert!(extract_legacy_paint_series_spec(&TEST_TEXT).is_ok());
     }
 }

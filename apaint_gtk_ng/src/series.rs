@@ -39,12 +39,12 @@ pub mod display;
 
 use crate::series::display::*;
 
-type PaintActionCallback = Box<dyn Fn(Rc<SeriesPaint<f64>>)>;
+type PaintActionCallback = Box<dyn Fn(Rc<SeriesPaint>)>;
 
 #[derive(PWO, Wrapper)]
 struct SeriesPage {
     paned: gtk::Paned,
-    paint_series: SeriesPaintSeries<f64>,
+    paint_series: SeriesPaintSeries,
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ColouredItemListView>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
@@ -52,7 +52,7 @@ struct SeriesPage {
 
 impl SeriesPage {
     fn new(
-        paint_series: SeriesPaintSeries<f64>,
+        paint_series: SeriesPaintSeries,
         menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
@@ -109,7 +109,7 @@ impl SeriesPage {
         self.list_view.update_popup_condns(changed_condns);
     }
 
-    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(
         &self,
         name: &str,
         callback: F,
@@ -209,7 +209,7 @@ impl SeriesBinder {
         }
     }
 
-    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(
         &self,
         name: &str,
         callback: F,
@@ -221,7 +221,7 @@ impl SeriesBinder {
             .push(Box::new(callback));
     }
 
-    fn invoke_named_callback(&self, item: &str, paint: Rc<SeriesPaint<f64>>) {
+    fn invoke_named_callback(&self, item: &str, paint: Rc<SeriesPaint>) {
         for callback in self
             .callbacks
             .borrow()
@@ -291,7 +291,7 @@ impl SeriesBinder {
 trait RcSeriesBinder {
     fn add_series(
         &self,
-        new_series: SeriesPaintSeries<f64>,
+        new_series: SeriesPaintSeries,
         path: &Path,
     ) -> Result<(), crate::Error>;
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error>;
@@ -300,7 +300,7 @@ trait RcSeriesBinder {
 impl RcSeriesBinder for Rc<SeriesBinder> {
     fn add_series(
         &self,
-        new_series: SeriesPaintSeries<f64>,
+        new_series: SeriesPaintSeries,
         path: &Path,
     ) -> Result<(), crate::Error> {
         match self.binary_search_series_id(&new_series.series_id()) {
@@ -372,12 +372,12 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
     }
 }
 
-impl SeriesPaintFinder<f64> for SeriesBinder {
+impl SeriesPaintFinder for SeriesBinder {
     fn get_series_paint(
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint_ng::Result<Rc<SeriesPaint<f64>>> {
+    ) -> apaint_ng::Result<Rc<SeriesPaint>> {
         if let Some(series_id) = series_id {
             let bsr = self
                 .pages
@@ -430,17 +430,17 @@ impl PaintSeriesManager {
         Ok(())
     }
 
-    fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn display_paint_information(&self, paint: &Rc<SeriesPaint>) {
         self.display_dialog_manager.display_paint(paint);
     }
 
-    fn inform_add_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn inform_add_paint(&self, paint: &Rc<SeriesPaint>) {
         for callback in self.add_paint_callbacks.borrow().iter() {
             callback(Rc::clone(paint));
         }
     }
 
-    pub fn connect_add_paint<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
+    pub fn connect_add_paint<F: Fn(Rc<SeriesPaint>) + 'static>(&self, callback: F) {
         self.add_paint_callbacks
             .borrow_mut()
             .push(Box::new(callback));
@@ -456,12 +456,12 @@ impl PaintSeriesManager {
     }
 }
 
-impl SeriesPaintFinder<f64> for PaintSeriesManager {
+impl SeriesPaintFinder for PaintSeriesManager {
     fn get_series_paint(
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint_ng::Result<Rc<SeriesPaint<f64>>> {
+    ) -> apaint_ng::Result<Rc<SeriesPaint>> {
         self.binder.get_series_paint(paint_id, series_id)
     }
 }
@@ -602,17 +602,17 @@ impl PaintStandardsManager {
         Ok(())
     }
 
-    fn display_paint_information(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn display_paint_information(&self, paint: &Rc<SeriesPaint>) {
         self.display_dialog_manager.display_paint(paint);
     }
 
-    fn inform_set_as_target(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn inform_set_as_target(&self, paint: &Rc<SeriesPaint>) {
         for callback in self.set_as_target_callbacks.borrow().iter() {
             callback(Rc::clone(paint));
         }
     }
 
-    pub fn connect_set_as_target<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(&self, callback: F) {
+    pub fn connect_set_as_target<F: Fn(Rc<SeriesPaint>) + 'static>(&self, callback: F) {
         self.set_as_target_callbacks
             .borrow_mut()
             .push(Box::new(callback));

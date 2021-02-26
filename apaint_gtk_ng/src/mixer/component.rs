@@ -53,7 +53,7 @@ where
             .numeric(true)
             .build();
         let label = gtk::Label::new(Some(&paint.label_text()));
-        label.set_widget_colour_rgb(&paint.rgb());
+        label.set_widget_colour(&paint.hcv());
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&label, true, true, 0);
         hbox.pack_start(&spin_button, false, false, 0);

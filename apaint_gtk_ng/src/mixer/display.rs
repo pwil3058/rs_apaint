@@ -9,40 +9,40 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_gtk_ng::attributes::{
-    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
+use colour_math_gtk_ng::{attributes::{
+    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder, }, colour::*
 };
 use colour_math_ng::{ColourBasics, ScalarAttribute};
 
 use apaint_ng::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
-    colour::{Colourable, RGB},
+    colour::{Colourable, RGB, HCV},
     list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
 };
 
 #[derive(PWO)]
 pub struct MixtureDisplay {
     vbox: gtk::Box,
-    mixture: Rc<Mixture<f64>>,
+    mixture: Rc<Mixture>,
     target_label: gtk::Label,
-    cads: ColourAttributeDisplayStack,
+    cads: Rc<ColourAttributeDisplayStack>,
 }
 
 impl MixtureDisplay {
-    pub fn set_target(&self, new_target: Option<&RGB<f64>>) {
-        if let Some(rgb) = new_target {
+    pub fn set_target(&self, new_target: Option<&impl GdkRGBA>) {
+        if let Some(colour) = new_target {
             self.target_label.set_label("Current Target");
-            self.target_label.set_widget_colour_rgb(&rgb);
-            self.cads.set_target_colour(Some(rgb));
+            self.target_label.set_widget_colour(colour);
+            self.cads.set_target_colour(Some(colour));
         } else {
             self.target_label.set_label("");
-            self.target_label.set_widget_colour_rgb(&self.mixture.rgb());
-            self.cads.set_target_colour(Option::<&RGB>::None);
+            self.target_label.set_widget_colour(&self.mixture.hcv());
+            self.cads.set_target_colour(Option::<&HCV>::None);
         };
     }
 
-    pub fn mixture(&self) -> &Rc<Mixture<f64>> {
+    pub fn mixture(&self) -> &Rc<Mixture> {
         &self.mixture
     }
 }
@@ -51,7 +51,7 @@ impl MixtureDisplay {
 pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB<f64>>,
+    target_colour: Option<HCV>,
     list_spec: ComponentsListViewSpec,
 }
 
@@ -72,56 +72,56 @@ impl MixtureDisplayBuilder {
         self
     }
 
-    pub fn target_rgb(&mut self, target_rgb: Option<&RGB<f64>>) -> &mut Self {
-        self.target_rgb = if let Some(target_rgb) = target_rgb {
-            Some(*target_rgb)
+    pub fn target_colour(&mut self, target_colour: Option<&impl ColourBasics>) -> &mut Self {
+        self.target_colour = if let Some(target_colour) = target_colour {
+            Some(target_colour.hcv())
         } else {
             None
         };
         self
     }
 
-    pub fn build(&self, mixture: &Rc<Mixture<f64>>) -> MixtureDisplay {
-        let rgb = mixture.rgb();
+    pub fn build(&self, mixture: &Rc<Mixture>) -> MixtureDisplay {
+        let colour = mixture.hcv();
         let vbox = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
             .build();
 
         let label = gtk::LabelBuilder::new().label(mixture.id()).build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&colour);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(mixture.name().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&colour);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(mixture.notes().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&colour);
         vbox.pack_start(&label, false, false, 0);
 
         let cads = ColourAttributeDisplayStackBuilder::new()
             .attributes(&self.attributes)
             .build();
-        cads.set_colour(Some(&rgb));
-        let target_label = if let Some(target_rgb) = self.target_rgb {
+        cads.set_colour(Some(&colour));
+        let target_label = if let Some(target_colour) = self.target_colour {
             let label = gtk::LabelBuilder::new().label("Target").build();
-            label.set_widget_colour_rgb(&target_rgb);
-            cads.set_target_colour(Some(&target_rgb));
+            label.set_widget_colour(&target_colour);
+            cads.set_target_colour(Some(&target_colour));
             label
         } else {
             let label = gtk::LabelBuilder::new().build();
-            label.set_widget_colour_rgb(&rgb);
+            label.set_widget_colour(&colour);
             label
         };
         vbox.pack_start(&target_label, true, true, 0);
 
-        if let Some(targeted_rgb) = mixture.targeted_rgb() {
+        if let Some(targeted_colour) = mixture.targeted_colour() {
             let label = gtk::LabelBuilder::new().label("Matched Colour").build();
-            label.set_widget_colour_rgb(&targeted_rgb);
+            label.set_widget_colour(&targeted_colour);
             vbox.pack_start(&label, true, true, 0);
         }
 
@@ -130,7 +130,7 @@ impl MixtureDisplayBuilder {
         for characteristic_type in self.characteristics.iter() {
             let value = mixture.characteristic(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(&value).build();
-            label.set_widget_colour_rgb(&rgb);
+            label.set_widget_colour(&colour);
             vbox.pack_start(&label, false, false, 0);
         }
 
@@ -163,7 +163,7 @@ pub struct MixtureDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     mixture_display_builder: MixtureDisplayBuilder,
-    dialogs: BTreeMap<Rc<Mixture<f64>>, MixtureDisplayDialog>,
+    dialogs: BTreeMap<Rc<Mixture>, MixtureDisplayDialog>,
 }
 
 impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
@@ -185,7 +185,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn display_mixture(&mut self, mixture: &Rc<Mixture<f64>>) {
+    pub fn display_mixture(&mut self, mixture: &Rc<Mixture>) {
         if !self.dialogs.contains_key(mixture) {
             let dialog = self.new_dialog();
             let display = self.mixture_display_builder.build(mixture);
@@ -199,8 +199,8 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         pdd.dialog.present();
     }
 
-    pub fn set_target_rgb(&mut self, rgb: Option<&RGB<f64>>) {
-        self.mixture_display_builder.target_rgb(rgb);
+    pub fn set_target_colour(&mut self, rgb: Option<&impl GdkRGBA>) {
+        self.mixture_display_builder.target_colour(rgb);
         for pdd in self.dialogs.values() {
             pdd.display.set_target(rgb);
         }
@@ -212,7 +212,7 @@ pub struct MixtureDisplayDialogManagerBuilder<W: TopGtkWindow> {
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB<f64>>,
+    target_colour: Option<HCV>,
 }
 
 impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
@@ -222,7 +222,7 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
             buttons: vec![],
             attributes: vec![],
             characteristics: vec![],
-            target_rgb: None,
+            target_colour: None,
         }
     }
 
@@ -241,13 +241,17 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
         self
     }
 
+    pub fn target_colour(&mut self, target_colour: &impl ColourBasics) {
+        self.target_colour = Some(target_colour.hcv());
+    }
+
     pub fn build(&self) -> MixtureDisplayDialogManager<W> {
         let mut mixture_display_builder = MixtureDisplayBuilder::new();
         mixture_display_builder
             .attributes(&self.attributes)
             .characteristics(&self.characteristics);
-        if let Some(target_rgb) = self.target_rgb {
-            mixture_display_builder.target_rgb(Some(&target_rgb));
+        if let Some(target_colour) = self.target_colour {
+            mixture_display_builder.target_colour(Some(&target_colour));
         }
         MixtureDisplayDialogManager {
             caller: self.caller.clone(),

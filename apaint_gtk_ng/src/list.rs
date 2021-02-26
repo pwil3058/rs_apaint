@@ -21,7 +21,7 @@ use apaint_ng::{
     BasicPaintIfce,
 };
 
-use crate::colour::{ColourBasics, ScalarAttribute};
+use crate::colour::{ColourBasics, ScalarAttribute, HCV, RGB};
 
 type PopupCallback = Box<dyn Fn(&str)>;
 
@@ -276,26 +276,31 @@ pub trait PaintListRow: BasicPaintIfce {
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Vec<glib::Value> {
-        let ha = if let Some(angle) = self.hue_angle() {
-            angle.degrees()
+        let ha: f64 = if let Some(angle) = self.hue_angle() {
+            angle.into()
         } else {
-            -181.0 + self.value()
+            -181.0 + f64::from(self.value())
+        };
+        let hcv_bg = if let Some(hcv) = self.hue_hcv() {
+            hcv
+        } else {
+            HCV::new_grey(self.value())
         };
         let mut row: Vec<glib::Value> = vec![
             self.id().to_value(),
-            self.rgb().pango_string().to_value(),
-            self.best_foreground_rgb().pango_string().to_value(),
+            self.hcv().pango_string().to_value(),
+            self.best_foreground().pango_string().to_value(),
             self.name().or(Some("")).unwrap().to_value(),
             self.notes().or(Some("")).unwrap().to_value(),
-            self.max_chroma_rgb().pango_string().to_value(),
+            hcv_bg.pango_string().to_value(),
             ha.to_value(),
         ];
         for attr in attributes.iter() {
-            let string = format!("{:5.4}", self.scalar_attribute(*attr));
-            let attr_rgb = self.scalar_attribute_rgb(*attr);
+            let string = format!("{:5.4}", f64::from(self.scalar_attribute(*attr)));
+            let attr_rgb = self.scalar_attribute_rgb::<f64>(*attr);
             row.push(string.to_value());
             row.push(attr_rgb.pango_string().to_value());
-            row.push(attr_rgb.best_foreground_rgb().pango_string().to_value());
+            row.push(attr_rgb.best_foreground().pango_string().to_value());
         }
         for characteristic in characteristics.iter() {
             let string = self.characteristic(*characteristic).abbrev();
@@ -305,11 +310,11 @@ pub trait PaintListRow: BasicPaintIfce {
     }
 }
 
-impl PaintListRow for SeriesPaint<f64> {}
+impl PaintListRow for SeriesPaint {}
 
-impl PaintListRow for BasicPaintSpec<f64> {}
+impl PaintListRow for BasicPaintSpec {}
 
 // TODO: modify PaintListRow for Mixture to included target RGB
-impl PaintListRow for Mixture<f64> {}
+impl PaintListRow for Mixture {}
 
-impl PaintListRow for Paint<f64> {}
+impl PaintListRow for Paint {}

@@ -24,7 +24,7 @@ use std::collections::HashMap;
 #[derive(PWO)]
 pub struct PaintDisplay {
     vbox: gtk::Box,
-    paint: Rc<SeriesPaint<f64>>,
+    paint: Rc<SeriesPaint>,
     target_label: gtk::Label,
     cads: ColourAttributeDisplayStack,
 }
@@ -42,7 +42,7 @@ impl PaintDisplay {
         };
     }
 
-    pub fn paint(&self) -> &Rc<SeriesPaint<f64>> {
+    pub fn paint(&self) -> &Rc<SeriesPaint> {
         &self.paint
     }
 }
@@ -78,7 +78,7 @@ impl PaintDisplayBuilder {
         self
     }
 
-    pub fn build(&self, paint: &Rc<SeriesPaint<f64>>) -> PaintDisplay {
+    pub fn build(&self, paint: &Rc<SeriesPaint>) -> PaintDisplay {
         let rgb = paint.rgb();
         let vbox = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
@@ -159,7 +159,7 @@ pub struct PaintDisplayDialogManager<W: TopGtkWindow> {
     button_callbacks: RefCell<HashMap<u16, Vec<PaintActionCallback>>>,
     paint_display_builder: RefCell<PaintDisplayBuilder>,
     conditional_widgets_builder: ConditionalWidgetsBuilder,
-    dialogs: RefCell<BTreeMap<Rc<SeriesPaint<f64>>, PaintDisplayDialog>>,
+    dialogs: RefCell<BTreeMap<Rc<SeriesPaint>, PaintDisplayDialog>>,
 }
 
 impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
@@ -183,7 +183,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         }
     }
 
-    fn inform_button_action(&self, action: u16, paint: Rc<SeriesPaint<f64>>) {
+    fn inform_button_action(&self, action: u16, paint: Rc<SeriesPaint>) {
         let button_callbacks = self.button_callbacks.borrow();
         for callback in button_callbacks
             .get(&action)
@@ -194,7 +194,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         }
     }
 
-    pub fn connect_action_button<F: Fn(Rc<SeriesPaint<f64>>) + 'static>(
+    pub fn connect_action_button<F: Fn(Rc<SeriesPaint>) + 'static>(
         &self,
         action: u16,
         callback: F,
@@ -208,11 +208,11 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
 }
 
 pub trait DisplayPaint {
-    fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>);
+    fn display_paint(&self, paint: &Rc<SeriesPaint>);
 }
 
 impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>> {
-    fn display_paint(&self, paint: &Rc<SeriesPaint<f64>>) {
+    fn display_paint(&self, paint: &Rc<SeriesPaint>) {
         if !self.dialogs.borrow().contains_key(paint) {
             let dialog = self.new_dialog();
             let display = self.paint_display_builder.borrow().build(paint);
