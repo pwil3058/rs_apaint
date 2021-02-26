@@ -18,16 +18,16 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::{attributes::hue_wheel::MakeColouredShape, ColourInterface, ScalarAttribute};
+use colour_math_cairo_ng::CairoSetColour;
+use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
 
-use colour_math_gtk::{
+use colour_math_gtk_ng::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
-    colour_math_cairo::CairoSetColour,
+    colour_edit::{ColourEditor, ColourEditorBuilder},
     hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
-    colour_edit::{ColourEditor, ColourEditorBuilder}
 };
 
-use apaint::{
+use apaint_ng::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     mixtures::{MixingSession, MixtureBuilder, Paint},
@@ -59,8 +59,8 @@ pub struct TargetedPaintEntry {
     notes_entry: gtk::Entry,
     cads: ColourAttributeDisplayStack,
     drawing_area: gtk::DrawingArea,
-    mix_rgb: RefCell<Option<RGB>>,
-    target_rgb: RefCell<Option<RGB>>,
+    mix_rgb: RefCell<Option<RGB<f64>>>,
+    target_rgb: RefCell<Option<RGB<f64>>>,
 }
 
 impl TargetedPaintEntry {
@@ -120,29 +120,29 @@ impl TargetedPaintEntry {
         }
     }
 
-    pub fn set_mix_rgb(&self, rgb: Option<&RGB>) {
+    pub fn set_mix_rgb(&self, rgb: Option<&RGB<f64>>) {
         if let Some(rgb) = rgb {
             *self.mix_rgb.borrow_mut() = Some(*rgb);
             self.cads.set_colour(Some(rgb));
         } else {
             *self.mix_rgb.borrow_mut() = None;
-            self.cads.set_colour(Option::<&RGB>::None);
+            self.cads.set_colour(Option::<&RGB<f64>>::None);
         }
         self.drawing_area.queue_draw()
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         if let Some(rgb) = rgb {
             *self.target_rgb.borrow_mut() = Some(*rgb);
             self.cads.set_target_colour(Some(rgb));
         } else {
             *self.target_rgb.borrow_mut() = None;
-            self.cads.set_target_colour(Option::<&RGB>::None);
+            self.cads.set_target_colour(Option::<&RGB<f64>>::None);
         }
         self.drawing_area.queue_draw()
     }
 
-    pub fn target_rgb(&self) -> Option<RGB> {
+    pub fn target_rgb(&self) -> Option<RGB<f64>> {
         if let Some(rgb) = self.target_rgb.borrow().as_ref() {
             Some(*rgb)
         } else {
@@ -248,14 +248,14 @@ impl TargetedPaintMixer {
             .update_session_is_saveable(!self.mixing_session.borrow().notes().is_empty());
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
         Ok(new_digest)
     }
 
-    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
+    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(path)?;
         let session = MixingSession::<f64>::read(&mut file, &self.paint_series_manager)?;
@@ -283,14 +283,14 @@ impl TargetedPaintMixer {
     }
 
     // TODO: review visibility of targeted mixer methods
-    pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB) {
+    pub fn start_new_mixture(&self, name: &str, notes: &str, target_rgb: &RGB<f64>) {
         self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text(name);
         self.mix_entry.notes_entry.set_text(notes);
         self.set_target_rgb(Some(target_rgb));
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         self.hue_wheel.set_target_rgb(rgb);
         self.mix_entry.set_target_rgb(rgb);
         self.paint_series_manager.set_target_rgb(rgb);
@@ -351,7 +351,7 @@ impl TargetedPaintMixer {
         self.series_paint_spinner_box.zero_all_parts();
     }
 
-    pub fn full_reset(&self) -> apaint::Result<Vec<u8>> {
+    pub fn full_reset(&self) -> apaint_ng::Result<Vec<u8>> {
         self.notes_entry.set_text("");
         self.cancel_current_mixture();
         *self.mixing_session.borrow_mut() = MixingSession::new();
@@ -657,7 +657,7 @@ struct TargetPaintEntry {
     vbox: gtk::Box,
     name_entry: gtk::Entry,
     notes_entry: gtk::Entry,
-    colour_editor: Rc<ColourEditor>,
+    colour_editor: Rc<ColourEditor<u16>>,
 }
 
 impl TargetPaintEntry {
@@ -693,7 +693,7 @@ impl TargetPaintEntry {
         self.notes_entry.get_text().to_string()
     }
 
-    fn rgb(&self) -> RGB {
+    fn rgb(&self) -> RGB<f64> {
         self.colour_editor.rgb()
     }
 }

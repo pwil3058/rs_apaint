@@ -25,8 +25,8 @@ const SAV_SESSION_IS_SAVEABLE: u64 = SAV_NEXT_CONDN << 3;
 
 const BTN_IMAGE_SIZE: i32 = 24;
 
-type PathCallback = Box<dyn Fn(&Path) -> apaint::Result<Vec<u8>>>;
-type ResetCallback = Box<dyn Fn() -> apaint::Result<Vec<u8>>>;
+type PathCallback = Box<dyn Fn(&Path) -> apaint_ng::Result<Vec<u8>>>;
+type ResetCallback = Box<dyn Fn() -> apaint_ng::Result<Vec<u8>>>;
 
 #[derive(PWO, Wrapper)]
 pub struct StorageManager {
@@ -42,15 +42,15 @@ pub struct StorageManager {
 }
 
 impl StorageManager {
-    pub fn connect_load<F: Fn(&Path) -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
+    pub fn connect_load<F: Fn(&Path) -> apaint_ng::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.load_callback.borrow_mut() = Box::new(callback);
     }
 
-    pub fn connect_save<F: Fn(&Path) -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
+    pub fn connect_save<F: Fn(&Path) -> apaint_ng::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.save_callback.borrow_mut() = Box::new(callback);
     }
 
-    pub fn connect_reset<F: Fn() -> apaint::Result<Vec<u8>> + 'static>(&self, callback: F) {
+    pub fn connect_reset<F: Fn() -> apaint_ng::Result<Vec<u8>> + 'static>(&self, callback: F) {
         *self.reset_callback.borrow_mut() = Box::new(callback);
     }
 
@@ -302,9 +302,9 @@ impl StorageManagerBuilder {
                 .build(),
             current_file_path: RefCell::new(None),
             current_file_digest: RefCell::new(vec![]),
-            reset_callback: RefCell::new(Box::new(|| Err(apaint::Error::NotImplemented))),
-            save_callback: RefCell::new(Box::new(|_| Err(apaint::Error::NotImplemented))),
-            load_callback: RefCell::new(Box::new(|_| Err(apaint::Error::NotImplemented))),
+            reset_callback: RefCell::new(Box::new(|| Err(apaint_ng::Error::NotImplemented))),
+            save_callback: RefCell::new(Box::new(|_| Err(apaint_ng::Error::NotImplemented))),
+            load_callback: RefCell::new(Box::new(|_| Err(apaint_ng::Error::NotImplemented))),
             last_file_key: format!("{}::storage_manager::last_file", self.last_file_key),
         });
 

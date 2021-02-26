@@ -8,19 +8,18 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
+use apaint_ng::{characteristics::CharacteristicType, LabelText, TooltipText};
 
-use apaint_boilerplate::Colour;
+use apaint_boilerplate_ng::Colour;
 
-use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
-use apaint_gtk::mixer::targeted::TargetedPaintMixerBuilder;
-use apaint_gtk::series::display::PaintDisplayBuilder;
-use apaint_gtk::{colour::*, factory::BasicPaintFactoryBuilder};
+use apaint_gtk_ng::mixer::targeted::TargetedPaintMixerBuilder;
+use apaint_gtk_ng::series::display::PaintDisplayBuilder;
+use apaint_gtk_ng::{colour::*, factory::BasicPaintFactoryBuilder};
+use apaint_ng::series::{BasicPaintSpec, SeriesId, SeriesPaint};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-#[component = "f64"]
 struct Dummy {
-    rgb: RGB,
+    rgb: RGB<f64>,
 }
 
 impl TooltipText for Dummy {

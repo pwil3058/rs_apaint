@@ -9,11 +9,11 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::ScalarAttribute;
+use colour_math_ng::ScalarAttribute;
 
-use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
+use colour_math_gtk_ng::colour_edit::{ColourEditor, ColourEditorBuilder};
 
-use apaint::series::BasicPaintSpec;
+use apaint_ng::series::BasicPaintSpec;
 
 use crate::characteristics::{
     CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
@@ -30,7 +30,7 @@ pub struct BasicPaintSpecEditor {
     id_entry: gtk::Entry,
     name_entry: gtk::Entry,
     notes_entry: gtk::Entry,
-    colour_editor: Rc<ColourEditor>,
+    colour_editor: Rc<ColourEditor<u16>>,
     finish_entry: Rc<FinishEntry>,
     transparency_entry: Rc<TransparencyEntry>,
     permanence_entry: Rc<PermanenceEntry>,
@@ -133,7 +133,10 @@ impl BasicPaintSpecEditor {
         let add_btn = gtk::ButtonBuilder::new().label("Add").build();
         let accept_btn = gtk::ButtonBuilder::new().label("Accept").build();
         let reset_btn = gtk::ButtonBuilder::new().label("Reset").build();
-        let colour_editor = ColourEditorBuilder::new().attributes(attributes).extra_buttons(&[add_btn.clone(), accept_btn.clone(), reset_btn.clone()]).build();
+        let colour_editor = ColourEditorBuilder::new()
+            .attributes(attributes)
+            .extra_buttons(&[add_btn.clone(), accept_btn.clone(), reset_btn.clone()])
+            .build();
         vbox.pack_start(&colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,

@@ -9,12 +9,12 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::{ColourInterface, ScalarAttribute};
-use colour_math_gtk::attributes::{
+use colour_math_gtk_ng::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
+use colour_math_ng::{ColourBasics, ScalarAttribute};
 
-use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
+use apaint_ng::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
     colour::{Colourable, RGB},
@@ -30,7 +30,7 @@ pub struct MixtureDisplay {
 }
 
 impl MixtureDisplay {
-    pub fn set_target(&self, new_target: Option<&RGB>) {
+    pub fn set_target(&self, new_target: Option<&RGB<f64>>) {
         if let Some(rgb) = new_target {
             self.target_label.set_label("Current Target");
             self.target_label.set_widget_colour_rgb(&rgb);
@@ -51,7 +51,7 @@ impl MixtureDisplay {
 pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB>,
+    target_rgb: Option<RGB<f64>>,
     list_spec: ComponentsListViewSpec,
 }
 
@@ -72,7 +72,7 @@ impl MixtureDisplayBuilder {
         self
     }
 
-    pub fn target_rgb(&mut self, target_rgb: Option<&RGB>) -> &mut Self {
+    pub fn target_rgb(&mut self, target_rgb: Option<&RGB<f64>>) -> &mut Self {
         self.target_rgb = if let Some(target_rgb) = target_rgb {
             Some(*target_rgb)
         } else {
@@ -199,7 +199,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         pdd.dialog.present();
     }
 
-    pub fn set_target_rgb(&mut self, rgb: Option<&RGB>) {
+    pub fn set_target_rgb(&mut self, rgb: Option<&RGB<f64>>) {
         self.mixture_display_builder.target_rgb(rgb);
         for pdd in self.dialogs.values() {
             pdd.display.set_target(rgb);
@@ -212,7 +212,7 @@ pub struct MixtureDisplayDialogManagerBuilder<W: TopGtkWindow> {
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB>,
+    target_rgb: Option<RGB<f64>>,
 }
 
 impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {

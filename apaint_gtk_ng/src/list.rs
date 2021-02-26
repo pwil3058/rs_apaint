@@ -14,14 +14,14 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint::{
+use apaint_ng::{
     characteristics::CharacteristicType,
     mixtures::{Mixture, Paint},
     series::{BasicPaintSpec, SeriesPaint},
     BasicPaintIfce,
 };
 
-use crate::colour::{ColourInterface, ScalarAttribute};
+use crate::colour::{ColourBasics, ScalarAttribute};
 
 type PopupCallback = Box<dyn Fn(&str)>;
 
@@ -270,7 +270,7 @@ impl ColouredItemListViewSpec for BasicPaintListViewSpec {
     }
 }
 
-pub trait PaintListRow: BasicPaintIfce<f64> {
+pub trait PaintListRow: BasicPaintIfce {
     fn row(
         &self,
         attributes: &[ScalarAttribute],

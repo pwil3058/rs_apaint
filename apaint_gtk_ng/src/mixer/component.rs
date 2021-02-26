@@ -14,11 +14,11 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint::{LabelText, TooltipText};
+use apaint_ng::{LabelText, TooltipText};
 
-use crate::colour::{ColourInterface, Colourable, RGB};
+use crate::colour::{ColourBasics, Colourable, RGB};
 
-//type RemovalCallback<P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static> =
+//type RemovalCallback<P: ColourBasics<f64> + TooltipText + LabelText + Ord + 'static> =
 //    Box<dyn Fn(&Rc<P>)>;
 
 type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
@@ -26,7 +26,7 @@ type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
 #[derive(PWO)]
 pub struct PartsSpinButton<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
@@ -38,7 +38,7 @@ where
 
 impl<P> PartsSpinButton<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     pub fn new(paint: &Rc<P>, sensitive: bool) -> Rc<Self> {
         let event_box = gtk::EventBoxBuilder::new()
@@ -109,7 +109,7 @@ where
         self.set_parts(self.parts() / divisor);
     }
 
-    pub fn rgb_parts(&self) -> (RGB, u64) {
+    pub fn rgb_parts(&self) -> (RGB<f64>, u64) {
         (self.paint.rgb(), self.parts())
     }
 
@@ -143,7 +143,7 @@ where
 #[derive(PWO)]
 pub struct PartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     frame: gtk::Frame,
     vbox: gtk::Box,
@@ -156,7 +156,7 @@ where
 
 impl<P> PartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     pub fn new(title: &str, n_cols: u32, sensitive: bool) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -173,7 +173,7 @@ where
         })
     }
 
-    pub fn rgb_contributions(&self) -> Vec<(RGB, u64)> {
+    pub fn rgb_contributions(&self) -> Vec<(RGB<f64>, u64)> {
         self.spinners
             .borrow()
             .iter()
@@ -287,14 +287,14 @@ where
 
 pub trait RcPartsSpinButtonBox<P>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     fn add_paint(&self, paint: &Rc<P>);
 }
 
 impl<P> RcPartsSpinButtonBox<P> for Rc<PartsSpinButtonBox<P>>
 where
-    P: ColourInterface<f64> + TooltipText + LabelText + Ord + 'static,
+    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
 {
     fn add_paint(&self, paint: &Rc<P>) {
         if let Err(index) = self.binary_search_paint(paint) {

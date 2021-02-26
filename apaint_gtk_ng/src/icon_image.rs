@@ -2,7 +2,7 @@
 
 use pw_gix::{gdk_pixbuf, gtk};
 
-use apaint::xpm::*;
+use apaint_ng::xpm::*;
 
 // NEW COLLECTION
 pub fn colln_new_pixbuf() -> gdk_pixbuf::Pixbuf {

@@ -2,13 +2,13 @@
 
 use std::{error, fmt, io};
 
-pub mod angles {
-    pub use normalised_angles;
-
-    pub type Angle = normalised_angles::Angle<f64>;
-    pub type Degrees = normalised_angles::Degrees<f64>;
-    pub type Radians = normalised_angles::Radians<f64>;
-}
+pub mod factory;
+pub mod icon_image;
+pub mod list;
+pub mod mixer;
+pub mod series;
+pub mod spec_edit;
+pub mod storage;
 
 pub mod characteristics {
     use std::{cell::RefCell, rc::Rc};
@@ -19,7 +19,7 @@ pub mod characteristics {
         wrapper::*,
     };
 
-    pub use apaint::characteristics::{
+    pub use apaint_ng::characteristics::{
         CharacteristicIfce, CharacteristicType, Finish, Fluorescence, Metallicness, Permanence,
         Transparency,
     };
@@ -96,35 +96,31 @@ pub mod characteristics {
 }
 
 pub mod colour {
-    pub use colour_math::{
-        urgb::{RGB16, RGB8},
-        ColourInterface, HueConstants, RGBConstants, ScalarAttribute, CCI,
-    };
-    pub use colour_math_gtk::coloured::*;
+    pub use colour_math_gtk_ng::{colour::*, coloured::*};
+    // pub use colour_math_ng::{
+    //     Angle, ColourBasics, HueConstants, RGBConstants, ScalarAttribute, CCI, RGB,
+    // };
 
-    pub use normalised_angles;
+    type RGB8 = RGB<u8>;
+    type RGB16 = RGB<u16>;
+
     use pw_gix::gdk;
 
-    pub type Hue = colour_math::hue::Hue<f64>;
-    pub type RGB = colour_math::rgb::RGB<f64>;
-    pub type Degrees = normalised_angles::Degrees<f64>;
-    pub type Radians = normalised_angles::Radians<f64>;
-    pub type Angle = normalised_angles::Angle<f64>;
-
-    pub trait GdkConvert {
-        fn into_gdk_rgba(&self) -> gdk::RGBA;
-    }
-
-    impl GdkConvert for RGB {
-        fn into_gdk_rgba(&self) -> gdk::RGBA {
-            gdk::RGBA {
-                red: self[CCI::Red],
-                green: self[CCI::Green],
-                blue: self[CCI::Blue],
-                alpha: 1.0,
-            }
-        }
-    }
+    //
+    // pub trait GdkConvert {
+    //     fn into_gdk_rgba(&self) -> gdk::RGBA;
+    // }
+    //
+    // impl GdkConvert for RGB {
+    //     fn into_gdk_rgba(&self) -> gdk::RGBA {
+    //         gdk::RGBA {
+    //             red: self[CCI::Red],
+    //             green: self[CCI::Green],
+    //             blue: self[CCI::Blue],
+    //             alpha: 1.0,
+    //         }
+    //     }
+    // }
 }
 
 pub mod window {
@@ -246,17 +242,9 @@ pub mod window {
     }
 }
 
-pub mod factory;
-pub mod icon_image;
-pub mod list;
-pub mod mixer;
-pub mod series;
-pub mod spec_edit;
-pub mod storage;
-
 #[derive(Debug)]
 pub enum Error {
-    APaintError(apaint::Error),
+    APaintError(apaint_ng::Error),
     IOError(io::Error),
     DuplicateFile(String),
     GeneralError(String),
@@ -283,8 +271,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<apaint::Error> for Error {
-    fn from(err: apaint::Error) -> Self {
+impl From<apaint_ng::Error> for Error {
+    fn from(err: apaint_ng::Error) -> Self {
         Error::APaintError(err)
     }
 }

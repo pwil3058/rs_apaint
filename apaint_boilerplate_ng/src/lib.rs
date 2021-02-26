@@ -247,6 +247,7 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
         }
 
         impl #impl_generics colour_math_ng::ColourAttributes for #struct_name #ty_generics #where_clause {}
+        //impl #impl_generics colour_math_gtk_ng::colour::GdkRGBA for #struct_name #ty_generics #where_clause {}
     };
 
     proc_macro::TokenStream::from(tokens)

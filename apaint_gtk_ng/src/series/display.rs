@@ -9,12 +9,12 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::{ColourInterface, ScalarAttribute};
-use colour_math_gtk::attributes::{
+use colour_math_gtk_ng::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
+use colour_math_ng::{ColourBasics, ScalarAttribute};
 
-use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
+use apaint_ng::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
 use crate::colour::{Colourable, RGB};
 use crate::series::PaintActionCallback;
@@ -30,7 +30,7 @@ pub struct PaintDisplay {
 }
 
 impl PaintDisplay {
-    pub fn set_target(&self, new_target: Option<&RGB>) {
+    pub fn set_target(&self, new_target: Option<&RGB<f64>>) {
         if let Some(rgb) = new_target {
             self.target_label.set_label("Current Target");
             self.target_label.set_widget_colour_rgb(rgb);
@@ -38,7 +38,7 @@ impl PaintDisplay {
         } else {
             self.target_label.set_label("");
             self.target_label.set_widget_colour_rgb(&self.paint.rgb());
-            self.cads.set_target_colour(Option::<&RGB>::None);
+            self.cads.set_target_colour(Option::<&RGB<f64>>::None);
         };
     }
 
@@ -51,7 +51,7 @@ impl PaintDisplay {
 pub struct PaintDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB>,
+    target_rgb: Option<RGB<f64>>,
 }
 
 impl PaintDisplayBuilder {
@@ -69,7 +69,7 @@ impl PaintDisplayBuilder {
         self
     }
 
-    pub fn target_rgb(&mut self, target_rgb: Option<&RGB>) -> &mut Self {
+    pub fn target_rgb(&mut self, target_rgb: Option<&RGB<f64>>) -> &mut Self {
         self.target_rgb = if let Some(target_rgb) = target_rgb {
             Some(*target_rgb)
         } else {
@@ -176,7 +176,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         self.paint_display_builder.borrow_mut().target_rgb(rgb);
         for pdd in self.dialogs.borrow().values() {
             pdd.display.set_target(rgb);
@@ -246,7 +246,7 @@ pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     buttons: Vec<(u16, &'static str, Option<&'static str>, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB>,
+    target_rgb: Option<RGB<f64>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
 }
 

@@ -21,10 +21,10 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::attributes::hue_wheel::MakeColouredShape;
-use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
+use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
+use colour_math_ng::beigui::hue_wheel::MakeColouredShape;
 
-use apaint::{
+use apaint_ng::{
     characteristics::CharacteristicType,
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
@@ -135,7 +135,7 @@ impl SeriesPage {
         }
     }
 
-    fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         self.hue_wheel.set_target_rgb(rgb);
     }
 }
@@ -147,7 +147,7 @@ struct SeriesBinder {
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: RefCell<Option<RGB>>,
+    target_rgb: RefCell<Option<RGB<f64>>>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
     loaded_files_data_path: Option<PathBuf>,
 }
@@ -233,7 +233,7 @@ impl SeriesBinder {
         }
     }
 
-    fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         if let Some(rgb) = rgb {
             *self.target_rgb.borrow_mut() = Some(*rgb);
             for (page, _) in self.pages.borrow().iter() {
@@ -377,7 +377,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint::Result<Rc<SeriesPaint<f64>>> {
+    ) -> apaint_ng::Result<Rc<SeriesPaint<f64>>> {
         if let Some(series_id) = series_id {
             let bsr = self
                 .pages
@@ -386,12 +386,12 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
             match bsr {
                 Ok(index) => match self.pages.borrow()[index].0.paint_series.find(paint_id) {
                     Some(paint) => Ok(Rc::clone(paint)),
-                    None => Err(apaint::Error::UnknownSeriesPaint(
+                    None => Err(apaint_ng::Error::UnknownSeriesPaint(
                         series_id.clone(),
                         paint_id.to_string(),
                     )),
                 },
-                Err(_) => Err(apaint::Error::UnknownSeries(series_id.clone())),
+                Err(_) => Err(apaint_ng::Error::UnknownSeries(series_id.clone())),
             }
         } else {
             for page in self.pages.borrow().iter() {
@@ -399,7 +399,7 @@ impl SeriesPaintFinder<f64> for SeriesBinder {
                     return Ok(Rc::clone(paint));
                 }
             }
-            Err(apaint::Error::NotFound(paint_id.to_string()))
+            Err(apaint_ng::Error::NotFound(paint_id.to_string()))
         }
     }
 }
@@ -446,7 +446,7 @@ impl PaintSeriesManager {
             .push(Box::new(callback));
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB>) {
+    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
         self.binder.set_target_rgb(rgb);
         self.display_dialog_manager.set_target_rgb(rgb);
     }
@@ -461,7 +461,7 @@ impl SeriesPaintFinder<f64> for PaintSeriesManager {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint::Result<Rc<SeriesPaint<f64>>> {
+    ) -> apaint_ng::Result<Rc<SeriesPaint<f64>>> {
         self.binder.get_series_paint(paint_id, series_id)
     }
 }
