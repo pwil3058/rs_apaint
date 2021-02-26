@@ -6,7 +6,7 @@ use regex::Regex;
 
 use lazy_static::lazy_static;
 
-use colour_math::ColourComponent;
+use colour_math_ng::{LightLevel, Prop};
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
@@ -30,13 +30,14 @@ fn extract_header_value(line: Option<&str>) -> Result<String, crate::Error> {
     Err(crate::Error::NotAValidLegacySpec)
 }
 
-fn extract_paint_spec<F: ColourComponent>(line: &str) -> Result<BasicPaintSpec<F>, crate::Error> {
+fn extract_paint_spec<F: LightLevel>(line: &str) -> Result<BasicPaintSpec<F>, crate::Error> {
     use crate::Error::NotAValidLegacySpec;
     if let Some(cap) = PAINT_RE.captures(line) {
         let name = cap.name("name").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb_str = cap.name("rgb").ok_or(NotAValidLegacySpec)?.as_str();
-        let rgb = colour_math::RGB16::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
-        let mut bps = BasicPaintSpec::<F>::new(rgb.into(), name);
+        let rgb = colour_math_ng::RGB::<u16>::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
+        let array: [Prop; 3] = rgb.into();
+        let mut bps = BasicPaintSpec::<F>::new(array.into(), name);
         bps.name = name.to_string();
         bps.notes = cap
             .name("notes")
@@ -79,7 +80,7 @@ fn extract_paint_spec<F: ColourComponent>(line: &str) -> Result<BasicPaintSpec<F
     }
 }
 
-pub fn extract_legacy_paint_series_spec<F: ColourComponent>(
+pub fn extract_legacy_paint_series_spec<F: LightLevel>(
     string: &str,
 ) -> Result<SeriesPaintSeriesSpec<F>, crate::Error> {
     let mut lines = string.lines();
@@ -95,7 +96,7 @@ pub fn extract_legacy_paint_series_spec<F: ColourComponent>(
     Ok(spec)
 }
 
-pub fn read_legacy_paint_series_spec<R: Read, F: ColourComponent>(
+pub fn read_legacy_paint_series_spec<R: Read, F: LightLevel>(
     reader: &mut R,
 ) -> Result<SeriesPaintSeriesSpec<F>, crate::Error> {
     let mut string = String::new();

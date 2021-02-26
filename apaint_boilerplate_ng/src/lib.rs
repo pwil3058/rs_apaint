@@ -5,7 +5,6 @@ extern crate proc_macro;
 use heck::KebabCase;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::spanned::Spanned;
 use syn::{parse_macro_input, Data, DeriveInput, Ident};
 
 fn acronym(input: &str) -> String {
@@ -155,7 +154,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     proc_macro::TokenStream::from(tokens)
 }
 
-#[proc_macro_derive(Colour, attributes(colour, component))]
+#[proc_macro_derive(Colour, attributes(colour))]
 pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
     let struct_name = parsed_input.ident;
@@ -184,114 +183,82 @@ pub fn colour_interface_derive(input: TokenStream) -> TokenStream {
     } else {
         first.unwrap()
     };
-    let mut component = { Ident::new("F", struct_name.span()) };
-    for attr in parsed_input.attrs.iter() {
-        if attr.path.is_ident("component") {
-            if let Ok(meta) = attr.parse_meta() {
-                match meta {
-                    syn::Meta::NameValue(nv) => {
-                        if let syn::Lit::Str(lit_str) = &nv.lit {
-                            component = Ident::new(&lit_str.value(), nv.span());
-                        }
-                    }
-                    _ => panic!("expected 'component = name'"),
-                }
-            }
-        }
-    }
     let tokens = quote! {
-        impl #impl_generics colour_math::ColourInterface<#component> for #struct_name #ty_generics #where_clause {
-            fn rgb(&self) -> colour_math::RGB<#component> {
-                self.#colour.rgb()
-            }
-
-            fn rgba(&self) -> colour_math::RGBA<#component> {
-                self.#colour.rgba()
-            }
-
-            fn hcv(&self) -> colour_math::HCV<#component> {
-                self.#colour.hcv()
-            }
-
-            fn hue(&self) -> Option<colour_math::Hue<#component>> {
+        impl #impl_generics colour_math_ng::ColourBasics for #struct_name #ty_generics #where_clause {
+            fn hue(&self) -> Option<colour_math_ng::Hue> {
                 self.#colour.hue()
             }
 
-            fn hue_angle(&self) -> Option<colour_math::Degrees<#component>> {
+            fn hue_angle(&self) -> Option<colour_math_ng::Angle> {
                 self.#colour.hue_angle()
+            }
+
+            fn hue_rgb<L: LightLevel>(&self) -> Option<colour_math_ng::RGB<L>> {
+                self.#colour.hue_rgb::<L>()
+            }
+
+            fn hue_hcv(&self) -> Option<colour_math_ng::HCV> {
+                self.#colour.hue_hcv()
             }
 
             fn is_grey(&self) -> bool {
                 self.#colour.is_grey()
             }
 
-            fn chroma(&self) -> #component {
+            fn chroma(&self) -> colour_math_ng::Chroma {
                 self.#colour.chroma()
             }
 
-            fn greyness(&self) -> #component {
-                self.#colour.greyness()
-            }
-
-            fn value(&self) -> #component {
+            fn value(&self) -> colour_math_ng::Prop {
                 self.#colour.value()
             }
 
-            fn warmth(&self) -> #component {
+            fn greyness(&self) -> colour_math_ng::Greyness {
+                self.#colour.greyness()
+            }
+
+            fn warmth(&self) -> colour_math_ng::Warmth {
                 self.#colour.warmth()
             }
 
-            fn best_foreground_rgb(&self) -> colour_math::RGB<#component> {
-                self.#colour.best_foreground_rgb()
+            fn hcv(&self) -> colour_math_ng::HCV {
+                self.#colour.hcv()
             }
 
-            fn monochrome_rgb(&self) -> colour_math::RGB<#component> {
-                self.#colour.monochrome_rgb()
+            fn rgb<L: LightLevel>(&self) -> colour_math_ng::RGB<L> {
+                self.#colour.rgb::<L>()
             }
 
-            fn max_chroma_rgb(&self) -> colour_math::RGB<#component> {
-                self.#colour.max_chroma_rgb()
+            fn monochrome_hcv(&self) -> colour_math_ng::HCV {
+                self.#colour.monochrome_hcv()
             }
 
-            fn warmth_rgb(&self) -> colour_math::RGB<#component> {
-                self.#colour.warmth_rgb()
+            fn monochrome_rgb<L: LightLevel>(&self) -> colour_math_ng::RGB<L> {
+                self.#colour.monochrome_rgb::<L>()
             }
 
-            fn scalar_attribute(&self, attr: ScalarAttribute) -> #component {
-                self.#colour.scalar_attribute(attr)
+            fn best_foreground(&self) -> colour_math_ng::HCV {
+                self.#colour.best_foreground()
             }
 
-            fn scalar_attribute_rgb(&self, attr: ScalarAttribute) -> colour_math::RGB<#component> {
-                self.#colour.scalar_attribute_rgb(attr)
+            fn pango_string(&self) -> String {
+                self.#colour.pango_string()
             }
         }
+
+        impl #impl_generics colour_math_ng::ColourAttributes for #struct_name #ty_generics #where_clause {}
     };
 
     proc_macro::TokenStream::from(tokens)
 }
 
-#[proc_macro_derive(BasicPaint, attributes(colour, component))]
+#[proc_macro_derive(BasicPaint, attributes(colour))]
 pub fn basic_paint_interface_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
     let struct_name = parsed_input.ident;
     let (impl_generics, ty_generics, where_clause) = parsed_input.generics.split_for_impl();
-    let mut component = { Ident::new("F", struct_name.span()) };
-    for attr in parsed_input.attrs.iter() {
-        if attr.path.is_ident("component") {
-            if let Ok(meta) = attr.parse_meta() {
-                match meta {
-                    syn::Meta::NameValue(nv) => {
-                        if let syn::Lit::Str(lit_str) = &nv.lit {
-                            component = Ident::new(&lit_str.value(), nv.span());
-                        }
-                    }
-                    _ => panic!("expected 'component = name'"),
-                }
-            }
-        }
-    }
     let tokens = quote! {
-        impl #impl_generics crate::BasicPaintIfce<#component> for #struct_name #ty_generics #where_clause {
+        impl #impl_generics crate::BasicPaintIfce for #struct_name #ty_generics #where_clause {
             fn id(&self) -> &str {
                 &self.id
             }

@@ -10,11 +10,11 @@ use std::{
 use crypto_hash::{Algorithm, Hasher};
 use serde::{de::DeserializeOwned, Serialize};
 
-use apaint_boilerplate::{BasicPaint, Colour};
+use apaint_boilerplate_ng::{BasicPaint, Colour};
 
-use colour_math::{
-    attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    ColourComponent, ColourInterface, ScalarAttribute, RGB,
+use colour_math_ng::{
+    beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
+    ColourBasics, LightLevel, RGB,
 };
 
 use crate::{
@@ -24,7 +24,7 @@ use crate::{
 use std::cmp::Ordering;
 
 #[derive(Debug, Colour, BasicPaint)]
-pub struct SeriesPaint<F: ColourComponent> {
+pub struct SeriesPaint<F: LightLevel> {
     rgb: RGB<F>,
     id: String,
     name: String,
@@ -37,13 +37,13 @@ pub struct SeriesPaint<F: ColourComponent> {
     series_id: Rc<SeriesId>,
 }
 
-impl<F: ColourComponent> SeriesPaint<F> {
+impl<F: LightLevel> SeriesPaint<F> {
     pub fn series_id(&self) -> &Rc<SeriesId> {
         &self.series_id
     }
 }
 
-impl<F: ColourComponent> From<(&BasicPaintSpec<F>, &Rc<SeriesId>)> for SeriesPaint<F> {
+impl<F: LightLevel> From<(&BasicPaintSpec<F>, &Rc<SeriesId>)> for SeriesPaint<F> {
     fn from(spec: (&BasicPaintSpec<F>, &Rc<SeriesId>)) -> Self {
         Self {
             rgb: spec.0.rgb,
@@ -61,7 +61,7 @@ impl<F: ColourComponent> From<(&BasicPaintSpec<F>, &Rc<SeriesId>)> for SeriesPai
 }
 
 // TODO: think about not considering series id when testing equality and order
-impl<F: ColourComponent> PartialEq for SeriesPaint<F> {
+impl<F: LightLevel> PartialEq for SeriesPaint<F> {
     fn eq(&self, other: &Self) -> bool {
         if self.id == other.id {
             self.series_id == other.series_id
@@ -71,9 +71,9 @@ impl<F: ColourComponent> PartialEq for SeriesPaint<F> {
     }
 }
 
-impl<F: ColourComponent> Eq for SeriesPaint<F> {}
+impl<F: LightLevel> Eq for SeriesPaint<F> {}
 
-impl<F: ColourComponent> PartialOrd for SeriesPaint<F> {
+impl<F: LightLevel> PartialOrd for SeriesPaint<F> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match self.id.cmp(&other.id) {
             Ordering::Less => Some(Ordering::Less),
@@ -83,13 +83,13 @@ impl<F: ColourComponent> PartialOrd for SeriesPaint<F> {
     }
 }
 
-impl<F: ColourComponent> Ord for SeriesPaint<F> {
+impl<F: LightLevel> Ord for SeriesPaint<F> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
 }
 
-impl<F: ColourComponent> TooltipText for SeriesPaint<F> {
+impl<F: LightLevel> TooltipText for SeriesPaint<F> {
     fn tooltip_text(&self) -> String {
         let mut string = self.label_text();
         if let Some(notes) = self.notes() {
@@ -105,29 +105,29 @@ impl<F: ColourComponent> TooltipText for SeriesPaint<F> {
     }
 }
 
-impl<F: ColourComponent> LabelText for SeriesPaint<F> {
+impl<F: LightLevel> LabelText for SeriesPaint<F> {
     fn label_text(&self) -> String {
         if let Some(name) = self.name() {
             format!("{}: {}", self.id, name)
         } else if let Some(notes) = self.notes() {
             format!("{}: {}", self.id, notes)
         } else {
-            format!("{}: {}", self.id, self.rgb().pango_string())
+            format!("{}: {}", self.id, self.rgb::<F>().pango_string())
         }
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for SeriesPaint<F> {
-    fn coloured_shape(&self) -> ColouredShape<F> {
+impl<F: LightLevel + ShapeConsts> MakeColouredShape for SeriesPaint<F> {
+    fn coloured_shape(&self) -> ColouredShape {
         let tooltip_text = self.tooltip_text();
-        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
+        ColouredShape::new(&self.rgb, &self.id, &tooltip_text, Shape::Square)
     }
 }
 
 #[derive(Debug)]
 pub struct SeriesPaintSeries<F>
 where
-    F: ColourComponent,
+    F: LightLevel,
 {
     series_id: Rc<SeriesId>,
     paint_list: Vec<Rc<SeriesPaint<F>>>,
@@ -135,7 +135,7 @@ where
 
 impl<F> SeriesPaintSeries<F>
 where
-    F: ColourComponent,
+    F: LightLevel,
 {
     pub fn series_id(&self) -> &Rc<SeriesId> {
         &self.series_id
@@ -163,7 +163,7 @@ where
     }
 }
 
-impl<F: ColourComponent> From<&SeriesPaintSeriesSpec<F>> for SeriesPaintSeries<F> {
+impl<F: LightLevel> From<&SeriesPaintSeriesSpec<F>> for SeriesPaintSeries<F> {
     fn from(spec: &SeriesPaintSeriesSpec<F>) -> Self {
         debug_assert!(spec.is_sorted_unique());
         let series_id = Rc::new(spec.series_id().clone());
@@ -179,7 +179,7 @@ impl<F: ColourComponent> From<&SeriesPaintSeriesSpec<F>> for SeriesPaintSeries<F
     }
 }
 
-pub trait SeriesPaintFinder<F: ColourComponent> {
+pub trait SeriesPaintFinder<F: LightLevel> {
     fn get_series_paint(
         &self,
         paint_id: &str,
@@ -188,7 +188,7 @@ pub trait SeriesPaintFinder<F: ColourComponent> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Colour, BasicPaint, Clone, PartialEq)]
-pub struct BasicPaintSpec<F: ColourComponent> {
+pub struct BasicPaintSpec<F: LightLevel> {
     pub rgb: RGB<F>,
     pub id: String,
     pub name: String,
@@ -200,7 +200,7 @@ pub struct BasicPaintSpec<F: ColourComponent> {
     pub metallicness: Metallicness,
 }
 
-impl<F: ColourComponent> BasicPaintSpec<F> {
+impl<F: LightLevel> BasicPaintSpec<F> {
     pub fn new(rgb: RGB<F>, id: &str) -> Self {
         Self {
             rgb,
@@ -216,8 +216,8 @@ impl<F: ColourComponent> BasicPaintSpec<F> {
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for BasicPaintSpec<F> {
-    fn coloured_shape(&self) -> ColouredShape<F> {
+impl<F: LightLevel + ShapeConsts> MakeColouredShape for BasicPaintSpec<F> {
+    fn coloured_shape(&self) -> ColouredShape {
         let tooltip_text = if let Some(name) = self.name() {
             if let Some(notes) = self.notes() {
                 format!("{}: {}\n{}", self.id, name, notes)
@@ -227,9 +227,9 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for BasicPaintSpec<F
         } else if let Some(notes) = self.notes() {
             format!("{}: {}", self.id, notes)
         } else {
-            format!("{}: {}", self.id, self.rgb().pango_string())
+            format!("{}: {}", self.id, self.rgb::<F>().pango_string())
         };
-        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Square)
+        ColouredShape::new(&self.rgb, &self.id, &tooltip_text, Shape::Square)
     }
 }
 
@@ -274,7 +274,7 @@ impl From<&Rc<SeriesId>> for SeriesId {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SeriesPaintSeriesSpec<F>
 where
-    F: ColourComponent,
+    F: LightLevel,
 {
     series_id: SeriesId,
     paint_list: Vec<BasicPaintSpec<F>>,
@@ -282,7 +282,7 @@ where
 
 impl<F> std::default::Default for SeriesPaintSeriesSpec<F>
 where
-    F: ColourComponent,
+    F: LightLevel,
 {
     fn default() -> Self {
         Self {
@@ -294,7 +294,7 @@ where
 
 impl<F> SeriesPaintSeriesSpec<F>
 where
-    F: ColourComponent,
+    F: LightLevel,
 {
     pub fn series_id(&self) -> &SeriesId {
         &self.series_id
@@ -363,7 +363,7 @@ where
 
 impl<'de, F> SeriesPaintSeriesSpec<F>
 where
-    F: ColourComponent + DeserializeOwned,
+    F: LightLevel + DeserializeOwned,
 {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
@@ -375,7 +375,7 @@ where
 
 impl<'de, F> SeriesPaintSeriesSpec<F>
 where
-    F: ColourComponent + Serialize,
+    F: LightLevel + Serialize,
 {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
         let mut hasher = Hasher::new(Algorithm::SHA256);
@@ -397,7 +397,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::series::{BasicPaintSpec, SeriesPaintSeriesSpec};
-    use colour_math::{HueConstants, RGB};
+    use colour_math_ng::{HueConstants, RGB};
 
     #[test]
     fn save_and_recover() {

@@ -3,6 +3,7 @@
 use std::{
     cmp::Ordering,
     io::{Read, Write},
+    ops::{AddAssign, Div, Mul},
     rc::Rc,
 };
 
@@ -11,21 +12,23 @@ use serde::{de::DeserializeOwned, Serialize};
 use crypto_hash::{Algorithm, Hasher};
 use gcd::Gcd;
 
-use colour_math::{
-    attributes::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
-    ColourComponent, ColourInterface, Degrees, Hue, ScalarAttribute, CCI, HCV, RGB, RGBA,
+use num_traits::cast::{FromPrimitive, ToPrimitive};
+
+use colour_math_ng::{
+    beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape, ShapeConsts},
+    Angle, Chroma, ColourBasics, Hue, LightLevel, CCI, HCV, RGB,
 };
 
-use apaint_boilerplate::Colour;
+use apaint_boilerplate_ng::Colour;
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
-    BasicPaintIfce, LabelText, TooltipText,
+    BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
 
 #[derive(Debug, Colour)]
-pub struct Mixture<F: ColourComponent> {
+pub struct Mixture<F: LightLevel> {
     rgb: RGB<F>,
     targeted_rgb: Option<RGB<F>>,
     id: String,
@@ -39,7 +42,7 @@ pub struct Mixture<F: ColourComponent> {
     components: Vec<(Paint<F>, u64)>,
 }
 
-impl<F: ColourComponent + ShapeConsts> Mixture<F> {
+impl<F: LightLevel + ShapeConsts> Mixture<F> {
     pub fn targeted_rgb(&self) -> Option<&RGB<F>> {
         if let Some(ref rgb) = self.targeted_rgb {
             Some(rgb)
@@ -48,11 +51,11 @@ impl<F: ColourComponent + ShapeConsts> Mixture<F> {
         }
     }
 
-    pub fn targeted_rgb_shape(&self) -> ColouredShape<F> {
+    pub fn targeted_rgb_shape(&self) -> ColouredShape {
         let tooltip_text = format!("Target for: {}", self.tooltip_text());
         let id = self.targeted_rgb_id();
         ColouredShape::new(
-            self.targeted_rgb.unwrap(),
+            &self.targeted_rgb.expect("programmer error"),
             &id,
             &tooltip_text,
             Shape::Circle,
@@ -68,7 +71,7 @@ impl<F: ColourComponent + ShapeConsts> Mixture<F> {
     }
 }
 
-impl<F: ColourComponent> BasicPaintIfce<F> for Mixture<F> {
+impl<F: LightLevel> BasicPaintIfce for Mixture<F> {
     fn id(&self) -> &str {
         &self.id
     }
@@ -110,7 +113,7 @@ impl<F: ColourComponent> BasicPaintIfce<F> for Mixture<F> {
     }
 }
 
-impl<F: ColourComponent> TooltipText for Mixture<F> {
+impl<F: LightLevel> TooltipText for Mixture<F> {
     fn tooltip_text(&self) -> String {
         let mut string = self.label_text();
         if let Some(notes) = self.notes() {
@@ -122,34 +125,34 @@ impl<F: ColourComponent> TooltipText for Mixture<F> {
     }
 }
 
-impl<F: ColourComponent> LabelText for Mixture<F> {
+impl<F: LightLevel> LabelText for Mixture<F> {
     fn label_text(&self) -> String {
         if let Some(name) = self.name() {
             format!("Mix {}: {}", self.id, name)
         } else if let Some(notes) = self.notes() {
             format!("Mix {}: {}", self.id, notes)
         } else {
-            format!("Mix {}: {}", self.id, self.rgb().pango_string())
+            format!("Mix {}: {}", self.id, self.rgb::<F>().pango_string())
         }
     }
 }
 
-impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Mixture<F> {
-    fn coloured_shape(&self) -> ColouredShape<F> {
+impl<F: LightLevel + ShapeConsts> MakeColouredShape for Mixture<F> {
+    fn coloured_shape(&self) -> ColouredShape {
         let tooltip_text = self.tooltip_text();
-        ColouredShape::new(self.rgb, &self.id, &tooltip_text, Shape::Diamond)
+        ColouredShape::new(&self.rgb, &self.id, &tooltip_text, Shape::Diamond)
     }
 }
 
-impl<F: ColourComponent> PartialEq for Mixture<F> {
+impl<F: LightLevel> PartialEq for Mixture<F> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl<F: ColourComponent> Eq for Mixture<F> {}
+impl<F: LightLevel> Eq for Mixture<F> {}
 
-impl<F: ColourComponent> PartialOrd for Mixture<F> {
+impl<F: LightLevel> PartialOrd for Mixture<F> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match self.id.cmp(&other.id) {
             Ordering::Less => Some(Ordering::Less),
@@ -159,19 +162,19 @@ impl<F: ColourComponent> PartialOrd for Mixture<F> {
     }
 }
 
-impl<F: ColourComponent> Ord for Mixture<F> {
+impl<F: LightLevel> Ord for Mixture<F> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
 }
 
 #[derive(Debug)]
-pub struct MixingSession<F: ColourComponent> {
+pub struct MixingSession<F: LightLevel> {
     notes: String,
     mixtures: Vec<Rc<Mixture<F>>>,
 }
 
-impl<F: ColourComponent> Default for MixingSession<F> {
+impl<F: LightLevel> Default for MixingSession<F> {
     fn default() -> Self {
         Self {
             notes: String::new(),
@@ -180,7 +183,7 @@ impl<F: ColourComponent> Default for MixingSession<F> {
     }
 }
 
-impl<F: ColourComponent> MixingSession<F> {
+impl<F: LightLevel> MixingSession<F> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -253,7 +256,16 @@ impl<F: ColourComponent> MixingSession<F> {
     }
 }
 
-impl<F: ColourComponent + DeserializeOwned> MixingSession<F> {
+impl<F> MixingSession<F>
+where
+    F: LightLevel
+        + DeserializeOwned
+        + ToPrimitive
+        + FromPrimitive
+        + AddAssign
+        + Div<Output = F>
+        + Mul<Output = F>,
+{
     pub fn read<R: Read>(
         reader: &mut R,
         series_paint_finder: &Rc<impl SeriesPaintFinder<F>>,
@@ -264,7 +276,7 @@ impl<F: ColourComponent + DeserializeOwned> MixingSession<F> {
     }
 }
 
-impl<F: ColourComponent + Serialize> MixingSession<F> {
+impl<F: LightLevel + Serialize> MixingSession<F> {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
         SaveableMixingSession::from(self).write(writer)
     }
@@ -275,7 +287,10 @@ impl<F: ColourComponent + Serialize> MixingSession<F> {
 }
 
 #[derive(Debug)]
-pub struct MixtureBuilder<F: ColourComponent> {
+pub struct MixtureBuilder<F>
+where
+    F: LightLevel + ToPrimitive + FromPrimitive + AddAssign + Div + Mul,
+{
     id: String,
     name: String,
     notes: String,
@@ -284,7 +299,16 @@ pub struct MixtureBuilder<F: ColourComponent> {
     targeted_rgb: Option<RGB<F>>,
 }
 
-impl<F: ColourComponent> MixtureBuilder<F> {
+impl<F> MixtureBuilder<F>
+where
+    F: LightLevel
+        + ToPrimitive
+        + FromPrimitive
+        + AddAssign
+        + Div<Output = F>
+        + Mul
+        + Mul<Output = F>,
+{
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_string(),
@@ -357,7 +381,7 @@ impl<F: ColourComponent> MixtureBuilder<F> {
         for (paint, parts) in self.series_components.iter() {
             let adjusted_parts = parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            let rgb = paint.rgb();
+            let rgb = paint.rgb::<F>();
             for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
                 rgb_sum[i] +=
                     rgb[*cci] * F::from_u64(adjusted_parts).expect("no problems expected");
@@ -373,7 +397,7 @@ impl<F: ColourComponent> MixtureBuilder<F> {
         for (paint, parts) in self.mixture_components.iter() {
             let adjusted_parts = parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            let rgb = paint.rgb();
+            let rgb = paint.rgb::<F>();
             for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
                 rgb_sum[i] +=
                     rgb[*cci] * F::from_u64(adjusted_parts).expect("no problems expected");
@@ -388,7 +412,7 @@ impl<F: ColourComponent> MixtureBuilder<F> {
         }
         let divisor: F = F::from_u64(total_adjusted_parts).expect("should succeed");
         for item in &mut rgb_sum {
-            *item /= divisor;
+            *item = *item / divisor;
         }
         let divisor = total_adjusted_parts as f64;
         let mp = Mixture::<F> {
@@ -409,13 +433,13 @@ impl<F: ColourComponent> MixtureBuilder<F> {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Paint<F: ColourComponent> {
+pub enum Paint<F: LightLevel> {
     Series(Rc<SeriesPaint<F>>),
     Mixed(Rc<Mixture<F>>),
 }
 
-impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Paint<F> {
-    fn coloured_shape(&self) -> ColouredShape<F> {
+impl<F: LightLevel + ShapeConsts> MakeColouredShape for Paint<F> {
+    fn coloured_shape(&self) -> ColouredShape {
         match self {
             Paint::Series(paint) => paint.coloured_shape(),
             Paint::Mixed(paint) => paint.coloured_shape(),
@@ -423,39 +447,32 @@ impl<F: ColourComponent + ShapeConsts> MakeColouredShape<F> for Paint<F> {
     }
 }
 
-impl<F: ColourComponent> ColourInterface<F> for Paint<F> {
-    fn rgb(&self) -> RGB<F> {
-        match self {
-            Paint::Series(paint) => paint.rgb(),
-            Paint::Mixed(paint) => paint.rgb(),
-        }
-    }
-
-    fn rgba(&self) -> RGBA<F> {
-        match self {
-            Paint::Series(paint) => paint.rgba(),
-            Paint::Mixed(paint) => paint.rgba(),
-        }
-    }
-
-    fn hcv(&self) -> HCV<F> {
-        match self {
-            Paint::Series(paint) => paint.hcv(),
-            Paint::Mixed(paint) => paint.hcv(),
-        }
-    }
-
-    fn hue(&self) -> Option<Hue<F>> {
+impl<F: LightLevel> ColourBasics for Paint<F> {
+    fn hue(&self) -> Option<Hue> {
         match self {
             Paint::Series(paint) => paint.hue(),
             Paint::Mixed(paint) => paint.hue(),
         }
     }
 
-    fn hue_angle(&self) -> Option<Degrees<F>> {
+    fn hue_angle(&self) -> Option<Angle> {
         match self {
             Paint::Series(paint) => paint.hue_angle(),
             Paint::Mixed(paint) => paint.hue_angle(),
+        }
+    }
+
+    fn hue_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
+        match self {
+            Paint::Series(paint) => paint.hue_rgb::<L>(),
+            Paint::Mixed(paint) => paint.hue_rgb::<L>(),
+        }
+    }
+
+    fn hue_hcv(&self) -> Option<HCV> {
+        match self {
+            Paint::Series(paint) => paint.hue_hcv(),
+            Paint::Mixed(paint) => paint.hue_hcv(),
         }
     }
 
@@ -466,64 +483,73 @@ impl<F: ColourComponent> ColourInterface<F> for Paint<F> {
         }
     }
 
-    fn chroma(&self) -> F {
+    fn chroma(&self) -> Chroma {
         match self {
             Paint::Series(paint) => paint.chroma(),
             Paint::Mixed(paint) => paint.chroma(),
         }
     }
 
-    fn max_chroma_rgb(&self) -> RGB<F> {
-        match self {
-            Paint::Series(paint) => paint.max_chroma_rgb(),
-            Paint::Mixed(paint) => paint.max_chroma_rgb(),
-        }
-    }
-
-    fn greyness(&self) -> F {
-        match self {
-            Paint::Series(paint) => paint.greyness(),
-            Paint::Mixed(paint) => paint.greyness(),
-        }
-    }
-
-    fn value(&self) -> F {
+    fn value(&self) -> Prop {
         match self {
             Paint::Series(paint) => paint.value(),
             Paint::Mixed(paint) => paint.value(),
         }
     }
 
-    fn monochrome_rgb(&self) -> RGB<F> {
+    fn greyness(&self) -> Greyness {
         match self {
-            Paint::Series(paint) => paint.monochrome_rgb(),
-            Paint::Mixed(paint) => paint.monochrome_rgb(),
+            Paint::Series(paint) => paint.greyness(),
+            Paint::Mixed(paint) => paint.greyness(),
         }
     }
 
-    fn warmth(&self) -> F {
+    fn warmth(&self) -> Warmth {
         match self {
             Paint::Series(paint) => paint.warmth(),
             Paint::Mixed(paint) => paint.warmth(),
         }
     }
 
-    fn warmth_rgb(&self) -> RGB<F> {
+    fn hcv(&self) -> HCV {
         match self {
-            Paint::Series(paint) => paint.warmth_rgb(),
-            Paint::Mixed(paint) => paint.warmth_rgb(),
+            Paint::Series(paint) => paint.hcv(),
+            Paint::Mixed(paint) => paint.hcv(),
         }
     }
 
-    fn best_foreground_rgb(&self) -> RGB<F> {
+    fn rgb<L: LightLevel>(&self) -> RGB<L> {
         match self {
-            Paint::Series(paint) => paint.best_foreground_rgb(),
-            Paint::Mixed(paint) => paint.best_foreground_rgb(),
+            Paint::Series(paint) => paint.rgb(),
+            Paint::Mixed(paint) => paint.rgb(),
+        }
+    }
+
+    fn monochrome_hcv(&self) -> HCV {
+        match self {
+            Paint::Series(paint) => paint.monochrome_hcv(),
+            Paint::Mixed(paint) => paint.monochrome_hcv(),
+        }
+    }
+
+    fn monochrome_rgb<L: LightLevel>(&self) -> RGB<L> {
+        match self {
+            Paint::Series(paint) => paint.monochrome_rgb::<L>(),
+            Paint::Mixed(paint) => paint.monochrome_rgb::<L>(),
+        }
+    }
+
+    fn best_foreground(&self) -> HCV {
+        match self {
+            Paint::Series(paint) => paint.best_foreground(),
+            Paint::Mixed(paint) => paint.best_foreground(),
         }
     }
 }
 
-impl<F: ColourComponent> BasicPaintIfce<F> for Paint<F> {
+impl<L: LightLevel> ColourAttributes for Paint<L> {}
+
+impl<F: LightLevel> BasicPaintIfce for Paint<F> {
     fn id(&self) -> &str {
         match self {
             Paint::Series(paint) => paint.id(),
@@ -587,19 +613,19 @@ pub enum SaveablePaint {
     Mixed(String),
 }
 
-impl<F: ColourComponent> From<&Rc<SeriesPaint<F>>> for SaveablePaint {
+impl<F: LightLevel> From<&Rc<SeriesPaint<F>>> for SaveablePaint {
     fn from(paint: &Rc<SeriesPaint<F>>) -> Self {
         SaveablePaint::Series(paint.series_id().into(), paint.id().to_string())
     }
 }
 
-impl<F: ColourComponent> From<&Rc<Mixture<F>>> for SaveablePaint {
+impl<F: LightLevel> From<&Rc<Mixture<F>>> for SaveablePaint {
     fn from(paint: &Rc<Mixture<F>>) -> Self {
         SaveablePaint::Mixed(paint.id().to_string())
     }
 }
 
-impl<F: ColourComponent> From<&Paint<F>> for SaveablePaint {
+impl<F: LightLevel> From<&Paint<F>> for SaveablePaint {
     fn from(paint: &Paint<F>) -> Self {
         match paint {
             Paint::Series(paint) => paint.into(),
@@ -609,7 +635,7 @@ impl<F: ColourComponent> From<&Paint<F>> for SaveablePaint {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SaveableMixture<F: ColourComponent> {
+pub struct SaveableMixture<F: LightLevel> {
     targeted_rgb: Option<RGB<F>>,
     id: String,
     name: String,
@@ -617,7 +643,7 @@ pub struct SaveableMixture<F: ColourComponent> {
     components: Vec<(SaveablePaint, u64)>,
 }
 
-impl<F: ColourComponent> From<&Rc<Mixture<F>>> for SaveableMixture<F> {
+impl<F: LightLevel> From<&Rc<Mixture<F>>> for SaveableMixture<F> {
     fn from(rcmp: &Rc<Mixture<F>>) -> Self {
         let components = rcmp
             .components
@@ -635,12 +661,12 @@ impl<F: ColourComponent> From<&Rc<Mixture<F>>> for SaveableMixture<F> {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SaveableMixingSession<F: ColourComponent> {
+pub struct SaveableMixingSession<F: LightLevel> {
     notes: String,
     mixtures: Vec<SaveableMixture<F>>,
 }
 
-impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
+impl<F: LightLevel> From<&MixingSession<F>> for SaveableMixingSession<F> {
     fn from(session: &MixingSession<F>) -> Self {
         let mixtures = session.mixtures.iter().map(SaveableMixture::from).collect();
         Self {
@@ -650,7 +676,10 @@ impl<F: ColourComponent> From<&MixingSession<F>> for SaveableMixingSession<F> {
     }
 }
 
-impl<F: ColourComponent> SaveableMixingSession<F> {
+impl<F> SaveableMixingSession<F>
+where
+    F: LightLevel + ToPrimitive + FromPrimitive + AddAssign + Div<Output = F> + Mul<Output = F>,
+{
     pub fn mixing_session(
         &self,
         series_paint_finder: &Rc<impl SeriesPaintFinder<F>>,
@@ -693,7 +722,7 @@ impl<F: ColourComponent> SaveableMixingSession<F> {
 
 impl<'de, F> SaveableMixingSession<F>
 where
-    F: ColourComponent + DeserializeOwned,
+    F: LightLevel + DeserializeOwned,
 {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
@@ -703,7 +732,7 @@ where
     }
 }
 
-impl<F: ColourComponent + Serialize> SaveableMixingSession<F> {
+impl<F: LightLevel + Serialize> SaveableMixingSession<F> {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
         let mut hasher = Hasher::new(Algorithm::SHA256);
         let json_text = serde_json::to_string_pretty(self)?;
@@ -730,7 +759,7 @@ mod test {
         BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
         SeriesPaintSeriesSpec,
     };
-    use colour_math::{HueConstants, RGB};
+    use colour_math_ng::{HueConstants, RGB};
 
     impl SeriesPaintFinder<f64> for SeriesPaintSeries<f64> {
         fn get_series_paint(

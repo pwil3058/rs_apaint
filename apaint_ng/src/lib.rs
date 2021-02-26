@@ -13,8 +13,7 @@ pub mod mixtures;
 pub mod series;
 pub mod xpm;
 
-pub use colour_math::*;
-pub use normalised_angles::*;
+pub use colour_math_ng::*;
 pub use num_traits_plus::float_plus::*;
 
 use crate::characteristics::*;
@@ -27,7 +26,7 @@ pub trait LabelText {
     fn label_text(&self) -> String;
 }
 
-pub trait BasicPaintIfce<F: ColourComponent>: ColourInterface<F> {
+pub trait BasicPaintIfce: ColourBasics + ColourAttributes {
     fn id(&self) -> &str;
 
     fn name(&self) -> Option<&str> {

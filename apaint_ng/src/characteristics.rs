@@ -4,7 +4,7 @@
 
 use std::{fmt, str::FromStr};
 
-use apaint_boilerplate::Characteristic;
+use apaint_boilerplate_ng::Characteristic;
 
 pub trait CharacteristicIfce:
     FromStr<Err = String> + PartialEq + PartialOrd + Default + fmt::Debug
