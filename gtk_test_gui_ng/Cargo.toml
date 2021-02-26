@@ -1,0 +1,15 @@
+[package]
+name = "gtk_test_gui_ng"
+version = "0.1.0"
+authors = ["Peter Williams <pwil3058@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+apaint_ng = { path = "../apaint_ng" }
+apaint_boilerplate_ng = { path = "../apaint_boilerplate_ng" }
+apaint_gtk_ng = { path = "../apaint_gtk_ng" }
+
+colour_math_ng = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }

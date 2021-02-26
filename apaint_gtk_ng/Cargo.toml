@@ -1,0 +1,23 @@
+[package]
+name = "apaint_gtk_ng"
+version = "0.1.0"
+authors = ["Peter Williams <pwil3058@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+
+gcd = "2.0.1"
+
+pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+normalised_angles = { git = "https://github.com/pwil3058/rs_normalised_angles.git" }
+num_traits_plus = { git = "https://github.com/pwil3058/rs_num_traits_plus.git" }
+pw_pathux = { git = "https://github.com/pwil3058/rs_pw_pathux.git" }
+
+colour_math_ng = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+colour_math_gtk_ng = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+
+apaint_ng = { path = "../apaint_ng" }
