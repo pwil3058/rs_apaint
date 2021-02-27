@@ -14,9 +14,10 @@ use pw_gix::{
 };
 
 use crate::{
-    colour::{Colourable, RGBConstants, RGB},
+    colour::{Colourable, RGBConstants},
     icon_image,
 };
+use apaint_ng::HCV;
 
 const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN;
 const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
@@ -359,7 +360,7 @@ impl StorageManagerBuilder {
             .pack_start(&gtk::Label::new(Some("Current File:")), false, false, 1);
         storage_manager
             .file_name_label
-            .set_widget_colour_rgb(&RGB::WHITE);
+            .set_widget_colour(&HCV::WHITE);
         storage_manager
             .hbox
             .pack_start(&storage_manager.file_name_label, true, true, 1);

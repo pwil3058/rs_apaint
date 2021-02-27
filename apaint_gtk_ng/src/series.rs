@@ -30,7 +30,7 @@ use apaint_ng::{
 };
 
 use crate::{
-    colour::{ScalarAttribute, RGB},
+    colour::{GdkColour, ScalarAttribute, HCV},
     icon_image::{paint_standard_load_image, series_paint_load_image},
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
 };
@@ -109,11 +109,7 @@ impl SeriesPage {
         self.list_view.update_popup_condns(changed_condns);
     }
 
-    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(
-        &self,
-        name: &str,
-        callback: F,
-    ) {
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(&self, name: &str, callback: F) {
         self.callbacks
             .borrow_mut()
             .get_mut(name)
@@ -135,8 +131,8 @@ impl SeriesPage {
         }
     }
 
-    fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        self.hue_wheel.set_target_rgb(rgb);
+    fn set_target_colour(&self, rgb: Option<&impl GdkColour>) {
+        self.hue_wheel.set_target_colour(rgb);
     }
 }
 
@@ -147,7 +143,7 @@ struct SeriesBinder {
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: RefCell<Option<RGB<f64>>>,
+    target_colour: RefCell<Option<HCV>>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
     loaded_files_data_path: Option<PathBuf>,
 }
@@ -173,7 +169,7 @@ impl SeriesBinder {
             menu_items: menu_items.to_vec(),
             attributes: attributes.to_vec(),
             characteristics: characteristics.to_vec(),
-            target_rgb: RefCell::new(None),
+            target_colour: RefCell::new(None),
             callbacks,
             loaded_files_data_path,
         });
@@ -209,11 +205,7 @@ impl SeriesBinder {
         }
     }
 
-    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(
-        &self,
-        name: &str,
-        callback: F,
-    ) {
+    fn connect_popup_menu_item<F: Fn(Rc<SeriesPaint>) + 'static>(&self, name: &str, callback: F) {
         self.callbacks
             .borrow_mut()
             .get_mut(name)
@@ -233,16 +225,16 @@ impl SeriesBinder {
         }
     }
 
-    fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        if let Some(rgb) = rgb {
-            *self.target_rgb.borrow_mut() = Some(*rgb);
+    fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
+        if let Some(colour) = colour {
+            *self.target_colour.borrow_mut() = Some(colour.hcv());
             for (page, _) in self.pages.borrow().iter() {
-                page.set_target_rgb(Some(rgb));
+                page.set_target_colour(Some(colour));
             }
         } else {
-            *self.target_rgb.borrow_mut() = None;
+            *self.target_colour.borrow_mut() = None;
             for (page, _) in self.pages.borrow().iter() {
-                page.set_target_rgb(None);
+                page.set_target_colour(Option::<&HCV>::None);
             }
         }
     }
@@ -289,20 +281,12 @@ impl SeriesBinder {
 }
 
 trait RcSeriesBinder {
-    fn add_series(
-        &self,
-        new_series: SeriesPaintSeries,
-        path: &Path,
-    ) -> Result<(), crate::Error>;
+    fn add_series(&self, new_series: SeriesPaintSeries, path: &Path) -> Result<(), crate::Error>;
     fn add_series_from_file(&self, path: &Path) -> Result<(), crate::Error>;
 }
 
 impl RcSeriesBinder for Rc<SeriesBinder> {
-    fn add_series(
-        &self,
-        new_series: SeriesPaintSeries,
-        path: &Path,
-    ) -> Result<(), crate::Error> {
+    fn add_series(&self, new_series: SeriesPaintSeries, path: &Path) -> Result<(), crate::Error> {
         match self.binary_search_series_id(&new_series.series_id()) {
             Ok(_) => Err(crate::Error::GeneralError(format!(
                 "{}: Series already in binder",
@@ -335,8 +319,8 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     &self.attributes,
                     &self.characteristics,
                 );
-                if let Some(rgb) = &self.target_rgb.borrow().as_ref() {
-                    new_page.set_target_rgb(Some(rgb));
+                if let Some(colour) = self.target_colour.borrow().as_ref() {
+                    new_page.set_target_colour(Some(colour));
                 };
                 for menu_item in self.menu_items.iter() {
                     let self_c = Rc::clone(self);
@@ -366,7 +350,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
             return Err(crate::Error::DuplicateFile(msg));
         }
         let mut file = File::open(path)?;
-        let new_series_spec = SeriesPaintSeriesSpec::<f64>::read(&mut file)?;
+        let new_series_spec = SeriesPaintSeriesSpec::read(&mut file)?;
         self.add_series((&new_series_spec).into(), path)?;
         Ok(())
     }
@@ -446,9 +430,9 @@ impl PaintSeriesManager {
             .push(Box::new(callback));
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        self.binder.set_target_rgb(rgb);
-        self.display_dialog_manager.set_target_rgb(rgb);
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
+        self.binder.set_target_colour(colour);
+        self.display_dialog_manager.set_target_colour(colour);
     }
 
     pub fn update_popup_condns(&self, changed_condns: MaskedCondns) {

@@ -16,8 +16,7 @@ use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
 
 use apaint_ng::{
-    characteristics::CharacteristicType,
-    series::{BasicPaintSpec, SeriesPaintSeriesSpec},
+    characteristics::CharacteristicType, series::BasicPaintSpec, series::SeriesPaintSeriesSpec,
     BasicPaintIfce,
 };
 

@@ -9,15 +9,16 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_gtk_ng::{attributes::{
-    ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder, }, colour::*
+use colour_math_gtk_ng::{
+    attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
+    colour::*,
 };
 use colour_math_ng::{ColourBasics, ScalarAttribute};
 
 use apaint_ng::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
-    colour::{Colourable, RGB, HCV},
+    colour::{Colourable, HCV},
     list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
 };
 
@@ -30,7 +31,7 @@ pub struct MixtureDisplay {
 }
 
 impl MixtureDisplay {
-    pub fn set_target(&self, new_target: Option<&impl GdkRGBA>) {
+    pub fn set_target(&self, new_target: Option<&impl GdkColour>) {
         if let Some(colour) = new_target {
             self.target_label.set_label("Current Target");
             self.target_label.set_widget_colour(colour);
@@ -199,7 +200,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         pdd.dialog.present();
     }
 
-    pub fn set_target_colour(&mut self, rgb: Option<&impl GdkRGBA>) {
+    pub fn set_target_colour(&mut self, rgb: Option<&impl GdkColour>) {
         self.mixture_display_builder.target_colour(rgb);
         for pdd in self.dialogs.values() {
             pdd.display.set_target(rgb);

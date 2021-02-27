@@ -235,13 +235,13 @@ impl BasicPaintSpecEditor {
         });
 
         let bpe_c = Rc::clone(&bpe);
-        bpe.colour_editor.connect_changed(move |rgb| {
+        bpe.colour_editor.connect_changed(move |hcv| {
             let mut masked_condns = MaskedCondns {
                 condns: 0,
                 mask: Self::SAV_RGB_CHANGED,
             };
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
-                if &spec.rgb != rgb {
+                if &spec.colour != hcv {
                     masked_condns.condns += Self::SAV_RGB_CHANGED;
                 }
             }
@@ -354,8 +354,8 @@ impl BasicPaintSpecEditor {
 
     fn spec_from_entries(&self) -> BasicPaintSpec {
         let id = self.id_entry.get_text();
-        let rgb = self.colour_editor.rgb();
-        let mut paint_spec = BasicPaintSpec::new(rgb, &id);
+        let hcv = self.colour_editor.hcv();
+        let mut paint_spec = BasicPaintSpec::new(&hcv, &id);
         paint_spec.name = self.name_entry.get_text().to_string();
         paint_spec.notes = self.notes_entry.get_text().to_string();
         paint_spec.finish = self.finish_entry.value();
@@ -449,7 +449,7 @@ impl BasicPaintSpecEditor {
         self.id_entry.set_text(&spec.id);
         self.name_entry.set_text(&spec.name);
         self.notes_entry.set_text(&spec.notes);
-        self.colour_editor.set_rgb(&spec.rgb);
+        self.colour_editor.set_colour(&spec.colour);
         self.finish_entry.set_value(Some(spec.finish));
         self.permanence_entry.set_value(Some(spec.permanence));
         self.transparency_entry.set_value(Some(spec.transparency));

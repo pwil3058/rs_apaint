@@ -19,10 +19,11 @@ use pw_gix::{
 };
 
 use colour_math_cairo_ng::CairoSetColour;
-use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute, HCV, LightLevel};
+use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, LightLevel, ScalarAttribute, HCV};
 
 use colour_math_gtk_ng::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
+    colour::GdkColour,
     colour_edit::{ColourEditor, ColourEditorBuilder},
     hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
 };
@@ -120,7 +121,7 @@ impl TargetedPaintEntry {
         }
     }
 
-    pub fn set_mix_colour(&self, colour: Option<&impl ColourBasics>) {
+    pub fn set_mix_colour(&self, colour: Option<&impl GdkColour>) {
         if let Some(colour) = colour {
             *self.mix_colour.borrow_mut() = Some(colour.hcv());
             self.cads.set_colour(Some(colour));
@@ -131,7 +132,7 @@ impl TargetedPaintEntry {
         self.drawing_area.queue_draw()
     }
 
-    pub fn set_target_colour(&self, colour: Option<&impl ColourBasics>) {
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
         if let Some(colour) = colour {
             *self.target_colour.borrow_mut() = Some(colour.hcv());
             self.cads.set_target_colour(Some(colour));
@@ -143,6 +144,7 @@ impl TargetedPaintEntry {
     }
 
     pub fn target_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
+        use colour_math_ng::ColourBasics;;
         if let Some(colour) = self.target_colour.borrow().as_ref() {
             Some(colour.rgb::<L>())
         } else {
@@ -151,6 +153,7 @@ impl TargetedPaintEntry {
     }
 
     pub fn target_colour(&self) -> Option<HCV> {
+        use colour_math_ng::ColourBasics;;
         if let Some(colour) = self.target_colour.borrow().as_ref() {
             Some(colour.hcv())
         } else {
@@ -291,14 +294,14 @@ impl TargetedPaintMixer {
     }
 
     // TODO: review visibility of targeted mixer methods
-    pub fn start_new_mixture(&self, name: &str, notes: &str, target_colour: &impl ColourBasics) {
+    pub fn start_new_mixture(&self, name: &str, notes: &str, target_colour: &impl GdkColour) {
         self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text(name);
         self.mix_entry.notes_entry.set_text(notes);
         self.set_target_colour(Some(target_colour));
     }
 
-    pub fn set_target_colour(&self, colour: Option<&impl ColourBasics>) {
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
         self.hue_wheel.set_target_colour(colour);
         self.mix_entry.set_target_colour(colour);
         self.paint_series_manager.set_target_colour(colour);
@@ -326,13 +329,13 @@ impl TargetedPaintMixer {
     pub fn accept_current_mixture(&self) {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
-        let mixed_paint = MixtureBuilder::<f64>::new(&mix_id)
+        let mixed_paint = MixtureBuilder::new(&mix_id)
             .name(&self.mix_entry.name_entry.get_text())
             .notes(&self.mix_entry.notes_entry.get_text())
-            .targeted_rgb(
+            .targeted_colour(
                 &self
                     .mix_entry
-                    .target_rgb()
+                    .target_colour()
                     .expect("should not be accepted without target"),
             )
             .series_paint_components(self.series_paint_spinner_box.paint_contributions())
@@ -344,7 +347,7 @@ impl TargetedPaintMixer {
         self.mix_entry.id_label.set_label("MIX#???");
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");
-        self.set_target_rgb(None);
+        self.set_target_colour(Option::<&HCV>::None);
         self.series_paint_spinner_box.zero_all_parts();
         // TODO: handle case of duplicate mixed paint
         self.mixing_session.borrow_mut().add_mixture(&mixed_paint);
@@ -355,7 +358,7 @@ impl TargetedPaintMixer {
         self.mix_entry.id_label.set_label("MIX#???");
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");
-        self.set_target_rgb(None);
+        self.set_target_colour(Option::<&HCV>::None);
         self.series_paint_spinner_box.zero_all_parts();
     }
 
@@ -409,6 +412,7 @@ impl TargetedPaintMixerBuilder {
     }
 
     pub fn build(&self) -> Rc<TargetedPaintMixer> {
+        use colour_math_ng::ColourBasics;
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let file_manager = StorageManagerBuilder::new()
             .last_file_key("targeted_mixer::session")
@@ -437,8 +441,7 @@ impl TargetedPaintMixerBuilder {
             )],
         );
         let mix_entry = TargetedPaintEntry::new(&self.attributes);
-        let series_paint_spinner_box =
-            PartsSpinButtonBox::<SeriesPaint<f64>>::new("Paints", 4, true);
+        let series_paint_spinner_box = PartsSpinButtonBox::<SeriesPaint>::new("Paints", 4, true);
 
         let display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
@@ -607,8 +610,8 @@ impl TargetedPaintMixerBuilder {
             .connect_set_as_target(move |paint| {
                 let id = paint.id();
                 let name = paint.name().unwrap_or("");
-                let rgb = paint.rgb();
-                tpm_c.start_new_mixture(id, name, &rgb);
+                let colour = paint.hcv();
+                tpm_c.start_new_mixture(id, name, &colour);
             });
 
         let tpm_c = Rc::clone(&tpm);

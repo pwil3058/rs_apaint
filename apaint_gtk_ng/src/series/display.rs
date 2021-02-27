@@ -16,7 +16,7 @@ use colour_math_ng::{ColourBasics, ScalarAttribute};
 
 use apaint_ng::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
-use crate::colour::{Colourable, RGB};
+use crate::colour::{Colourable, GdkColour, HCV};
 use crate::series::PaintActionCallback;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -26,19 +26,19 @@ pub struct PaintDisplay {
     vbox: gtk::Box,
     paint: Rc<SeriesPaint>,
     target_label: gtk::Label,
-    cads: ColourAttributeDisplayStack,
+    cads: Rc<ColourAttributeDisplayStack>,
 }
 
 impl PaintDisplay {
-    pub fn set_target(&self, new_target: Option<&RGB<f64>>) {
-        if let Some(rgb) = new_target {
+    pub fn set_target_colour(&self, new_target: Option<&impl GdkColour>) {
+        if let Some(colour) = new_target {
             self.target_label.set_label("Current Target");
-            self.target_label.set_widget_colour_rgb(rgb);
-            self.cads.set_target_colour(Some(rgb));
+            self.target_label.set_widget_colour(colour);
+            self.cads.set_target_colour(Some(colour));
         } else {
             self.target_label.set_label("");
-            self.target_label.set_widget_colour_rgb(&self.paint.rgb());
-            self.cads.set_target_colour(Option::<&RGB<f64>>::None);
+            self.target_label.set_widget_colour(&self.paint.hcv());
+            self.cads.set_target_colour(Option::<&HCV>::None);
         };
     }
 
@@ -51,7 +51,7 @@ impl PaintDisplay {
 pub struct PaintDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB<f64>>,
+    target_colour: Option<HCV>,
 }
 
 impl PaintDisplayBuilder {
@@ -69,9 +69,9 @@ impl PaintDisplayBuilder {
         self
     }
 
-    pub fn target_rgb(&mut self, target_rgb: Option<&RGB<f64>>) -> &mut Self {
-        self.target_rgb = if let Some(target_rgb) = target_rgb {
-            Some(*target_rgb)
+    pub fn target_colour(&mut self, target_colour: Option<&impl GdkColour>) -> &mut Self {
+        self.target_colour = if let Some(target_colour) = target_colour {
+            Some(target_colour.hcv())
         } else {
             None
         };
@@ -79,53 +79,53 @@ impl PaintDisplayBuilder {
     }
 
     pub fn build(&self, paint: &Rc<SeriesPaint>) -> PaintDisplay {
-        let rgb = paint.rgb();
+        let hcv = paint.hcv();
         let vbox = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
             .build();
 
         let label = gtk::LabelBuilder::new().label(paint.id()).build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&hcv);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(paint.name().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&hcv);
         vbox.pack_start(&label, false, false, 0);
 
         let label = gtk::LabelBuilder::new()
             .label(paint.notes().unwrap_or(""))
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&hcv);
         vbox.pack_start(&label, false, false, 0);
 
         let series_id = paint.series_id();
         let label = gtk::LabelBuilder::new()
             .label(series_id.series_name())
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&hcv);
         vbox.pack_start(&label, false, false, 0);
 
         let series_id = paint.series_id();
         let label = gtk::LabelBuilder::new()
             .label(series_id.proprietor())
             .build();
-        label.set_widget_colour_rgb(&rgb);
+        label.set_widget_colour(&hcv);
         vbox.pack_start(&label, false, false, 0);
 
         let cads = ColourAttributeDisplayStackBuilder::new()
             .attributes(&self.attributes)
             .build();
-        cads.set_colour(Some(&rgb));
-        let target_label = if let Some(target_rgb) = self.target_rgb {
+        cads.set_colour(Some(&hcv));
+        let target_label = if let Some(target_colour) = self.target_colour {
             let label = gtk::LabelBuilder::new().label("Target").build();
-            label.set_widget_colour_rgb(&target_rgb);
-            cads.set_target_colour(Some(&target_rgb));
+            label.set_widget_colour(&target_colour);
+            cads.set_target_colour(Some(&target_colour));
             label
         } else {
             let label = gtk::LabelBuilder::new().build();
-            label.set_widget_colour_rgb(&rgb);
+            label.set_widget_colour(&hcv);
             label
         };
         vbox.pack_start(&target_label, true, true, 0);
@@ -134,7 +134,7 @@ impl PaintDisplayBuilder {
         for characteristic_type in self.characteristics.iter() {
             let value = paint.characteristic(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(&value).build();
-            label.set_widget_colour_rgb(&rgb);
+            label.set_widget_colour(&hcv);
             vbox.pack_start(&label, false, false, 0);
         }
         vbox.show_all();
@@ -176,10 +176,12 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn set_target_rgb(&self, rgb: Option<&RGB<f64>>) {
-        self.paint_display_builder.borrow_mut().target_rgb(rgb);
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
+        self.paint_display_builder
+            .borrow_mut()
+            .target_colour(colour);
         for pdd in self.dialogs.borrow().values() {
-            pdd.display.set_target(rgb);
+            pdd.display.set_target_colour(colour);
         }
     }
 
@@ -246,7 +248,7 @@ pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     buttons: Vec<(u16, &'static str, Option<&'static str>, u64)>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    target_rgb: Option<RGB<f64>>,
+    target_colour: Option<HCV>,
     change_notifier: Rc<ChangedCondnsNotifier>,
 }
 
@@ -258,7 +260,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
             buttons: vec![],
             attributes: vec![],
             characteristics: vec![],
-            target_rgb: None,
+            target_colour: None,
             change_notifier,
         }
     }
@@ -286,13 +288,18 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
+    pub fn target_colour(&mut self, target_colour: &impl GdkColour) -> &mut Self {
+        self.target_colour = Some(target_colour.hcv());
+        self
+    }
+
     pub fn build(&self) -> Rc<PaintDisplayDialogManager<W>> {
         let mut paint_display_builder = PaintDisplayBuilder::new();
         paint_display_builder
             .attributes(&self.attributes)
             .characteristics(&self.characteristics);
-        if let Some(target_rgb) = self.target_rgb {
-            paint_display_builder.target_rgb(Some(&target_rgb));
+        if let Some(target_colour) = self.target_colour {
+            paint_display_builder.target_colour(Some(&target_colour));
         }
         let mut hash_map: HashMap<u16, Vec<PaintActionCallback>> = HashMap::new();
         for (id, _, _, _) in self.buttons.iter() {

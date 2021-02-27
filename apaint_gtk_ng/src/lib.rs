@@ -97,30 +97,19 @@ pub mod characteristics {
 
 pub mod colour {
     pub use colour_math_gtk_ng::{colour::*, coloured::*};
-    // pub use colour_math_ng::{
-    //     Angle, ColourBasics, HueConstants, RGBConstants, ScalarAttribute, CCI, RGB,
-    // };
 
-    type RGB8 = RGB<u8>;
-    type RGB16 = RGB<u16>;
+    pub trait PartsColour:
+        colour_math_ng::ColourIfce
+        + apaint_ng::TooltipText
+        + apaint_ng::LabelText
+        + std::cmp::Ord
+        + 'static
+    {
+    }
 
-    use pw_gix::gdk;
+    use apaint_ng::series::*;
 
-    //
-    // pub trait GdkConvert {
-    //     fn into_gdk_rgba(&self) -> gdk::RGBA;
-    // }
-    //
-    // impl GdkConvert for RGB {
-    //     fn into_gdk_rgba(&self) -> gdk::RGBA {
-    //         gdk::RGBA {
-    //             red: self[CCI::Red],
-    //             green: self[CCI::Green],
-    //             blue: self[CCI::Blue],
-    //             alpha: 1.0,
-    //         }
-    //     }
-    // }
+    impl PartsColour for SeriesPaint {}
 }
 
 pub mod window {

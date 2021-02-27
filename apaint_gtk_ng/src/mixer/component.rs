@@ -14,20 +14,12 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint_ng::{LabelText, TooltipText};
-
-use crate::colour::{ColourBasics, Colourable, RGB};
-
-//type RemovalCallback<P: ColourBasics<f64> + TooltipText + LabelText + Ord + 'static> =
-//    Box<dyn Fn(&Rc<P>)>;
+use crate::colour::{Colourable, PartsColour, RGB};
 
 type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
 
 #[derive(PWO)]
-pub struct PartsSpinButton<P>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+pub struct PartsSpinButton<P: PartsColour> {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
     popup_menu: WrappedMenu,
@@ -36,10 +28,7 @@ where
     remove_me_callbacks: RefCell<Vec<RemoveCallback<P>>>,
 }
 
-impl<P> PartsSpinButton<P>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+impl<P: PartsColour> PartsSpinButton<P> {
     pub fn new(paint: &Rc<P>, sensitive: bool) -> Rc<Self> {
         let event_box = gtk::EventBoxBuilder::new()
             .tooltip_text(&paint.tooltip_text())
@@ -141,10 +130,7 @@ where
 }
 
 #[derive(PWO)]
-pub struct PartsSpinButtonBox<P>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+pub struct PartsSpinButtonBox<P: PartsColour> {
     frame: gtk::Frame,
     vbox: gtk::Box,
     spinners: RefCell<Vec<Rc<PartsSpinButton<P>>>>,
@@ -154,10 +140,7 @@ where
     removal_requested_callbacks: RefCell<Vec<RemoveCallback<P>>>,
 }
 
-impl<P> PartsSpinButtonBox<P>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+impl<P: PartsColour> PartsSpinButtonBox<P> {
     pub fn new(title: &str, n_cols: u32, sensitive: bool) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let frame = gtk::FrameBuilder::new().label(title).build();
@@ -285,17 +268,11 @@ where
     }
 }
 
-pub trait RcPartsSpinButtonBox<P>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+pub trait RcPartsSpinButtonBox<P: PartsColour> {
     fn add_paint(&self, paint: &Rc<P>);
 }
 
-impl<P> RcPartsSpinButtonBox<P> for Rc<PartsSpinButtonBox<P>>
-where
-    P: ColourBasics + TooltipText + LabelText + Ord + 'static,
-{
+impl<P: PartsColour> RcPartsSpinButtonBox<P> for Rc<PartsSpinButtonBox<P>> {
     fn add_paint(&self, paint: &Rc<P>) {
         if let Err(index) = self.binary_search_paint(paint) {
             let spinner = PartsSpinButton::new(paint, self.sensitive.get());

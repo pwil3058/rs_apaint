@@ -19,7 +19,7 @@ use apaint_ng::series::{BasicPaintSpec, SeriesId, SeriesPaint};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 struct Dummy {
-    rgb: RGB<f64>,
+    colour: HCV,
 }
 
 impl TooltipText for Dummy {
@@ -76,10 +76,10 @@ fn main() {
         .build();
     vbox.pack_start(&mixer.pwo(), false, false, 0);
     // TODO: why do paint and target have different values?
-    let mut paint_spec = BasicPaintSpec::new([0.1, 0.3, 0.8].into(), "id");
+    let mut paint_spec = BasicPaintSpec::new(&RGB::<f64>::from([0.1, 0.3, 0.8]), "id");
     paint_spec.name = "name".to_string();
     paint_spec.notes = "notes".to_string();
-    let paint = SeriesPaint::<f64>::from((&paint_spec, &Rc::new(SeriesId::new("Series", "Owner"))));
+    let paint = SeriesPaint::from((&paint_spec, &Rc::new(SeriesId::new("Series", "Owner"))));
     let mut builder = PaintDisplayBuilder::new();
     builder
         .attributes(&[
@@ -93,7 +93,7 @@ fn main() {
             CharacteristicType::Fluorescence,
             CharacteristicType::Metallicness,
         ])
-        .target_rgb(Some(&[0.6, 0.1, 0.7].into()));
+        .target_colour(Some(&RGB::<f64>::from([0.6, 0.1, 0.7])));
     let display = builder.build(&Rc::new(paint));
     vbox.pack_start(&display.pwo(), true, true, 0);
     vbox.show_all();
