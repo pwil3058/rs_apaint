@@ -11,7 +11,5 @@ proc-macro = true
 
 [dependencies]
 heck = "0.3.1"
-syn = "1.0"
 quote = "1.0"
-
-colour_math_gtk_ng = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+syn = "1.0"
