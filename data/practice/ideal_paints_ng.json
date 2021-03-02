@@ -1,14 +1,12 @@
 {
   "series_id": {
-    "proprietor": "Nature",
-    "series_name": "Ideal Colours"
+    "proprietor": "Nature/Physics",
+    "series_name": "Ideal Paint Series"
   },
   "paint_list": [
     {
       "colour": {
-        "hue": {
-          "Primary": "Red"
-        },
+        "hue": null,
         "chroma": {
           "Neither": 0
         },
@@ -120,9 +118,7 @@
     },
     {
       "colour": {
-        "hue": {
-          "Primary": "Red"
-        },
+        "hue": null,
         "chroma": {
           "Neither": 0
         },

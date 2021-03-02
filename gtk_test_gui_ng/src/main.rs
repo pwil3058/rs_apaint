@@ -10,7 +10,7 @@ use pw_gix::{
 
 use apaint_ng::{characteristics::CharacteristicType, LabelText, TooltipText};
 
-use apaint_boilerplate_ng::Colour;
+use colour_math_derive::Colour;
 
 use apaint_gtk_ng::mixer::targeted::TargetedPaintMixerBuilder;
 use apaint_gtk_ng::series::display::PaintDisplayBuilder;

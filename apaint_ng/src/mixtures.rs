@@ -10,11 +10,11 @@ use crypto_hash::{Algorithm, Hasher};
 use gcd::Gcd;
 
 use colour_math_ng::{
-    beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape, },
+    beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
     Angle, Chroma, ColourBasics, Hue, LightLevel, CCI, HCV, RGB,
 };
 
-use apaint_boilerplate_ng::Colour;
+use colour_math_derive::Colour;
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
@@ -209,9 +209,7 @@ impl MixingSession {
         for mixture in self.mixtures.iter() {
             for (paint, _parts) in mixture.components.iter() {
                 if let Paint::Series(series_paint) = paint {
-                    match v
-                        .binary_search_by_key(&series_paint.id(), |p: &Rc<SeriesPaint>| p.id())
-                    {
+                    match v.binary_search_by_key(&series_paint.id(), |p: &Rc<SeriesPaint>| p.id()) {
                         Ok(_) => (),
                         Err(index) => v.insert(index, Rc::clone(series_paint)),
                     }
@@ -259,8 +257,7 @@ impl MixingSession {
     }
 }
 
-impl MixingSession
-{
+impl MixingSession {
     pub fn read<R: Read>(
         reader: &mut R,
         series_paint_finder: &Rc<impl SeriesPaintFinder>,
@@ -282,8 +279,7 @@ impl MixingSession {
 }
 
 #[derive(Debug)]
-pub struct MixtureBuilder
-{
+pub struct MixtureBuilder {
     id: String,
     name: String,
     notes: String,
@@ -292,8 +288,7 @@ pub struct MixtureBuilder
     targeted_colour: Option<HCV>,
 }
 
-impl MixtureBuilder
-{
+impl MixtureBuilder {
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_string(),
@@ -368,8 +363,7 @@ impl MixtureBuilder
             total_adjusted_parts += adjusted_parts;
             let rgb = paint.rgb::<u16>();
             for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
-                rgb_sum[i] +=
-                    rgb[*cci] as u128 * adjusted_parts;
+                rgb_sum[i] += rgb[*cci] as u128 * adjusted_parts;
             }
             let fap = adjusted_parts as f64;
             finish += fap * f64::from(paint.finish());
@@ -384,8 +378,7 @@ impl MixtureBuilder
             total_adjusted_parts += adjusted_parts;
             let rgb = paint.rgb::<u16>();
             for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
-                rgb_sum[i] +=
-                    rgb[*cci] as u128 * adjusted_parts;
+                rgb_sum[i] += rgb[*cci] as u128 * adjusted_parts;
             }
             let fap = adjusted_parts as f64;
             finish += fap * paint.finish;
@@ -398,9 +391,16 @@ impl MixtureBuilder
         for item in &mut rgb_sum {
             *item = *item / total_adjusted_parts;
         }
-        let u16_array: Vec<u16> = rgb_sum.iter().map(|i| (i / total_adjusted_parts) as u16).collect();
+        let u16_array: Vec<u16> = rgb_sum
+            .iter()
+            .map(|i| (i / total_adjusted_parts) as u16)
+            .collect();
         let divisor = total_adjusted_parts as f64;
-        let hcv: HCV = HCV::from(&RGB::<u16>::from([u16_array[0], u16_array[1], u16_array[2]]));
+        let hcv: HCV = HCV::from(&RGB::<u16>::from([
+            u16_array[0],
+            u16_array[1],
+            u16_array[2],
+        ]));
         let mp = Mixture {
             colour: hcv,
             targeted_colour: self.targeted_colour,
@@ -662,8 +662,7 @@ impl From<&MixingSession> for SaveableMixingSession {
     }
 }
 
-impl SaveableMixingSession
-{
+impl SaveableMixingSession {
     pub fn mixing_session(
         &self,
         series_paint_finder: &Rc<impl SeriesPaintFinder>,
@@ -704,8 +703,7 @@ impl SaveableMixingSession
     }
 }
 
-impl<'de> SaveableMixingSession
-{
+impl<'de> SaveableMixingSession {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
         reader.read_to_string(&mut string)?;
@@ -741,7 +739,7 @@ mod test {
         BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
         SeriesPaintSeriesSpec,
     };
-    use colour_math_ng::{HueConstants, RGB, HCV};
+    use colour_math_ng::{HueConstants, HCV, RGB};
 
     impl SeriesPaintFinder for SeriesPaintSeries {
         fn get_series_paint(

@@ -9,7 +9,8 @@ use std::{
 
 use crypto_hash::{Algorithm, Hasher};
 
-use apaint_boilerplate_ng::{BasicPaint, Colour};
+use apaint_boilerplate_ng::BasicPaint;
+use colour_math_derive::Colour;
 
 use colour_math_ng::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
@@ -116,8 +117,7 @@ impl MakeColouredShape for SeriesPaint {
 }
 
 #[derive(Debug)]
-pub struct SeriesPaintSeries
-{
+pub struct SeriesPaintSeries {
     series_id: Rc<SeriesId>,
     paint_list: Vec<Rc<SeriesPaint>>,
 }
@@ -258,8 +258,7 @@ impl From<&Rc<SeriesId>> for SeriesId {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct SeriesPaintSeriesSpec
-{
+pub struct SeriesPaintSeriesSpec {
     series_id: SeriesId,
     paint_list: Vec<BasicPaintSpec>,
 }
@@ -274,8 +273,7 @@ pub struct SeriesPaintSeriesSpec
 //     }
 // }
 
-impl SeriesPaintSeriesSpec
-{
+impl SeriesPaintSeriesSpec {
     pub fn series_id(&self) -> &SeriesId {
         &self.series_id
     }
@@ -341,8 +339,7 @@ impl SeriesPaintSeriesSpec
     }
 }
 
-impl<'de> SeriesPaintSeriesSpec
-{
+impl<'de> SeriesPaintSeriesSpec {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
         reader.read_to_string(&mut string)?;
@@ -351,8 +348,7 @@ impl<'de> SeriesPaintSeriesSpec
     }
 }
 
-impl<'de> SeriesPaintSeriesSpec
-{
+impl<'de> SeriesPaintSeriesSpec {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
         let mut hasher = Hasher::new(Algorithm::SHA256);
         let json_text = serde_json::to_string_pretty(self)?;
@@ -373,7 +369,7 @@ impl<'de> SeriesPaintSeriesSpec
 #[cfg(test)]
 mod test {
     use crate::series::{BasicPaintSpec, SeriesPaintSeriesSpec};
-    use colour_math_ng::{HueConstants, RGB, HCV};
+    use colour_math_ng::{HueConstants, HCV, RGB};
 
     #[test]
     fn save_and_recover() {
