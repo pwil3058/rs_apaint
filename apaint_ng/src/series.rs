@@ -221,8 +221,8 @@ impl MakeColouredShape for BasicPaintSpec {
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Clone)]
 pub struct SeriesId {
-    proprietor: String,
-    series_name: String,
+    pub(crate) proprietor: String,
+    pub(crate) series_name: String,
 }
 
 impl SeriesId {
@@ -259,19 +259,9 @@ impl From<&Rc<SeriesId>> for SeriesId {
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SeriesPaintSeriesSpec {
-    series_id: SeriesId,
-    paint_list: Vec<BasicPaintSpec>,
+    pub(crate) series_id: SeriesId,
+    pub(crate) paint_list: Vec<BasicPaintSpec>,
 }
-
-// impl std::default::Default for SeriesPaintSeriesSpec
-// {
-//     fn default() -> Self {
-//         Self {
-//             series_id: SeriesId::default(),
-//             paint_list: Vec::new(),
-//         }
-//     }
-// }
 
 impl SeriesPaintSeriesSpec {
     pub fn series_id(&self) -> &SeriesId {

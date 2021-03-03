@@ -11,6 +11,8 @@ use crate::{
     series::{BasicPaintSpec, SeriesPaintSeriesSpec},
 };
 
+pub mod legacy_series;
+
 lazy_static! {
     static ref HEADER_RE: Regex = Regex::new(r"^\w+:\s*(.*)$").expect("programmer error");
     static ref PAINT_RE: Regex = Regex::new(

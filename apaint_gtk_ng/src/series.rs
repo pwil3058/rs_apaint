@@ -26,6 +26,7 @@ use colour_math_ng::beigui::hue_wheel::MakeColouredShape;
 
 use apaint_ng::{
     characteristics::CharacteristicType,
+    legacy::{legacy_series::SeriesPaintSeriesSpec00, read_legacy_paint_series_spec},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
 
@@ -350,7 +351,26 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
             return Err(crate::Error::DuplicateFile(msg));
         }
         let mut file = File::open(path)?;
-        let new_series_spec = SeriesPaintSeriesSpec::read(&mut file)?;
+        let new_series_spec = match SeriesPaintSeriesSpec::read(&mut file) {
+            Ok(spec) => spec,
+            Err(_) => {
+                let mut file = File::open(&path)?;
+                match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
+                    Ok(spec) => spec,
+                    Err(err) => match &err {
+                        apaint_ng::Error::SerdeJsonError(_) => {
+                            let mut file = File::open(&path)?;
+                            if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
+                                series
+                            } else {
+                                return Err(crate::Error::APaintError(err));
+                            }
+                        }
+                        _ => return Err(crate::Error::APaintError(err)),
+                    },
+                }
+            }
+        };
         self.add_series((&new_series_spec).into(), path)?;
         Ok(())
     }

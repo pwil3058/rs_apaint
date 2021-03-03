@@ -16,8 +16,8 @@ use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
 
 use apaint_ng::{
-    characteristics::CharacteristicType, series::BasicPaintSpec, series::SeriesPaintSeriesSpec,
-    BasicPaintIfce,
+    characteristics::CharacteristicType, legacy::legacy_series::SeriesPaintSeriesSpec00,
+    series::BasicPaintSpec, series::SeriesPaintSeriesSpec, BasicPaintIfce,
 };
 
 use crate::{
@@ -160,17 +160,23 @@ impl BasicPaintFactory {
         let mut file = File::open(&path)?;
         let new_series = match SeriesPaintSeriesSpec::read(&mut file) {
             Ok(series) => series,
-            Err(err) => match &err {
-                apaint_ng::Error::SerdeJsonError(_) => {
-                    let mut file = File::open(&path)?;
-                    if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
-                        series
-                    } else {
-                        return Err(err);
-                    }
+            Err(_) => {
+                let mut file = File::open(&path)?;
+                match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
+                    Ok(series) => series,
+                    Err(err) => match &err {
+                        apaint_ng::Error::SerdeJsonError(_) => {
+                            let mut file = File::open(&path)?;
+                            if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
+                                series
+                            } else {
+                                return Err(err);
+                            }
+                        }
+                        _ => return Err(err),
+                    },
                 }
-                _ => return Err(err),
-            },
+            }
         };
         self.unguarded_reset();
         let id = new_series.series_id();
