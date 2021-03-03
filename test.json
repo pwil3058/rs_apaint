@@ -1,0 +1,158 @@
+{
+  "series_id": {
+    "proprietor": "Vallejo",
+    "series_name": "Model Air Colors Rev18-Baja"
+  },
+  "paint_list": [
+    {
+      "rgb": [
+        0.9725490196078432,
+        0.9803921568627452,
+        0.9647058823529412
+      ],
+      "id": "71.001",
+      "name": "White",
+      "notes": "FS37925-RAL9016-RLM21",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.976470588235294,
+        0.6549019607843137,
+        0.04705882352941176
+      ],
+      "id": "71.002",
+      "name": "Medium Yellow",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.796078431372549,
+        0.1450980392156863,
+        0.1411764705882353
+      ],
+      "id": "71.003",
+      "name": "Red RLM23",
+      "notes": "RLM23",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.1843137254901961,
+        0.24705882352941175,
+        0.4078431372549019
+      ],
+      "id": "71.004",
+      "name": "Blue",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.2352941176470588,
+        0.2627450980392157,
+        0.3254901960784314
+      ],
+      "id": "71.005",
+      "name": "Grey Blue",
+      "notes": "RAL5008",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.3137254901960784,
+        0.3803921568627451,
+        0.25098039215686274
+      ],
+      "id": "71.006",
+      "name": "Light Green Chromate",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.16862745098039217,
+        0.19215686274509805,
+        0.19607843137254904
+      ],
+      "id": "71.007",
+      "name": "Olive Green",
+      "notes": "",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.4196078431372549,
+        0.5647058823529412,
+        0.5843137254901961
+      ],
+      "id": "71.008",
+      "name": "Pale Blue",
+      "notes": "FS35414",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.7098039215686275,
+        0.7607843137254902,
+        0.5568627450980392
+      ],
+      "id": "71.009",
+      "name": "Eau de Nil “D. E. Green”",
+      "notes": "BS216",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    },
+    {
+      "rgb": [
+        0.33725490196078434,
+        0.3333333333333333,
+        0.23137254901960785
+      ],
+      "id": "71.010",
+      "name": "Interior Green",
+      "notes": "FS34098",
+      "finish": "Flat",
+      "transparency": "Opaque",
+      "permanence": "Permanent",
+      "fluorescence": "NonFluorescent",
+      "metallicness": "NonMetallic"
+    }
+  ]
+}
