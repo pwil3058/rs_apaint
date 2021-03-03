@@ -14,7 +14,7 @@ use apaint_gtk::{
     characteristics::CharacteristicType,
     colour::ScalarAttribute,
     factory::{BasicPaintFactory, BasicPaintFactoryBuilder},
-    mixer::targeted::{TargetedPaintMixer, TargetedPaintMixerBuilder},
+    mixer::palette::{TargetedPaintMixer, TargetedPaintMixerBuilder},
 };
 
 use crate::config;

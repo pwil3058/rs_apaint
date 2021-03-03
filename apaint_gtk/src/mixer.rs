@@ -2,4 +2,5 @@
 
 pub mod component;
 pub mod display;
+pub mod palette;
 pub mod targeted;
