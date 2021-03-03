@@ -99,11 +99,7 @@ pub mod colour {
     pub use colour_math_gtk::{colour::*, coloured::*};
 
     pub trait PartsColour:
-        colour_math::ColourIfce
-        + apaint::TooltipText
-        + apaint::LabelText
-        + std::cmp::Ord
-        + 'static
+        colour_math::ColourIfce + apaint::TooltipText + apaint::LabelText + std::cmp::Ord + 'static
     {
     }
 

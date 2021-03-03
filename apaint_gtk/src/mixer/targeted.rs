@@ -18,8 +18,8 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_cairo::CairoSetColour;
 use colour_math::{beigui::hue_wheel::MakeColouredShape, LightLevel, ScalarAttribute, HCV};
+use colour_math_cairo::CairoSetColour;
 
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},

@@ -9,11 +9,11 @@ use pw_gix::{
     wrapper::*,
 };
 
+use colour_math::{ColourBasics, ScalarAttribute};
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     colour::*,
 };
-use colour_math::{ColourBasics, ScalarAttribute};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 

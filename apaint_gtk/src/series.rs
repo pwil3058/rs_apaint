@@ -21,8 +21,8 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 use colour_math::beigui::hue_wheel::MakeColouredShape;
+use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 
 use apaint::{
     characteristics::CharacteristicType,
