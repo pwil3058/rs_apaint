@@ -10,7 +10,7 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint_gtk::{
+use apaint_gtk_ng::{
     characteristics::CharacteristicType,
     colour::ScalarAttribute,
     factory::{BasicPaintFactory, BasicPaintFactoryBuilder},
