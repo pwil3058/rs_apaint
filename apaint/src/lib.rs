@@ -13,7 +13,7 @@ pub mod mixtures;
 pub mod series;
 pub mod xpm;
 
-pub use colour_math_ng::*;
+pub use colour_math::*;
 pub use num_traits_plus::float_plus::*;
 
 use crate::characteristics::*;

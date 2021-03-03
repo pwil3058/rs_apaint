@@ -276,7 +276,7 @@ pub trait PaintListRow: BasicPaintIfce {
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
     ) -> Vec<glib::Value> {
-        use colour_math_ng::ColourBasics;
+        use colour_math::ColourBasics;
         let ha: f64 = if let Some(angle) = self.hue_angle() {
             angle.into()
         } else {

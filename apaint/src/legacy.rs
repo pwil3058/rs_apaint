@@ -35,7 +35,7 @@ fn extract_paint_spec(line: &str) -> Result<BasicPaintSpec, crate::Error> {
     if let Some(cap) = PAINT_RE.captures(line) {
         let name = cap.name("name").ok_or(NotAValidLegacySpec)?.as_str();
         let rgb_str = cap.name("rgb").ok_or(NotAValidLegacySpec)?.as_str();
-        let rgb = colour_math_ng::RGB::<u16>::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
+        let rgb = colour_math::RGB::<u16>::from_str(rgb_str).map_err(|_| NotAValidLegacySpec)?;
         let mut bps = BasicPaintSpec::new(&rgb, name);
         bps.name = name.to_string();
         bps.notes = cap

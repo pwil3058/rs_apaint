@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 use apaint_boilerplate::BasicPaint;
 use colour_math_derive::Colour;
 
-use colour_math_ng::{ColourBasics, LightLevel, RGB};
+use colour_math::{ColourBasics, LightLevel, RGB};
 
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
@@ -94,7 +94,7 @@ mod test {
     use crypto_hash::{Algorithm, Hasher};
     use serde::Serialize;
 
-    use colour_math_ng::{HueConstants, LightLevel, RGB};
+    use colour_math::{HueConstants, LightLevel, RGB};
 
     use crate::legacy::legacy_series::{BasicPaintSpec00, SeriesPaintSeriesSpec00};
     use crate::series::{BasicPaintSpec, SeriesId};

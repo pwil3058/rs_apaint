@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-pub use colour_math_ng::*;
+pub use colour_math::*;
 
 #[derive(Debug)]
 pub struct ColourMixer<F: LightLevel> {

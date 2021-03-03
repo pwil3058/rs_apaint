@@ -12,7 +12,7 @@ use crypto_hash::{Algorithm, Hasher};
 use apaint_boilerplate::BasicPaint;
 use colour_math_derive::Colour;
 
-use colour_math_ng::{
+use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
     ColourBasics, LightLevel, HCV,
 };
@@ -359,7 +359,7 @@ impl<'de> SeriesPaintSeriesSpec {
 #[cfg(test)]
 mod test {
     use crate::series::{BasicPaintSpec, SeriesPaintSeriesSpec};
-    use colour_math_ng::{HueConstants, HCV, RGB};
+    use colour_math::{HueConstants, HCV, RGB};
 
     #[test]
     fn save_and_recover() {

@@ -18,10 +18,10 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_cairo_ng::CairoSetColour;
-use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, LightLevel, ScalarAttribute, HCV};
+use colour_math_cairo::CairoSetColour;
+use colour_math::{beigui::hue_wheel::MakeColouredShape, LightLevel, ScalarAttribute, HCV};
 
-use colour_math_gtk_ng::{
+use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     colour::GdkColour,
     colour_edit::{ColourEditor, ColourEditorBuilder},
@@ -144,7 +144,7 @@ impl TargetedPaintEntry {
     }
 
     pub fn target_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
-        use colour_math_ng::ColourBasics;;
+        use colour_math::ColourBasics;;
         if let Some(colour) = self.target_colour.borrow().as_ref() {
             Some(colour.rgb::<L>())
         } else {
@@ -153,7 +153,7 @@ impl TargetedPaintEntry {
     }
 
     pub fn target_colour(&self) -> Option<HCV> {
-        use colour_math_ng::ColourBasics;;
+        use colour_math::ColourBasics;;
         if let Some(colour) = self.target_colour.borrow().as_ref() {
             Some(colour.hcv())
         } else {
@@ -412,7 +412,7 @@ impl TargetedPaintMixerBuilder {
     }
 
     pub fn build(&self) -> Rc<TargetedPaintMixer> {
-        use colour_math_ng::ColourBasics;
+        use colour_math::ColourBasics;
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let file_manager = StorageManagerBuilder::new()
             .last_file_key("targeted_mixer::session")

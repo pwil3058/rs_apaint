@@ -9,7 +9,7 @@ use std::{
 use crypto_hash::{Algorithm, Hasher};
 use gcd::Gcd;
 
-use colour_math_ng::{
+use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
     Angle, Chroma, ColourBasics, Hue, LightLevel, CCI, HCV, RGB,
 };
@@ -739,7 +739,7 @@ mod test {
         BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
         SeriesPaintSeriesSpec,
     };
-    use colour_math_ng::{HueConstants, HCV, RGB};
+    use colour_math::{HueConstants, HCV, RGB};
 
     impl SeriesPaintFinder for SeriesPaintSeries {
         fn get_series_paint(

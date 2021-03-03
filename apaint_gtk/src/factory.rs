@@ -12,8 +12,8 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
-use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
+use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
+use colour_math::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
 
 use apaint::{
     characteristics::CharacteristicType, legacy::legacy_series::SeriesPaintSeriesSpec00,

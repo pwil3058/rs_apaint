@@ -9,10 +9,10 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_gtk_ng::attributes::{
+use colour_math_gtk::attributes::{
     ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder,
 };
-use colour_math_ng::{ColourBasics, ScalarAttribute};
+use colour_math::{ColourBasics, ScalarAttribute};
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 

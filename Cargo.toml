@@ -2,13 +2,9 @@
 
 members = [
     "apaint",
-#    "apaint",
     "apaint_boilerplate",
-#    "apaint_boilerplate_ng",
     "apaint_gtk",
-#    "apaint_gtk",
     "mcmmtk_gtk",
     "pcatk_gtk",
     "gtk_test_gui",
-#    "gtk_test_gui_ng",
 ]

@@ -96,10 +96,10 @@ pub mod characteristics {
 }
 
 pub mod colour {
-    pub use colour_math_gtk_ng::{colour::*, coloured::*};
+    pub use colour_math_gtk::{colour::*, coloured::*};
 
     pub trait PartsColour:
-        colour_math_ng::ColourIfce
+        colour_math::ColourIfce
         + apaint::TooltipText
         + apaint::LabelText
         + std::cmp::Ord

@@ -9,9 +9,9 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math_ng::ScalarAttribute;
+use colour_math::ScalarAttribute;
 
-use colour_math_gtk_ng::colour_edit::{ColourEditor, ColourEditorBuilder};
+use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
 
 use apaint::series::BasicPaintSpec;
 
