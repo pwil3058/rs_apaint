@@ -14,7 +14,7 @@ use apaint_gtk::{
     characteristics::CharacteristicType,
     colour::ScalarAttribute,
     factory::{BasicPaintFactory, BasicPaintFactoryBuilder},
-    mixer::palette::{TargetedPaintMixer, TargetedPaintMixerBuilder},
+    mixer::palette::{PalettePaintMixer, PalettePaintMixerBuilder},
 };
 
 use crate::config;
@@ -22,7 +22,7 @@ use crate::config;
 #[derive(PWO, Wrapper)]
 pub struct PaintersColourAssistantTK {
     vbox: gtk::Box,
-    palette: Rc<TargetedPaintMixer>,
+    palette: Rc<PalettePaintMixer>,
     factory: Rc<BasicPaintFactory>,
 }
 
@@ -37,7 +37,7 @@ impl PaintersColourAssistantTK {
             CharacteristicType::Transparency,
             CharacteristicType::Permanence,
         ];
-        let palette = TargetedPaintMixerBuilder::new()
+        let palette = PalettePaintMixerBuilder::new()
             .attributes(&attributes)
             .characteristics(&characteristics)
             .config_dir_path(&config::config_dir_path())

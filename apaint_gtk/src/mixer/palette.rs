@@ -53,7 +53,7 @@ use crate::{
 };
 
 #[derive(PWO)]
-pub struct TargetedPaintEntry {
+pub struct PalettePaintEntry {
     vbox: gtk::Box,
     id_label: gtk::Label,
     name_entry: gtk::Entry,
@@ -64,7 +64,7 @@ pub struct TargetedPaintEntry {
     target_colour: RefCell<Option<HCV>>,
 }
 
-impl TargetedPaintEntry {
+impl PalettePaintEntry {
     pub fn new(attributes: &[ScalarAttribute]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let id_label = gtk::LabelBuilder::new().label("MIX#???").build();
@@ -163,7 +163,7 @@ impl TargetedPaintEntry {
 }
 
 #[derive(PWO, Wrapper)]
-pub struct TargetedPaintMixer {
+pub struct PalettePaintMixer {
     vbox: gtk::Box,
     mixing_session: RefCell<MixingSession>,
     file_manager: Rc<StorageManager>,
@@ -172,7 +172,7 @@ pub struct TargetedPaintMixer {
     list_view: Rc<ColouredItemListView>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
-    mix_entry: Rc<TargetedPaintEntry>,
+    mix_entry: Rc<PalettePaintEntry>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
@@ -181,7 +181,7 @@ pub struct TargetedPaintMixer {
     display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
 }
 
-impl TargetedPaintMixer {
+impl PalettePaintMixer {
     const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN;
     const SAV_HAS_TARGET: u64 = SAV_NEXT_CONDN << 1;
     pub const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
@@ -385,13 +385,13 @@ impl TargetedPaintMixer {
 }
 
 #[derive(Default)]
-pub struct TargetedPaintMixerBuilder {
+pub struct PalettePaintMixerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     config_dir_path: Option<PathBuf>,
 }
 
-impl TargetedPaintMixerBuilder {
+impl PalettePaintMixerBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -411,7 +411,7 @@ impl TargetedPaintMixerBuilder {
         self
     }
 
-    pub fn build(&self) -> Rc<TargetedPaintMixer> {
+    pub fn build(&self) -> Rc<PalettePaintMixer> {
         use colour_math::ColourBasics;
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let file_manager = StorageManagerBuilder::new()
@@ -421,7 +421,7 @@ impl TargetedPaintMixerBuilder {
                 "Reset the mixer in preparation for a new mixing session",
             )
             .build();
-        let change_notifier = ChangedCondnsNotifier::new(TargetedPaintMixer::SAV_NOT_HAS_TARGET);
+        let change_notifier = ChangedCondnsNotifier::new(PalettePaintMixer::SAV_NOT_HAS_TARGET);
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheelBuilder::new()
             .attributes(&self.attributes)
@@ -440,7 +440,7 @@ impl TargetedPaintMixerBuilder {
                 SAV_HOVER_OK,
             )],
         );
-        let mix_entry = TargetedPaintEntry::new(&self.attributes);
+        let mix_entry = PalettePaintEntry::new(&self.attributes);
         let series_paint_spinner_box = PartsSpinButtonBox::<SeriesPaint>::new("Paints", 4, true);
 
         let display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
@@ -476,8 +476,8 @@ impl TargetedPaintMixerBuilder {
         }
         let paint_standards_manager = builder.build();
         paint_standards_manager.update_popup_condns(MaskedCondns {
-            condns: TargetedPaintMixer::SAV_NOT_HAS_TARGET,
-            mask: TargetedPaintMixer::HAS_TARGET_MASK,
+            condns: PalettePaintMixer::SAV_NOT_HAS_TARGET,
+            mask: PalettePaintMixer::HAS_TARGET_MASK,
         });
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
             .icon(&paint_standard_image(24))
@@ -512,7 +512,7 @@ impl TargetedPaintMixerBuilder {
         buttons.add_widget(
             "new_mix",
             &new_mix_btn,
-            TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+            PalettePaintMixer::SAV_NOT_HAS_TARGET,
         );
         button_box.pack_start(&new_mix_btn, true, true, 0);
 
@@ -523,9 +523,9 @@ impl TargetedPaintMixerBuilder {
         buttons.add_widget(
             "accept",
             &accept_btn,
-            TargetedPaintMixer::SAV_HAS_COLOUR
-                + TargetedPaintMixer::SAV_HAS_TARGET
-                + TargetedPaintMixer::SAV_HAS_NAME,
+            PalettePaintMixer::SAV_HAS_COLOUR
+                + PalettePaintMixer::SAV_HAS_TARGET
+                + PalettePaintMixer::SAV_HAS_NAME,
         );
         button_box.pack_start(&accept_btn, true, true, 0);
 
@@ -533,18 +533,14 @@ impl TargetedPaintMixerBuilder {
             .label("Cancel")
             .tooltip_text("Cancel the current mixture.")
             .build();
-        buttons.add_widget("cancel", &cancel_btn, TargetedPaintMixer::SAV_HAS_TARGET);
+        buttons.add_widget("cancel", &cancel_btn, PalettePaintMixer::SAV_HAS_TARGET);
         button_box.pack_start(&cancel_btn, true, true, 0);
 
         let simplify_btn = gtk::ButtonBuilder::new()
             .label("Simplify Parts")
             .tooltip_text("Simplify the parts currently allocated to paints.")
             .build();
-        buttons.add_widget(
-            "simplify",
-            &simplify_btn,
-            TargetedPaintMixer::SAV_HAS_COLOUR,
-        );
+        buttons.add_widget("simplify", &simplify_btn, PalettePaintMixer::SAV_HAS_COLOUR);
         button_box.pack_start(&simplify_btn, true, true, 0);
 
         let zero_parts_btn = gtk::ButtonBuilder::new()
@@ -554,7 +550,7 @@ impl TargetedPaintMixerBuilder {
         buttons.add_widget(
             "zero_parts",
             &zero_parts_btn,
-            TargetedPaintMixer::SAV_HAS_COLOUR,
+            PalettePaintMixer::SAV_HAS_COLOUR,
         );
         button_box.pack_start(&zero_parts_btn, true, true, 0);
 
@@ -563,7 +559,7 @@ impl TargetedPaintMixerBuilder {
         vbox.pack_start(&list_view.pwo(), true, true, 0);
         vbox.show_all();
 
-        let tpm = Rc::new(TargetedPaintMixer {
+        let tpm = Rc::new(PalettePaintMixer {
             vbox,
             file_manager,
             notes_entry,
@@ -585,10 +581,10 @@ impl TargetedPaintMixerBuilder {
         tpm.mix_entry.name_entry.connect_changed(move |entry| {
             let mut condns = MaskedCondns {
                 condns: 0,
-                mask: TargetedPaintMixer::SAV_HAS_NAME,
+                mask: PalettePaintMixer::SAV_HAS_NAME,
             };
             if entry.get_text_length() > 0 {
-                condns.condns = TargetedPaintMixer::SAV_HAS_NAME;
+                condns.condns = PalettePaintMixer::SAV_HAS_NAME;
             };
             change_notifier_c.notify_changed_condns(condns);
         });
