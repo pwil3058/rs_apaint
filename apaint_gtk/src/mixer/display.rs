@@ -15,7 +15,7 @@ use colour_math_gtk_ng::{
 };
 use colour_math_ng::{ColourBasics, ScalarAttribute};
 
-use apaint_ng::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
+use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
 use crate::{
     colour::{Colourable, HCV},

@@ -28,7 +28,7 @@ use colour_math_gtk_ng::{
     hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
 };
 
-use apaint_ng::{
+use apaint::{
     characteristics::CharacteristicType,
     colour_mix::ColourMixer,
     mixtures::{MixingSession, MixtureBuilder, Paint},
@@ -259,14 +259,14 @@ impl TargetedPaintMixer {
             .update_session_is_saveable(!self.mixing_session.borrow().notes().is_empty());
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.mixing_session.borrow_mut().write(&mut file)?;
         Ok(new_digest)
     }
 
-    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
+    fn read_from_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(path)?;
         let session = MixingSession::read(&mut file, &self.paint_series_manager)?;
@@ -362,7 +362,7 @@ impl TargetedPaintMixer {
         self.series_paint_spinner_box.zero_all_parts();
     }
 
-    pub fn full_reset(&self) -> apaint_ng::Result<Vec<u8>> {
+    pub fn full_reset(&self) -> apaint::Result<Vec<u8>> {
         self.notes_entry.set_text("");
         self.cancel_current_mixture();
         *self.mixing_session.borrow_mut() = MixingSession::new();

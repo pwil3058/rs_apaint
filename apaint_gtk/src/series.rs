@@ -24,7 +24,7 @@ use pw_gix::{
 use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 use colour_math_ng::beigui::hue_wheel::MakeColouredShape;
 
-use apaint_ng::{
+use apaint::{
     characteristics::CharacteristicType,
     legacy::{legacy_series::SeriesPaintSeriesSpec00, read_legacy_paint_series_spec},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
@@ -358,7 +358,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                 match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
                     Ok(spec) => spec,
                     Err(err) => match &err {
-                        apaint_ng::Error::SerdeJsonError(_) => {
+                        apaint::Error::SerdeJsonError(_) => {
                             let mut file = File::open(&path)?;
                             if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
                                 series
@@ -381,7 +381,7 @@ impl SeriesPaintFinder for SeriesBinder {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint_ng::Result<Rc<SeriesPaint>> {
+    ) -> apaint::Result<Rc<SeriesPaint>> {
         if let Some(series_id) = series_id {
             let bsr = self
                 .pages
@@ -390,12 +390,12 @@ impl SeriesPaintFinder for SeriesBinder {
             match bsr {
                 Ok(index) => match self.pages.borrow()[index].0.paint_series.find(paint_id) {
                     Some(paint) => Ok(Rc::clone(paint)),
-                    None => Err(apaint_ng::Error::UnknownSeriesPaint(
+                    None => Err(apaint::Error::UnknownSeriesPaint(
                         series_id.clone(),
                         paint_id.to_string(),
                     )),
                 },
-                Err(_) => Err(apaint_ng::Error::UnknownSeries(series_id.clone())),
+                Err(_) => Err(apaint::Error::UnknownSeries(series_id.clone())),
             }
         } else {
             for page in self.pages.borrow().iter() {
@@ -403,7 +403,7 @@ impl SeriesPaintFinder for SeriesBinder {
                     return Ok(Rc::clone(paint));
                 }
             }
-            Err(apaint_ng::Error::NotFound(paint_id.to_string()))
+            Err(apaint::Error::NotFound(paint_id.to_string()))
         }
     }
 }
@@ -465,7 +465,7 @@ impl SeriesPaintFinder for PaintSeriesManager {
         &self,
         paint_id: &str,
         series_id: Option<&SeriesId>,
-    ) -> apaint_ng::Result<Rc<SeriesPaint>> {
+    ) -> apaint::Result<Rc<SeriesPaint>> {
         self.binder.get_series_paint(paint_id, series_id)
     }
 }

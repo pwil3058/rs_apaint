@@ -13,7 +13,7 @@ use colour_math_ng::ScalarAttribute;
 
 use colour_math_gtk_ng::colour_edit::{ColourEditor, ColourEditorBuilder};
 
-use apaint_ng::series::BasicPaintSpec;
+use apaint::series::BasicPaintSpec;
 
 use crate::characteristics::{
     CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,

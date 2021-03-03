@@ -1,14 +1,14 @@
 [workspace]
 
 members = [
+    "apaint",
 #    "apaint",
-    "apaint_ng",
-#    "apaint_boilerplate",
-    "apaint_boilerplate_ng",
+    "apaint_boilerplate",
+#    "apaint_boilerplate_ng",
+    "apaint_gtk",
 #    "apaint_gtk",
-    "apaint_gtk_ng",
     "mcmmtk_gtk",
     "pcatk_gtk",
-#    "gtk_test_gui",
-    "gtk_test_gui_ng",
+    "gtk_test_gui",
+#    "gtk_test_gui_ng",
 ]

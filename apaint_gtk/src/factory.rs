@@ -15,7 +15,7 @@ use pw_gix::{
 use colour_math_gtk_ng::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 use colour_math_ng::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttribute};
 
-use apaint_ng::{
+use apaint::{
     characteristics::CharacteristicType, legacy::legacy_series::SeriesPaintSeriesSpec00,
     series::BasicPaintSpec, series::SeriesPaintSeriesSpec, BasicPaintIfce,
 };
@@ -25,7 +25,7 @@ use crate::{
     spec_edit::BasicPaintSpecEditor,
     storage::{StorageManager, StorageManagerBuilder},
 };
-use apaint_ng::legacy::read_legacy_paint_series_spec;
+use apaint::legacy::read_legacy_paint_series_spec;
 
 #[derive(PWO, Wrapper)]
 pub struct BasicPaintFactory {
@@ -70,7 +70,7 @@ impl BasicPaintFactory {
         self.list_view.add_row(&row);
     }
 
-    fn do_remove_paint_work(&self, id: &str) -> apaint_ng::Result<()> {
+    fn do_remove_paint_work(&self, id: &str) -> apaint::Result<()> {
         self.paint_series.borrow_mut().remove(id)?;
         self.hue_wheel.remove_item(id);
         self.list_view.remove_row(id);
@@ -132,14 +132,14 @@ impl BasicPaintFactory {
         self.update_editor_needs_saving();
     }
 
-    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
+    fn write_to_file<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::create(path)?;
         let new_digest = self.paint_series.borrow_mut().write(&mut file)?;
         Ok(new_digest)
     }
 
-    fn reset(&self) -> apaint_ng::Result<Vec<u8>> {
+    fn reset(&self) -> apaint::Result<Vec<u8>> {
         self.unguarded_reset();
         let digest = self.paint_series.borrow().digest().expect("unrecoverable");
         Ok(digest)
@@ -155,7 +155,7 @@ impl BasicPaintFactory {
         self.update_series_needs_saving();
     }
 
-    fn load<Q: AsRef<Path>>(&self, path: Q) -> apaint_ng::Result<Vec<u8>> {
+    fn load<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
         let mut file = File::open(&path)?;
         let new_series = match SeriesPaintSeriesSpec::read(&mut file) {
@@ -165,7 +165,7 @@ impl BasicPaintFactory {
                 match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
                     Ok(series) => series,
                     Err(err) => match &err {
-                        apaint_ng::Error::SerdeJsonError(_) => {
+                        apaint::Error::SerdeJsonError(_) => {
                             let mut file = File::open(&path)?;
                             if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
                                 series

@@ -1,5 +1,5 @@
 [package]
-name = "apaint_boilerplate_ng"
+name = "apaint_boilerplate"
 version = "0.1.0"
 authors = ["Peter Williams <pwil3058@gmail.com>"]
 edition = "2018"

@@ -9,7 +9,7 @@ use std::{
 
 use crypto_hash::{Algorithm, Hasher};
 
-use apaint_boilerplate_ng::BasicPaint;
+use apaint_boilerplate::BasicPaint;
 use colour_math_derive::Colour;
 
 use colour_math_ng::{

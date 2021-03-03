@@ -4,7 +4,7 @@
 
 use std::{fmt, str::FromStr};
 
-use apaint_boilerplate_ng::Characteristic;
+use apaint_boilerplate::Characteristic;
 
 pub trait CharacteristicIfce:
     FromStr<Err = String> + PartialEq + PartialOrd + Default + fmt::Debug
@@ -19,7 +19,9 @@ pub trait CharacteristicIfce:
     fn full(&self) -> &'static str;
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
+#[derive(
+    Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic,
+)]
 pub enum Finish {
     Gloss,
     SemiGloss,
@@ -27,7 +29,9 @@ pub enum Finish {
     Flat,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
+#[derive(
+    Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic,
+)]
 pub enum Transparency {
     Opaque,
     SemiOpaque,
@@ -36,7 +40,9 @@ pub enum Transparency {
     Clear,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
+#[derive(
+    Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic,
+)]
 pub enum Permanence {
     ExtremelyPermanent,
     #[default]
@@ -45,7 +51,9 @@ pub enum Permanence {
     Fugitive,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
+#[derive(
+    Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic,
+)]
 pub enum Fluorescence {
     Fluorescent,
     SemiFluorescent,
@@ -54,7 +62,9 @@ pub enum Fluorescence {
     NonFluorescent,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic)]
+#[derive(
+    Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Characteristic,
+)]
 pub enum Metallicness {
     Metal,
     Metallic,

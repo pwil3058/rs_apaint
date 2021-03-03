@@ -1,5 +1,5 @@
 [package]
-name = "apaint_ng"
+name = "apaint"
 version = "0.1.0"
 authors = ["Peter Williams <pwil3058@gmail.com>"]
 edition = "2018"
@@ -16,7 +16,7 @@ lazy_static = "1.4.0"
 num-traits = "0.2.14"
 regex = "1.3.3"
 
-apaint_boilerplate_ng = { path = "../apaint_boilerplate_ng"}
+apaint_boilerplate = { path = "../apaint_boilerplate"}
 
 colour_math_derive = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 colour_math_ng = { git = "https://github.com/pwil3058/rs_colour_math.git" }

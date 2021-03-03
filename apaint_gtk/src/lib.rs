@@ -19,7 +19,7 @@ pub mod characteristics {
         wrapper::*,
     };
 
-    pub use apaint_ng::characteristics::{
+    pub use apaint::characteristics::{
         CharacteristicIfce, CharacteristicType, Finish, Fluorescence, Metallicness, Permanence,
         Transparency,
     };
@@ -100,14 +100,14 @@ pub mod colour {
 
     pub trait PartsColour:
         colour_math_ng::ColourIfce
-        + apaint_ng::TooltipText
-        + apaint_ng::LabelText
+        + apaint::TooltipText
+        + apaint::LabelText
         + std::cmp::Ord
         + 'static
     {
     }
 
-    use apaint_ng::series::*;
+    use apaint::series::*;
 
     impl PartsColour for SeriesPaint {}
 }
@@ -233,7 +233,7 @@ pub mod window {
 
 #[derive(Debug)]
 pub enum Error {
-    APaintError(apaint_ng::Error),
+    APaintError(apaint::Error),
     IOError(io::Error),
     DuplicateFile(String),
     GeneralError(String),
@@ -260,8 +260,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<apaint_ng::Error> for Error {
-    fn from(err: apaint_ng::Error) -> Self {
+impl From<apaint::Error> for Error {
+    fn from(err: apaint::Error) -> Self {
         Error::APaintError(err)
     }
 }

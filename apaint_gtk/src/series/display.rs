@@ -14,7 +14,7 @@ use colour_math_gtk_ng::attributes::{
 };
 use colour_math_ng::{ColourBasics, ScalarAttribute};
 
-use apaint_ng::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
+use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
 use crate::colour::{Colourable, GdkColour, HCV};
 use crate::series::PaintActionCallback;

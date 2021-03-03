@@ -4,7 +4,7 @@ use std::{convert::From, io::Read};
 
 use serde::de::DeserializeOwned;
 
-use apaint_boilerplate_ng::BasicPaint;
+use apaint_boilerplate::BasicPaint;
 use colour_math_derive::Colour;
 
 use colour_math_ng::{ColourBasics, LightLevel, RGB};

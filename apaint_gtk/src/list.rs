@@ -14,7 +14,7 @@ use pw_gix::{
     wrapper::*,
 };
 
-use apaint_ng::{
+use apaint::{
     characteristics::CharacteristicType,
     mixtures::{Mixture, Paint},
     series::{BasicPaintSpec, SeriesPaint},
