@@ -22,6 +22,7 @@ use crate::{
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
 
+// TODO: make an untargeted version of Mixture
 #[derive(Debug, Colour)]
 pub struct Mixture {
     colour: HCV,
