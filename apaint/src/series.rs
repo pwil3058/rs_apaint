@@ -173,6 +173,21 @@ pub trait SeriesPaintFinder {
     ) -> Result<Rc<SeriesPaint>, crate::Error>;
 }
 
+#[cfg(test)]
+impl SeriesPaintFinder for SeriesPaintSeries {
+    fn get_series_paint(
+        &self,
+        id: &str,
+        _series_id: Option<&SeriesId>,
+    ) -> Result<Rc<SeriesPaint>, crate::Error> {
+        if let Some(paint) = self.find(id) {
+            Ok(Rc::clone(paint))
+        } else {
+            Err(crate::Error::NotFound(id.to_string()))
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Colour, BasicPaint, Clone, PartialEq)]
 pub struct BasicPaintSpec {
     pub colour: HCV,

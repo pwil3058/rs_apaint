@@ -22,11 +22,9 @@ use crate::{
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
 
-pub mod untargeted;
-
-// TODO: make an untargeted version of TargetedMixture
+// TODO: make an untargeted version of Mixture
 #[derive(Debug, Colour)]
-pub struct TargetedMixture {
+pub struct Mixture {
     colour: HCV,
     targeted_colour: Option<HCV>,
     id: String,
@@ -40,7 +38,7 @@ pub struct TargetedMixture {
     components: Vec<(Paint, u64)>,
 }
 
-impl TargetedMixture {
+impl Mixture {
     pub fn targeted_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
         if let Some(ref colour) = self.targeted_colour {
             Some(colour.rgb::<L>())
@@ -77,7 +75,7 @@ impl TargetedMixture {
     }
 }
 
-impl BasicPaintIfce for TargetedMixture {
+impl BasicPaintIfce for Mixture {
     fn id(&self) -> &str {
         &self.id
     }
@@ -119,7 +117,7 @@ impl BasicPaintIfce for TargetedMixture {
     }
 }
 
-impl TooltipText for TargetedMixture {
+impl TooltipText for Mixture {
     fn tooltip_text(&self) -> String {
         let mut string = self.label_text();
         if let Some(notes) = self.notes() {
@@ -131,7 +129,7 @@ impl TooltipText for TargetedMixture {
     }
 }
 
-impl LabelText for TargetedMixture {
+impl LabelText for Mixture {
     fn label_text(&self) -> String {
         if let Some(name) = self.name() {
             format!("Mix {}: {}", self.id, name)
@@ -143,22 +141,22 @@ impl LabelText for TargetedMixture {
     }
 }
 
-impl MakeColouredShape for TargetedMixture {
+impl MakeColouredShape for Mixture {
     fn coloured_shape(&self) -> ColouredShape {
         let tooltip_text = self.tooltip_text();
         ColouredShape::new(&self.colour, &self.id, &tooltip_text, Shape::Diamond)
     }
 }
 
-impl PartialEq for TargetedMixture {
+impl PartialEq for Mixture {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl Eq for TargetedMixture {}
+impl Eq for Mixture {}
 
-impl PartialOrd for TargetedMixture {
+impl PartialOrd for Mixture {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match self.id.cmp(&other.id) {
             Ordering::Less => Some(Ordering::Less),
@@ -168,7 +166,7 @@ impl PartialOrd for TargetedMixture {
     }
 }
 
-impl Ord for TargetedMixture {
+impl Ord for Mixture {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
@@ -177,7 +175,7 @@ impl Ord for TargetedMixture {
 #[derive(Debug)]
 pub struct MixingSession {
     notes: String,
-    mixtures: Vec<Rc<TargetedMixture>>,
+    mixtures: Vec<Rc<Mixture>>,
 }
 
 impl Default for MixingSession {
@@ -202,7 +200,7 @@ impl MixingSession {
         self.notes = notes.to_string()
     }
 
-    pub fn mixtures(&self) -> impl Iterator<Item = &Rc<TargetedMixture>> {
+    pub fn mixtures(&self) -> impl Iterator<Item = &Rc<Mixture>> {
         self.mixtures.iter()
     }
 
@@ -223,7 +221,7 @@ impl MixingSession {
         v
     }
 
-    pub fn add_mixture(&mut self, mixture: &Rc<TargetedMixture>) -> Option<Rc<TargetedMixture>> {
+    pub fn add_mixture(&mut self, mixture: &Rc<Mixture>) -> Option<Rc<Mixture>> {
         debug_assert!(self.is_sorted_unique());
         match self
             .mixtures
@@ -242,7 +240,7 @@ impl MixingSession {
         }
     }
 
-    pub fn mixture(&self, id: &str) -> Option<&Rc<TargetedMixture>> {
+    pub fn mixture(&self, id: &str) -> Option<&Rc<Mixture>> {
         debug_assert!(self.is_sorted_unique());
         match self.mixtures.binary_search_by_key(&id, |p| p.id()) {
             Ok(index) => self.mixtures.get(index),
@@ -287,7 +285,7 @@ pub struct MixtureBuilder {
     name: String,
     notes: String,
     series_components: Vec<(Rc<SeriesPaint>, u64)>,
-    mixture_components: Vec<(Rc<TargetedMixture>, u64)>,
+    mixture_components: Vec<(Rc<Mixture>, u64)>,
     targeted_colour: Option<HCV>,
 }
 
@@ -331,20 +329,17 @@ impl MixtureBuilder {
         self
     }
 
-    pub fn mixed_paint_components(
-        &mut self,
-        components: Vec<(Rc<TargetedMixture>, u64)>,
-    ) -> &mut Self {
+    pub fn mixed_paint_components(&mut self, components: Vec<(Rc<Mixture>, u64)>) -> &mut Self {
         self.mixture_components = components;
         self
     }
 
-    pub fn mixed_paint_component(&mut self, component: (Rc<TargetedMixture>, u64)) -> &mut Self {
+    pub fn mixed_paint_component(&mut self, component: (Rc<Mixture>, u64)) -> &mut Self {
         self.mixture_components.push(component);
         self
     }
 
-    pub fn build(&self) -> Rc<TargetedMixture> {
+    pub fn build(&self) -> Rc<Mixture> {
         debug_assert!((self.series_components.len() + self.mixture_components.len()) > 0);
         let mut gcd: u128 = 0;
         for (_, parts) in self.series_components.iter() {
@@ -407,7 +402,7 @@ impl MixtureBuilder {
             u16_array[1],
             u16_array[2],
         ]));
-        let mp = TargetedMixture {
+        let mp = Mixture {
             colour: hcv,
             targeted_colour: self.targeted_colour,
             id: self.id.clone(),
@@ -427,7 +422,7 @@ impl MixtureBuilder {
 #[derive(Debug, PartialEq)]
 pub enum Paint {
     Series(Rc<SeriesPaint>),
-    Mixed(Rc<TargetedMixture>),
+    Mixed(Rc<Mixture>),
 }
 
 impl MakeColouredShape for Paint {
@@ -611,8 +606,8 @@ impl From<&Rc<SeriesPaint>> for SaveablePaint {
     }
 }
 
-impl From<&Rc<TargetedMixture>> for SaveablePaint {
-    fn from(paint: &Rc<TargetedMixture>) -> Self {
+impl From<&Rc<Mixture>> for SaveablePaint {
+    fn from(paint: &Rc<Mixture>) -> Self {
         SaveablePaint::Mixed(paint.id().to_string())
     }
 }
@@ -635,8 +630,8 @@ pub struct SaveableMixture {
     components: Vec<(SaveablePaint, u64)>,
 }
 
-impl From<&Rc<TargetedMixture>> for SaveableMixture {
-    fn from(rcmp: &Rc<TargetedMixture>) -> Self {
+impl From<&Rc<Mixture>> for SaveableMixture {
+    fn from(rcmp: &Rc<Mixture>) -> Self {
         let components = rcmp
             .components
             .iter()
@@ -673,7 +668,7 @@ impl SaveableMixingSession {
         &self,
         series_paint_finder: &Rc<impl SeriesPaintFinder>,
     ) -> Result<MixingSession, crate::Error> {
-        let mut mixtures: Vec<Rc<TargetedMixture>> = vec![];
+        let mut mixtures: Vec<Rc<Mixture>> = vec![];
         for saved_mixture in self.mixtures.iter() {
             let mut mixture_builder = MixtureBuilder::new(&saved_mixture.id);
             mixture_builder.name(&saved_mixture.name);

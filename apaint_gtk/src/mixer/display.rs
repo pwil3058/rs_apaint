@@ -15,7 +15,7 @@ use colour_math_gtk::{
     colour::*,
 };
 
-use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
+use apaint::{characteristics::CharacteristicType, mixtures::TargetedMixture, BasicPaintIfce};
 
 use crate::{
     colour::{Colourable, HCV},
@@ -25,7 +25,7 @@ use crate::{
 #[derive(PWO)]
 pub struct MixtureDisplay {
     vbox: gtk::Box,
-    mixture: Rc<Mixture>,
+    mixture: Rc<TargetedMixture>,
     target_label: gtk::Label,
     cads: Rc<ColourAttributeDisplayStack>,
 }
@@ -43,7 +43,7 @@ impl MixtureDisplay {
         };
     }
 
-    pub fn mixture(&self) -> &Rc<Mixture> {
+    pub fn mixture(&self) -> &Rc<TargetedMixture> {
         &self.mixture
     }
 }
@@ -82,7 +82,7 @@ impl MixtureDisplayBuilder {
         self
     }
 
-    pub fn build(&self, mixture: &Rc<Mixture>) -> MixtureDisplay {
+    pub fn build(&self, mixture: &Rc<TargetedMixture>) -> MixtureDisplay {
         let colour = mixture.hcv();
         let vbox = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
@@ -164,7 +164,7 @@ pub struct MixtureDisplayDialogManager<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     mixture_display_builder: MixtureDisplayBuilder,
-    dialogs: BTreeMap<Rc<Mixture>, MixtureDisplayDialog>,
+    dialogs: BTreeMap<Rc<TargetedMixture>, MixtureDisplayDialog>,
 }
 
 impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
@@ -186,7 +186,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         dialog
     }
 
-    pub fn display_mixture(&mut self, mixture: &Rc<Mixture>) {
+    pub fn display_mixture(&mut self, mixture: &Rc<TargetedMixture>) {
         if !self.dialogs.contains_key(mixture) {
             let dialog = self.new_dialog();
             let display = self.mixture_display_builder.build(mixture);

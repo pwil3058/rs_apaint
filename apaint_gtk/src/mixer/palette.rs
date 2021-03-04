@@ -477,7 +477,7 @@ impl PalettePaintMixerBuilder {
 
         let accept_btn = gtk::ButtonBuilder::new()
             .label("Accept")
-            .tooltip_text("Accept the current mixture and add it to the list of mixtures.")
+            .tooltip_text("Accept the current mixtures and add it to the list of mixtures.")
             .build();
         buttons.add_widget(
             "accept",
@@ -490,7 +490,7 @@ impl PalettePaintMixerBuilder {
 
         let cancel_btn = gtk::ButtonBuilder::new()
             .label("Cancel")
-            .tooltip_text("Cancel the current mixture.")
+            .tooltip_text("Cancel the current mixtures.")
             .build();
         buttons.add_widget("cancel", &cancel_btn, PalettePaintMixer::SAV_HAS_TARGET);
         button_box.pack_start(&cancel_btn, true, true, 0);
