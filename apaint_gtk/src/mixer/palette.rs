@@ -53,6 +53,22 @@ struct Sample {
     position: Point,
 }
 
+struct Samples {
+    samples: RefCell<Vec<Sample>>,
+    popup_menu: WrappedMenu,
+    popup_menu_posn: Cell<Point>,
+}
+
+impl Default for Samples {
+    fn default() -> Self {
+        Self {
+            samples: RefCell::new(Vec::new()),
+            popup_menu: WrappedMenu::new(&[]),
+            popup_menu_posn: Cell::new((0.0, 0.0).into()),
+        }
+    }
+}
+
 #[derive(PWO, Wrapper)]
 pub struct PalettePaintEntry {
     vbox: gtk::Box,
@@ -62,9 +78,7 @@ pub struct PalettePaintEntry {
     cads: Rc<ColourAttributeDisplayStack>,
     drawing_area: gtk::DrawingArea,
     mix_colour: RefCell<Option<HCV>>,
-    samples: RefCell<Vec<Sample>>,
-    popup_menu: WrappedMenu,
-    popup_menu_posn: Cell<Point>,
+    samples: Samples,
 }
 
 impl PalettePaintEntry {
@@ -99,14 +113,13 @@ impl PalettePaintEntry {
             cads,
             drawing_area,
             mix_colour: RefCell::new(None),
-            samples: RefCell::new(Vec::new()),
-            popup_menu: WrappedMenu::new(&[]),
-            popup_menu_posn: Cell::new((0.0, 0.0).into()),
+            samples: Samples::default(),
         });
 
         // POPUP
         let tpe_c = Rc::clone(&tpe);
-        tpe.popup_menu
+        tpe.samples
+            .popup_menu
             .append_item(
                 "paste",
                 "Paste Sample",
@@ -117,23 +130,24 @@ impl PalettePaintEntry {
                 if let Some(pixbuf) = cbd.wait_for_image() {
                     let sample = Sample {
                         pixbuf,
-                        position: tpe_c.popup_menu_posn.get(),
+                        position: tpe_c.samples.popup_menu_posn.get(),
                     };
-                    tpe_c.samples.borrow_mut().push(sample);
+                    tpe_c.samples.samples.borrow_mut().push(sample);
                     tpe_c.drawing_area.queue_draw();
                 } else {
                     tpe_c.inform_user("No image data on clipboard.", None);
                 }
             });
         let tpe_c = Rc::clone(&tpe);
-        tpe.popup_menu
+        tpe.samples
+            .popup_menu
             .append_item(
                 "remove",
                 "Remove Sample(s)",
                 "Remove all image samples from the sample area",
             )
             .connect_activate(move |_| {
-                tpe_c.samples.borrow_mut().clear();
+                tpe_c.samples.samples.borrow_mut().clear();
                 tpe_c.drawing_area.queue_draw();
             });
         let tpe_c = Rc::clone(&tpe);
@@ -142,16 +156,18 @@ impl PalettePaintEntry {
                 if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3
                 {
                     let position = Point::from(event.get_position());
-                    let n_samples = tpe_c.samples.borrow().len();
+                    let n_samples = tpe_c.samples.samples.borrow().len();
                     let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
                     tpe_c
+                        .samples
                         .popup_menu
                         .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
                     tpe_c
+                        .samples
                         .popup_menu
                         .set_sensitivities(n_samples > 0, &["remove"]);
-                    tpe_c.popup_menu_posn.set(position);
-                    tpe_c.popup_menu.popup_at_event(event);
+                    tpe_c.samples.popup_menu_posn.set(position);
+                    tpe_c.samples.popup_menu.popup_at_event(event);
                     return Inhibit(true);
                 }
                 Inhibit(false)
@@ -173,7 +189,7 @@ impl PalettePaintEntry {
             cairo_context.set_source_colour(&HCV::BLACK);
         };
         cairo_context.paint();
-        for sample in self.samples.borrow().iter() {
+        for sample in self.samples.samples.borrow().iter() {
             let buffer = sample
                 .pixbuf
                 .save_to_bufferv("png", &[])
@@ -197,7 +213,7 @@ impl PalettePaintEntry {
     }
 
     pub fn delete_samples(&self) {
-        self.samples.borrow_mut().clear();
+        self.samples.samples.borrow_mut().clear();
     }
 }
 
