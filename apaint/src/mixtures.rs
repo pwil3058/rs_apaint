@@ -22,8 +22,6 @@ use crate::{
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
 
-pub mod untargeted;
-
 // TODO: make an untargeted version of TargetedMixture
 #[derive(Debug, Colour)]
 pub struct TargetedMixture {
@@ -741,10 +739,7 @@ mod test {
     use std::rc::Rc;
 
     use crate::mixtures::{MixingSession, MixtureBuilder};
-    use crate::series::{
-        BasicPaintSpec, SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries,
-        SeriesPaintSeriesSpec,
-    };
+    use crate::series::{BasicPaintSpec, SeriesPaintSeries, SeriesPaintSeriesSpec};
     use colour_math::{HueConstants, HCV, RGB};
 
     #[test]
