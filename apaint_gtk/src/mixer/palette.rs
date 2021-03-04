@@ -8,9 +8,9 @@ use std::{
 };
 
 use pw_gix::{
-    cairo, gdk, gdk_pixbuf,
+    cairo,
     gtk::{self, prelude::*},
-    gtkx::{menu::WrappedMenu, paned::RememberPosition},
+    gtkx::paned::RememberPosition,
     sav_state::{
         ChangedCondnsNotifier, ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled,
         SAV_HOVER_OK, SAV_NEXT_CONDN,
@@ -18,8 +18,13 @@ use pw_gix::{
     wrapper::*,
 };
 
+#[cfg(feature = "palette_samples")]
+use colour_math_cairo::Point;
+#[cfg(feature = "palette_samples")]
+use pw_gix::{gdk, gdk_pixbuf, gtkx::menu::WrappedMenu};
+
 use colour_math::{beigui::hue_wheel::MakeColouredShape, ScalarAttribute, HCV};
-use colour_math_cairo::{CairoSetColour, Point};
+use colour_math_cairo::CairoSetColour;
 
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
@@ -48,17 +53,20 @@ use crate::{
     window::PersistentWindowButtonBuilder,
 };
 
+#[cfg(feature = "palette_samples")]
 struct Sample {
     pixbuf: gdk_pixbuf::Pixbuf,
     position: Point,
 }
 
+#[cfg(feature = "palette_samples")]
 struct Samples {
     samples: RefCell<Vec<Sample>>,
     popup_menu: WrappedMenu,
     popup_menu_posn: Cell<Point>,
 }
 
+#[cfg(feature = "palette_samples")]
 impl Default for Samples {
     fn default() -> Self {
         Self {
@@ -78,6 +86,7 @@ pub struct PalettePaintEntry {
     cads: Rc<ColourAttributeDisplayStack>,
     drawing_area: gtk::DrawingArea,
     mix_colour: RefCell<Option<HCV>>,
+    #[cfg(feature = "palette_samples")]
     samples: Samples,
 }
 
@@ -90,10 +99,13 @@ impl PalettePaintEntry {
         let cads = ColourAttributeDisplayStackBuilder::new()
             .attributes(attributes)
             .build();
+        #[cfg(feature = "palette_samples")]
         let drawing_area = gtk::DrawingAreaBuilder::new()
             .events(gdk::EventMask::BUTTON_PRESS_MASK)
             .height_request(100)
             .build();
+        #[cfg(not(feature = "palette_samples"))]
+        let drawing_area = gtk::DrawingAreaBuilder::new().height_request(100).build();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&id_label, false, false, 0);
         hbox.pack_start(&name_entry, true, true, 0);
@@ -113,65 +125,70 @@ impl PalettePaintEntry {
             cads,
             drawing_area,
             mix_colour: RefCell::new(None),
+            #[cfg(feature = "palette_samples")]
             samples: Samples::default(),
         });
 
         // POPUP
-        let tpe_c = Rc::clone(&tpe);
-        tpe.samples
-            .popup_menu
-            .append_item(
-                "paste",
-                "Paste Sample",
-                "Paste image sample from the clipboard at this position",
-            )
-            .connect_activate(move |_| {
-                let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
-                if let Some(pixbuf) = cbd.wait_for_image() {
-                    let sample = Sample {
-                        pixbuf,
-                        position: tpe_c.samples.popup_menu_posn.get(),
-                    };
-                    tpe_c.samples.samples.borrow_mut().push(sample);
-                    tpe_c.drawing_area.queue_draw();
-                } else {
-                    tpe_c.inform_user("No image data on clipboard.", None);
-                }
-            });
-        let tpe_c = Rc::clone(&tpe);
-        tpe.samples
-            .popup_menu
-            .append_item(
-                "remove",
-                "Remove Sample(s)",
-                "Remove all image samples from the sample area",
-            )
-            .connect_activate(move |_| {
-                tpe_c.samples.samples.borrow_mut().clear();
-                tpe_c.drawing_area.queue_draw();
-            });
-        let tpe_c = Rc::clone(&tpe);
-        tpe.drawing_area
-            .connect_button_press_event(move |_, event| {
-                if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3
-                {
-                    let position = Point::from(event.get_position());
-                    let n_samples = tpe_c.samples.samples.borrow().len();
+        #[cfg(feature = "palette_samples")]
+        {
+            let tpe_c = Rc::clone(&tpe);
+            tpe.samples
+                .popup_menu
+                .append_item(
+                    "paste",
+                    "Paste Sample",
+                    "Paste image sample from the clipboard at this position",
+                )
+                .connect_activate(move |_| {
                     let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
-                    tpe_c
-                        .samples
-                        .popup_menu
-                        .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
-                    tpe_c
-                        .samples
-                        .popup_menu
-                        .set_sensitivities(n_samples > 0, &["remove"]);
-                    tpe_c.samples.popup_menu_posn.set(position);
-                    tpe_c.samples.popup_menu.popup_at_event(event);
-                    return Inhibit(true);
-                }
-                Inhibit(false)
-            });
+                    if let Some(pixbuf) = cbd.wait_for_image() {
+                        let sample = Sample {
+                            pixbuf,
+                            position: tpe_c.samples.popup_menu_posn.get(),
+                        };
+                        tpe_c.samples.samples.borrow_mut().push(sample);
+                        tpe_c.drawing_area.queue_draw();
+                    } else {
+                        tpe_c.inform_user("No image data on clipboard.", None);
+                    }
+                });
+            let tpe_c = Rc::clone(&tpe);
+            tpe.samples
+                .popup_menu
+                .append_item(
+                    "remove",
+                    "Remove Sample(s)",
+                    "Remove all image samples from the sample area",
+                )
+                .connect_activate(move |_| {
+                    tpe_c.samples.samples.borrow_mut().clear();
+                    tpe_c.drawing_area.queue_draw();
+                });
+            let tpe_c = Rc::clone(&tpe);
+            tpe.drawing_area
+                .connect_button_press_event(move |_, event| {
+                    if event.get_event_type() == gdk::EventType::ButtonPress
+                        && event.get_button() == 3
+                    {
+                        let position = Point::from(event.get_position());
+                        let n_samples = tpe_c.samples.samples.borrow().len();
+                        let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+                        tpe_c
+                            .samples
+                            .popup_menu
+                            .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
+                        tpe_c
+                            .samples
+                            .popup_menu
+                            .set_sensitivities(n_samples > 0, &["remove"]);
+                        tpe_c.samples.popup_menu_posn.set(position);
+                        tpe_c.samples.popup_menu.popup_at_event(event);
+                        return Inhibit(true);
+                    }
+                    Inhibit(false)
+                });
+        }
 
         let tpe_c = Rc::clone(&tpe);
         tpe.drawing_area.connect_draw(move |da, ctxt| {
@@ -189,6 +206,7 @@ impl PalettePaintEntry {
             cairo_context.set_source_colour(&HCV::BLACK);
         };
         cairo_context.paint();
+        #[cfg(feature = "palette_samples")]
         for sample in self.samples.samples.borrow().iter() {
             let buffer = sample
                 .pixbuf
@@ -212,6 +230,7 @@ impl PalettePaintEntry {
         self.drawing_area.queue_draw()
     }
 
+    #[cfg(feature = "palette_samples")]
     pub fn delete_samples(&self) {
         self.samples.samples.borrow_mut().clear();
     }
@@ -359,6 +378,7 @@ impl PalettePaintMixer {
     }
 
     pub fn full_reset(&self) -> apaint::Result<Vec<u8>> {
+        #[cfg(feature = "palette_samples")]
         self.mix_entry.delete_samples();
         self.notes_entry.set_text("");
         self.cancel_current_mixture();
