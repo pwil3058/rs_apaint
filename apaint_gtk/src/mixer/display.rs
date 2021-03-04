@@ -120,6 +120,7 @@ impl MixtureDisplayBuilder {
         };
         vbox.pack_start(&target_label, true, true, 0);
 
+        #[cfg(feature = "targeted_mixtures")]
         if let Some(targeted_colour) = mixture.targeted_colour() {
             let label = gtk::LabelBuilder::new().label("Matched Colour").build();
             label.set_widget_colour(&targeted_colour);

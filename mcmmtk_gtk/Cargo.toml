@@ -9,6 +9,13 @@ edition = "2018"
 [dependencies]
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
-pw_pathux = { git = "https://github.com/pwil3058/rs_pw_pathux" }
+pw_pathux = { git = "https://github.com/pwil3058/rs_pw_pathux.git" }
 
-apaint_gtk = { path = "../apaint_gtk" }
+
+[dependencies.apaint]
+path = "../apaint"
+features = ["targeted_mixtures"]
+
+[dependencies.apaint_gtk]
+path = "../apaint_gtk"
+features = ["targeted_mixtures"]

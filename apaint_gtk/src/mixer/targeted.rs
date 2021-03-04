@@ -284,6 +284,7 @@ impl TargetedPaintMixer {
                 }
             }
             self.hue_wheel.add_item(mixture.coloured_shape());
+            #[cfg(feature = "targeted_mixtures")]
             self.hue_wheel.add_item(mixture.targeted_rgb_shape());
             self.list_view
                 .add_row(&mixture.row(&self.attributes, &self.characteristics));
@@ -329,18 +330,22 @@ impl TargetedPaintMixer {
     pub fn accept_current_mixture(&self) {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
-        let mixed_paint = MixtureBuilder::new(&mix_id)
+        //#[allow(unused_mut)]
+        let mut mixed_paint_builder = MixtureBuilder::new(&mix_id);
+        mixed_paint_builder
             .name(&self.mix_entry.name_entry.get_text())
             .notes(&self.mix_entry.notes_entry.get_text())
-            .targeted_colour(
-                &self
-                    .mix_entry
-                    .target_colour()
-                    .expect("should not be accepted without target"),
-            )
-            .series_paint_components(self.series_paint_spinner_box.paint_contributions())
-            .build();
+            .series_paint_components(self.series_paint_spinner_box.paint_contributions());
+        #[cfg(feature = "targeted_mixtures")]
+        mixed_paint_builder.targeted_colour(
+            &self
+                .mix_entry
+                .target_colour()
+                .expect("should not be accepted without target"),
+        );
+        let mixed_paint = mixed_paint_builder.build();
         self.hue_wheel.add_item(mixed_paint.coloured_shape());
+        #[cfg(feature = "targeted_mixtures")]
         self.hue_wheel.add_item(mixed_paint.targeted_rgb_shape());
         self.list_view
             .add_row(&mixed_paint.row(&self.attributes, &self.characteristics));
