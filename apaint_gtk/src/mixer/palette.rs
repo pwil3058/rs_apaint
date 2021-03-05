@@ -767,6 +767,19 @@ impl PalettePaintMixerBuilder {
         tpm.paint_series_manager
             .connect_add_paint(move |paint| tpm_c.add_series_paint(&paint));
 
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            use colour_math::ColourBasics;
+            let tpm_c = Rc::clone(&tpm);
+            tpm.paint_standards_manager
+                .connect_set_as_target(move |paint| {
+                    let id = paint.id();
+                    let name = paint.name().unwrap_or("");
+                    let colour = paint.hcv();
+                    tpm_c.start_new_mixture(id, name, &colour);
+                });
+        }
+
         let tpm_c = Rc::clone(&tpm);
         tpm.series_paint_spinner_box
             .connect_contributions_changed(move || tpm_c.contributions_changed());
