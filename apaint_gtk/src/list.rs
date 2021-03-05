@@ -16,7 +16,7 @@ use pw_gix::{
 
 use apaint::{
     characteristics::CharacteristicType,
-    mixtures::{Paint, TargetedMixture},
+    mixtures::{Mixture, Paint},
     series::{BasicPaintSpec, SeriesPaint},
     BasicPaintIfce,
 };
@@ -316,6 +316,6 @@ impl PaintListRow for SeriesPaint {}
 impl PaintListRow for BasicPaintSpec {}
 
 // TODO: modify PaintListRow for Mixture to included target RGB
-impl PaintListRow for TargetedMixture {}
+impl PaintListRow for Mixture {}
 
 impl PaintListRow for Paint {}
