@@ -11,7 +11,7 @@ use gcd::Gcd;
 
 use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
-    Angle, Chroma, ColourBasics, Hue, LightLevel, CCI, HCV, RGB,
+    Angle, Chroma, ColourBasics, Hue, LightLevel, HCV, RGB,
 };
 
 use colour_math_derive::Colour;
@@ -21,6 +21,7 @@ use crate::{
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
+use crate::colour_mix::ColourMixer;
 
 // TODO: make an untargeted version of TargetedMixture
 #[derive(Debug, Colour)]
@@ -87,17 +88,17 @@ impl BasicPaintIfce for Mixture {
 
     fn name(&self) -> Option<&str> {
         if self.name.is_empty() {
-            Some(&self.name)
-        } else {
             None
+        } else {
+            Some(&self.name)
         }
     }
 
     fn notes(&self) -> Option<&str> {
         if self.notes.is_empty() {
-            Some(&self.notes)
-        } else {
             None
+        } else {
+            Some(&self.notes)
         }
     }
 
@@ -349,31 +350,28 @@ impl MixtureBuilder {
 
     pub fn build(&self) -> Rc<Mixture> {
         debug_assert!((self.series_components.len() + self.mixture_components.len()) > 0);
-        let mut gcd: u128 = 0;
+        let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(*parts as u128);
+            gcd = gcd.gcd(*parts as u64);
         }
         for (_, parts) in self.mixture_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(*parts as u128);
+            gcd = gcd.gcd(*parts as u64);
         }
         debug_assert!(gcd > 0);
         let mut components = vec![];
-        let mut total_adjusted_parts: u128 = 0;
-        let mut rgb_sum: [u128; 3] = [0, 0, 0];
+        let mut total_adjusted_parts: u64 = 0;
         let mut finish: f64 = 0.0;
         let mut transparency: f64 = 0.0;
         let mut permanence: f64 = 0.0;
         let mut fluorescence: f64 = 0.0;
         let mut metallicness: f64 = 0.0;
+        let mut colour_mix = ColourMixer::<f64>::new();
         for (paint, parts) in self.series_components.iter() {
-            let adjusted_parts = *parts as u128 / gcd;
+            let adjusted_parts = *parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            let rgb = paint.rgb::<u16>();
-            for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
-                rgb_sum[i] += rgb[*cci] as u128 * adjusted_parts;
-            }
+            colour_mix.add(&paint.rgb(), adjusted_parts);
             let fap = adjusted_parts as f64;
             finish += fap * f64::from(paint.finish());
             transparency += fap * f64::from(paint.transparency());
@@ -383,12 +381,9 @@ impl MixtureBuilder {
             components.push((Paint::Series(Rc::clone(paint)), adjusted_parts as u64));
         }
         for (paint, parts) in self.mixture_components.iter() {
-            let adjusted_parts = *parts as u128 / gcd;
+            let adjusted_parts = *parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            let rgb = paint.rgb::<u16>();
-            for (i, cci) in [CCI::Red, CCI::Green, CCI::Blue].iter().enumerate() {
-                rgb_sum[i] += rgb[*cci] as u128 * adjusted_parts;
-            }
+            colour_mix.add(&paint.rgb(), adjusted_parts);
             let fap = adjusted_parts as f64;
             finish += fap * paint.finish;
             transparency += fap * paint.transparency;
@@ -397,19 +392,8 @@ impl MixtureBuilder {
             metallicness += fap * paint.metallicness;
             components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts as u64));
         }
-        for item in &mut rgb_sum {
-            *item = *item / total_adjusted_parts;
-        }
-        let u16_array: Vec<u16> = rgb_sum
-            .iter()
-            .map(|i| (i / total_adjusted_parts) as u16)
-            .collect();
+        let hcv: HCV = colour_mix.mixture().unwrap().into();
         let divisor = total_adjusted_parts as f64;
-        let hcv: HCV = HCV::from(&RGB::<u16>::from([
-            u16_array[0],
-            u16_array[1],
-            u16_array[2],
-        ]));
         let mp = Mixture {
             colour: hcv,
             #[cfg(feature = "targeted_mixtures")]
