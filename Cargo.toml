@@ -4,7 +4,5 @@ members = [
     "apaint",
     "apaint_boilerplate",
     "apaint_gtk",
-#    "mcmmtk_gtk",
-#    "pcatk_gtk",
     "gtk_test_gui",
 ]

@@ -13,7 +13,7 @@ use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 use colour_math_derive::Colour;
 
 use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
-use apaint_gtk::mixer::targeted::TargetedPaintMixerBuilder;
+use apaint_gtk::mixer::palette::PalettePaintMixerBuilder;
 use apaint_gtk::series::display::PaintDisplayBuilder;
 use apaint_gtk::{colour::*, factory::BasicPaintFactoryBuilder};
 
@@ -61,7 +61,7 @@ fn main() {
         false,
         0,
     );
-    let mixer = TargetedPaintMixerBuilder::new()
+    let mixer = PalettePaintMixerBuilder::new()
         .attributes(&[
             ScalarAttribute::Value,
             ScalarAttribute::Greyness,

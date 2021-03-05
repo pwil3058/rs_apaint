@@ -681,7 +681,7 @@ impl PaintStandardsManagerBuilder {
                     Some("Set the indicated standard as the target in the mixer"),
                 )
                     .into(),
-                SAV_HOVER_OK + crate::mixer::targeted::TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+                SAV_HOVER_OK + crate::mixer::palette::PalettePaintMixer::SAV_NOT_HAS_TARGET,
             ),
         ];
         let binder = SeriesBinder::new(
@@ -708,7 +708,7 @@ impl PaintStandardsManagerBuilder {
                 0,
                 "Set as Target",
                 Some("Set this colour as the mixer target"),
-                crate::mixer::targeted::TargetedPaintMixer::SAV_NOT_HAS_TARGET,
+                crate::mixer::palette::PalettePaintMixer::SAV_NOT_HAS_TARGET,
             )])
             .build();
 
