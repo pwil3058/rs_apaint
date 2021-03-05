@@ -16,12 +16,12 @@ use colour_math::{
 
 use colour_math_derive::Colour;
 
+use crate::colour_mix::ColourMixer;
 use crate::{
     characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
-use crate::colour_mix::ColourMixer;
 
 // TODO: make an untargeted version of TargetedMixture
 #[derive(Debug, Colour)]
@@ -367,11 +367,11 @@ impl MixtureBuilder {
         let mut permanence: f64 = 0.0;
         let mut fluorescence: f64 = 0.0;
         let mut metallicness: f64 = 0.0;
-        let mut colour_mix = ColourMixer::<f64>::new();
+        let mut colour_mix = ColourMixer::new();
         for (paint, parts) in self.series_components.iter() {
             let adjusted_parts = *parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            colour_mix.add(&paint.rgb(), adjusted_parts);
+            colour_mix.add(&paint.hcv(), adjusted_parts);
             let fap = adjusted_parts as f64;
             finish += fap * f64::from(paint.finish());
             transparency += fap * f64::from(paint.transparency());
@@ -383,7 +383,7 @@ impl MixtureBuilder {
         for (paint, parts) in self.mixture_components.iter() {
             let adjusted_parts = *parts / gcd;
             total_adjusted_parts += adjusted_parts;
-            colour_mix.add(&paint.rgb(), adjusted_parts);
+            colour_mix.add(&paint.hcv(), adjusted_parts);
             let fap = adjusted_parts as f64;
             finish += fap * paint.finish;
             transparency += fap * paint.transparency;
