@@ -10,10 +10,10 @@ use pw_gix::{
 };
 
 use colour_math::{ColourBasics, ScalarAttribute};
-use colour_math_gtk::{
-    attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
-    colour::*,
-};
+use colour_math_gtk::attributes::ColourAttributeDisplayStackBuilder;
+
+#[cfg(feature = "targeted_mixtures")]
+use colour_math_gtk::{attributes::ColourAttributeDisplayStack, colour::*};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
@@ -26,11 +26,14 @@ use crate::{
 pub struct MixtureDisplay {
     vbox: gtk::Box,
     mixture: Rc<Mixture>,
+    #[cfg(feature = "targeted_mixtures")]
     target_label: gtk::Label,
+    #[cfg(feature = "targeted_mixtures")]
     cads: Rc<ColourAttributeDisplayStack>,
 }
 
 impl MixtureDisplay {
+    #[cfg(feature = "targeted_mixtures")]
     pub fn set_target(&self, new_target: Option<&impl GdkColour>) {
         if let Some(colour) = new_target {
             self.target_label.set_label("Current Target");
@@ -52,6 +55,7 @@ impl MixtureDisplay {
 pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
+    #[cfg(feature = "targeted_mixtures")]
     target_colour: Option<HCV>,
     list_spec: ComponentsListViewSpec,
 }
@@ -73,6 +77,7 @@ impl MixtureDisplayBuilder {
         self
     }
 
+    #[cfg(feature = "targeted_mixtures")]
     pub fn target_colour(&mut self, target_colour: Option<&impl ColourBasics>) -> &mut Self {
         self.target_colour = if let Some(target_colour) = target_colour {
             Some(target_colour.hcv())
@@ -108,6 +113,8 @@ impl MixtureDisplayBuilder {
             .attributes(&self.attributes)
             .build();
         cads.set_colour(Some(&colour));
+
+        #[cfg(feature = "targeted_mixtures")]
         let target_label = if let Some(target_colour) = self.target_colour {
             let label = gtk::LabelBuilder::new().label("Target").build();
             label.set_widget_colour(&target_colour);
@@ -118,6 +125,7 @@ impl MixtureDisplayBuilder {
             label.set_widget_colour(&colour);
             label
         };
+        #[cfg(feature = "targeted_mixtures")]
         vbox.pack_start(&target_label, true, true, 0);
 
         #[cfg(feature = "targeted_mixtures")]
@@ -150,7 +158,9 @@ impl MixtureDisplayBuilder {
         MixtureDisplay {
             vbox,
             mixture: Rc::clone(mixture),
+            #[cfg(feature = "targeted_mixtures")]
             target_label,
+            #[cfg(feature = "targeted_mixtures")]
             cads,
         }
     }
@@ -201,6 +211,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         pdd.dialog.present();
     }
 
+    #[cfg(feature = "targeted_mixtures")]
     pub fn set_target_colour(&mut self, rgb: Option<&impl GdkColour>) {
         self.mixture_display_builder.target_colour(rgb);
         for pdd in self.dialogs.values() {
@@ -252,6 +263,7 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
         mixture_display_builder
             .attributes(&self.attributes)
             .characteristics(&self.characteristics);
+        #[cfg(feature = "targeted_mixtures")]
         if let Some(target_colour) = self.target_colour {
             mixture_display_builder.target_colour(Some(&target_colour));
         }

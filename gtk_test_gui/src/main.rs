@@ -92,8 +92,9 @@ fn main() {
             CharacteristicType::Transparency,
             CharacteristicType::Fluorescence,
             CharacteristicType::Metallicness,
-        ])
-        .target_colour(Some(&RGB::<f64>::from([0.6, 0.1, 0.7])));
+        ]);
+    #[cfg(feature = "targeted_mixtures")]
+    builder.target_colour(Some(&RGB::<f64>::from([0.6, 0.1, 0.7])));
     let display = builder.build(&Rc::new(paint));
     vbox.pack_start(&display.pwo(), true, true, 0);
     vbox.show_all();
