@@ -26,6 +26,11 @@ use pw_gix::{gdk, gdk_pixbuf, gtkx::menu::WrappedMenu};
 use colour_math::{beigui::hue_wheel::MakeColouredShape, ScalarAttribute, HCV};
 use colour_math_cairo::CairoSetColour;
 
+#[cfg(feature = "targeted_mixtures")]
+use colour_math::{LightLevel, RGB};
+#[cfg(feature = "targeted_mixtures")]
+use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
+
 use colour_math_gtk::{
     attributes::{ColourAttributeDisplayStack, ColourAttributeDisplayStackBuilder},
     colour::GdkColour,
@@ -51,6 +56,12 @@ use crate::{
     series::{PaintSeriesManager, PaintSeriesManagerBuilder},
     storage::{StorageManager, StorageManagerBuilder},
     window::PersistentWindowButtonBuilder,
+};
+
+#[cfg(feature = "targeted_mixtures")]
+use crate::{
+    icon_image::paint_standard_image,
+    series::{PaintStandardsManager, PaintStandardsManagerBuilder},
 };
 
 #[cfg(feature = "palette_samples")]
@@ -88,6 +99,8 @@ pub struct PalettePaintEntry {
     mix_colour: RefCell<Option<HCV>>,
     #[cfg(feature = "palette_samples")]
     samples: Samples,
+    #[cfg(feature = "targeted_mixtures")]
+    target_colour: RefCell<Option<HCV>>,
 }
 
 impl PalettePaintEntry {
@@ -127,6 +140,8 @@ impl PalettePaintEntry {
             mix_colour: RefCell::new(None),
             #[cfg(feature = "palette_samples")]
             samples: Samples::default(),
+            #[cfg(feature = "targeted_mixtures")]
+            target_colour: RefCell::new(None),
         });
 
         // POPUP
@@ -199,13 +214,22 @@ impl PalettePaintEntry {
         tpe
     }
 
-    pub fn draw(&self, _drawing_area: &gtk::DrawingArea, cairo_context: &cairo::Context) {
+    #[allow(unused_variables)]
+    pub fn draw(&self, drawing_area: &gtk::DrawingArea, cairo_context: &cairo::Context) {
         if let Some(ref colour) = *self.mix_colour.borrow() {
             cairo_context.set_source_colour(colour);
         } else {
             cairo_context.set_source_colour(&HCV::BLACK);
         };
         cairo_context.paint();
+        #[cfg(feature = "targeted_mixtures")]
+        if let Some(ref colour) = *self.target_colour.borrow() {
+            cairo_context.set_source_colour(colour);
+            let width = drawing_area.get_allocated_width() as f64;
+            let height = drawing_area.get_allocated_height() as f64;
+            cairo_context.rectangle(width / 4.0, height / 4.0, width / 2.0, height / 2.0);
+            cairo_context.fill();
+        }
         #[cfg(feature = "palette_samples")]
         for sample in self.samples.samples.borrow().iter() {
             let buffer = sample
@@ -230,6 +254,38 @@ impl PalettePaintEntry {
         self.drawing_area.queue_draw()
     }
 
+    #[cfg(feature = "targeted_mixtures")]
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
+        if let Some(colour) = colour {
+            *self.target_colour.borrow_mut() = Some(colour.hcv());
+            self.cads.set_target_colour(Some(colour));
+        } else {
+            *self.target_colour.borrow_mut() = None;
+            self.cads.set_target_colour(Option::<&HCV>::None);
+        }
+        self.drawing_area.queue_draw()
+    }
+
+    #[cfg(feature = "targeted_mixtures")]
+    pub fn target_rgb<L: LightLevel>(&self) -> Option<RGB<L>> {
+        use colour_math::ColourBasics;;
+        if let Some(colour) = self.target_colour.borrow().as_ref() {
+            Some(colour.rgb::<L>())
+        } else {
+            None
+        }
+    }
+
+    #[cfg(feature = "targeted_mixtures")]
+    pub fn target_colour(&self) -> Option<HCV> {
+        use colour_math::ColourBasics;;
+        if let Some(colour) = self.target_colour.borrow().as_ref() {
+            Some(colour.hcv())
+        } else {
+            None
+        }
+    }
+
     #[cfg(feature = "palette_samples")]
     pub fn delete_samples(&self) {
         self.samples.samples.borrow_mut().clear();
@@ -250,6 +306,8 @@ pub struct PalettePaintMixer {
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
+    #[cfg(feature = "targeted_mixtures")]
+    paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
     display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
 }
@@ -258,6 +316,8 @@ impl PalettePaintMixer {
     const SAV_HAS_COLOUR: u64 = SAV_NEXT_CONDN;
     const SAV_HAS_TARGET: u64 = SAV_NEXT_CONDN << 1;
     pub const SAV_NOT_HAS_TARGET: u64 = SAV_NEXT_CONDN << 2;
+    #[allow(dead_code)]
+    const HAS_TARGET_MASK: u64 = Self::SAV_HAS_TARGET + Self::SAV_NOT_HAS_TARGET;
     const SAV_HAS_NAME: u64 = SAV_NEXT_CONDN << 3;
 
     fn format_mix_id(&self) -> String {
@@ -294,6 +354,28 @@ impl PalettePaintMixer {
             self.mix_entry.set_mix_colour(Option::<&HCV>::None);
         }
         self.change_notifier.notify_changed_condns(condns);
+    }
+
+    #[cfg(feature = "targeted_mixtures")]
+    fn ask_start_new_mixture(&self) {
+        let tpe = TargetPaintEntry::new(&self.attributes);
+        let dialog = self.new_dialog_with_buttons(
+            Some("New Mixed Paint Target Colour"),
+            gtk::DialogFlags::DESTROY_WITH_PARENT,
+            CANCEL_OK_BUTTONS,
+        );
+        dialog
+            .get_content_area()
+            .pack_start(&tpe.pwo(), true, true, 0);
+        if dialog.run() == gtk::ResponseType::Ok {
+            let rgb = tpe.rgb();
+            let name = tpe.name();
+            let notes = tpe.notes();
+            unsafe { dialog.destroy() };
+            self.start_new_mixture(&name, &notes, &rgb);
+        } else {
+            unsafe { dialog.destroy() };
+        }
     }
 
     fn update_session_needs_saving(&self) {
@@ -344,21 +426,66 @@ impl PalettePaintMixer {
     }
 
     // TODO: review visibility of palette mixer methods
+    #[cfg(not(feature = "targeted_mixtures"))]
     pub fn start_new_mixture(&self) {
         self.mix_entry.id_label.set_label(&self.format_mix_id());
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");
     }
 
+    #[cfg(feature = "targeted_mixtures")]
+    pub fn start_new_mixture(&self, name: &str, notes: &str, target_colour: &impl GdkColour) {
+        self.mix_entry.id_label.set_label(&self.format_mix_id());
+        self.mix_entry.name_entry.set_text(name);
+        self.mix_entry.notes_entry.set_text(notes);
+        self.set_target_colour(Some(target_colour));
+    }
+
+    #[cfg(feature = "targeted_mixtures")]
+    pub fn set_target_colour(&self, colour: Option<&impl GdkColour>) {
+        self.hue_wheel.set_target_colour(colour);
+        self.mix_entry.set_target_colour(colour);
+        self.paint_series_manager.set_target_colour(colour);
+        if colour.is_some() {
+            let masked_condns = MaskedCondns {
+                condns: Self::SAV_HAS_TARGET,
+                mask: Self::HAS_TARGET_MASK,
+            };
+            self.paint_standards_manager
+                .update_popup_condns(masked_condns);
+            self.change_notifier.notify_changed_condns(masked_condns);
+            self.file_manager.update_tool_needs_saving(true);
+        } else {
+            let masked_condns = MaskedCondns {
+                condns: Self::SAV_NOT_HAS_TARGET,
+                mask: Self::HAS_TARGET_MASK,
+            };
+            self.paint_standards_manager
+                .update_popup_condns(masked_condns);
+            self.change_notifier.notify_changed_condns(masked_condns);
+            self.file_manager.update_tool_needs_saving(false);
+        }
+    }
+
     pub fn accept_current_mixture(&self) {
         let mix_id = self.format_mix_id();
         self.advance_mix_id();
-        let mixed_paint = MixtureBuilder::new(&mix_id)
+        let mut mixed_paint_builder = MixtureBuilder::new(&mix_id);
+        mixed_paint_builder
             .name(&self.mix_entry.name_entry.get_text())
             .notes(&self.mix_entry.notes_entry.get_text())
-            .series_paint_components(self.series_paint_spinner_box.paint_contributions())
-            .build();
+            .series_paint_components(self.series_paint_spinner_box.paint_contributions());
+        #[cfg(feature = "targeted_mixtures")]
+        mixed_paint_builder.targeted_colour(
+            &self
+                .mix_entry
+                .target_colour()
+                .expect("should not be accepted without target"),
+        );
+        let mixed_paint = mixed_paint_builder.build();
         self.hue_wheel.add_item(mixed_paint.coloured_shape());
+        #[cfg(feature = "targeted_mixtures")]
+        self.hue_wheel.add_item(mixed_paint.targeted_rgb_shape());
         self.list_view
             .add_row(&mixed_paint.row(&self.attributes, &self.characteristics));
         self.mix_entry.id_label.set_label("MIX#???");
@@ -375,6 +502,8 @@ impl PalettePaintMixer {
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");
         self.series_paint_spinner_box.zero_all_parts();
+        #[cfg(feature = "targeted_mixtures")]
+        self.set_target_colour(Option::<&HCV>::None);
     }
 
     pub fn full_reset(&self) -> apaint::Result<Vec<u8>> {
@@ -482,6 +611,37 @@ impl PalettePaintMixerBuilder {
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
 
+        #[cfg(feature = "targeted_mixtures")]
+        let mut builder = PaintStandardsManagerBuilder::new();
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            builder
+                .attributes(&self.attributes)
+                .characteristics(&self.characteristics)
+                .change_notifier(&change_notifier);
+            if let Some(ref config_dir_path) = self.config_dir_path {
+                builder.loaded_files_data_path(&config_dir_path.join("paint_standards_files"));
+            }
+        }
+        #[cfg(feature = "targeted_mixtures")]
+        let paint_standards_manager = builder.build();
+
+        #[cfg(feature = "targeted_mixtures")]
+        paint_standards_manager.update_popup_condns(MaskedCondns {
+            condns: PalettePaintMixer::SAV_NOT_HAS_TARGET,
+            mask: PalettePaintMixer::HAS_TARGET_MASK,
+        });
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            let persistent_window_btn = PersistentWindowButtonBuilder::new()
+                .icon(&paint_standard_image(24))
+                .window_child(&paint_standards_manager.pwo())
+                .window_title("Paint Standards Manager")
+                .window_geometry(Some("paint_standards_manager"), (300, 200))
+                .build();
+            button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+        }
+
         button_box.pack_start(&file_manager.pwo(), true, true, 0);
         vbox.pack_start(&button_box, false, false, 0);
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -567,6 +727,8 @@ impl PalettePaintMixerBuilder {
             series_paint_spinner_box,
             change_notifier,
             paint_series_manager,
+            #[cfg(feature = "targeted_mixtures")]
+            paint_standards_manager,
             next_mix_id: Cell::new(1),
             display_dialog_manager: RefCell::new(display_dialog_manager),
         });
@@ -604,7 +766,10 @@ impl PalettePaintMixerBuilder {
             .connect_removal_requested(move |p| tpm_c.process_removal_request(p));
 
         let tpm_c = Rc::clone(&tpm);
+        #[cfg(not(feature = "targeted_mixtures"))]
         new_mix_btn.connect_clicked(move |_| tpm_c.start_new_mixture());
+        #[cfg(feature = "targeted_mixtures")]
+        new_mix_btn.connect_clicked(move |_| tpm_c.ask_start_new_mixture());
 
         let tpm_c = Rc::clone(&tpm);
         accept_btn.connect_clicked(move |_| tpm_c.accept_current_mixture());
@@ -641,5 +806,53 @@ impl PalettePaintMixerBuilder {
         });
 
         tpm
+    }
+}
+
+#[cfg(feature = "targeted_mixtures")]
+#[derive(PWO)]
+struct TargetPaintEntry {
+    vbox: gtk::Box,
+    name_entry: gtk::Entry,
+    notes_entry: gtk::Entry,
+    colour_editor: Rc<ColourEditor<u16>>,
+}
+
+#[cfg(feature = "targeted_mixtures")]
+impl TargetPaintEntry {
+    fn new(attributes: &[ScalarAttribute]) -> Self {
+        // TODO: remember auto match on paste value
+        let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        let name_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        let notes_entry = gtk::EntryBuilder::new().hexpand(true).build();
+        let colour_editor = ColourEditorBuilder::new().attributes(attributes).build();
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some(" Name:")), false, false, 0);
+        hbox.pack_start(&name_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
+        hbox.pack_start(&notes_entry, true, true, 0);
+        vbox.pack_start(&hbox, false, false, 0);
+        vbox.pack_start(&colour_editor.pwo(), true, true, 0);
+        vbox.show_all();
+        Self {
+            vbox,
+            name_entry,
+            notes_entry,
+            colour_editor,
+        }
+    }
+
+    fn name(&self) -> String {
+        self.name_entry.get_text().to_string()
+    }
+
+    fn notes(&self) -> String {
+        self.notes_entry.get_text().to_string()
+    }
+
+    fn rgb(&self) -> RGB<f64> {
+        self.colour_editor.rgb()
     }
 }
