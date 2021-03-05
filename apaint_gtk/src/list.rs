@@ -180,11 +180,16 @@ impl ColouredItemListViewSpec for BasicPaintListViewSpec {
         for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
             column_types.push(glib::Type::String);
         }
+        #[cfg(feature = "targeted_mixtures")]
+        column_types.push(glib::Type::String);
+
         column_types
     }
 
     fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
+        #[cfg(feature = "targeted_mixtures")]
+        let target_col = 7 + self.attributes.len() as i32 * 3 + self.characteristics.len() as i32;
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Id")
@@ -224,6 +229,19 @@ impl ColouredItemListViewSpec for BasicPaintListViewSpec {
         col.add_attribute(&cell, "background", 1);
         col.add_attribute(&cell, "foreground", 2);
         cols.push(col);
+
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title("Target")
+                .sort_column_id(target_col)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "background", target_col);
+            cols.push(col);
+        }
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Hue")
@@ -307,6 +325,10 @@ pub trait PaintListRow: BasicPaintIfce {
             let string = self.characteristic(*characteristic).abbrev();
             row.push(string.to_value());
         }
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            row.push(self.hcv().pango_string().to_value());
+        }
         row
     }
 }
@@ -316,6 +338,52 @@ impl PaintListRow for SeriesPaint {}
 impl PaintListRow for BasicPaintSpec {}
 
 // TODO: modify PaintListRow for Mixture to included target RGB
-impl PaintListRow for Mixture {}
+impl PaintListRow for Mixture {
+    fn row(
+        &self,
+        attributes: &[ScalarAttribute],
+        characteristics: &[CharacteristicType],
+    ) -> Vec<glib::Value> {
+        use colour_math::ColourAttributes;
+        use colour_math::ColourBasics;
+        let ha: f64 = if let Some(angle) = self.hue_angle() {
+            angle.into()
+        } else {
+            -181.0 + f64::from(self.value())
+        };
+        let hcv_bg = if let Some(hcv) = self.hue_hcv() {
+            hcv
+        } else {
+            HCV::new_grey(self.value())
+        };
+        let mut row: Vec<glib::Value> = vec![
+            self.id().to_value(),
+            self.hcv().pango_string().to_value(),
+            self.best_foreground().pango_string().to_value(),
+            self.name().or(Some("")).unwrap().to_value(),
+            self.notes().or(Some("")).unwrap().to_value(),
+            hcv_bg.pango_string().to_value(),
+            ha.to_value(),
+        ];
+        for attr in attributes.iter() {
+            let string = format!("{:5.4}", f64::from(self.scalar_attribute(*attr)));
+            let attr_rgb = self.scalar_attribute_rgb::<f64>(*attr);
+            row.push(string.to_value());
+            row.push(attr_rgb.pango_string().to_value());
+            row.push(attr_rgb.best_foreground().pango_string().to_value());
+        }
+        for characteristic in characteristics.iter() {
+            let string = self.characteristic(*characteristic).abbrev();
+            row.push(string.to_value());
+        }
+        #[cfg(feature = "targeted_mixtures")]
+        if let Some(target_colour) = self.targeted_colour() {
+            row.push(target_colour.pango_string().to_value());
+        } else {
+            row.push(self.hcv().pango_string().to_value());
+        }
+        row
+    }
+}
 
 impl PaintListRow for Paint {}
