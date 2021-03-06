@@ -5,6 +5,7 @@
 use std::{fmt, str::FromStr};
 
 use apaint_boilerplate::Characteristic;
+use std::marker::PhantomData;
 
 pub trait CharacteristicIfce:
     FromStr<Err = String> + PartialEq + PartialOrd + Default + fmt::Debug
@@ -17,6 +18,42 @@ pub trait CharacteristicIfce:
 
     fn abbrev(&self) -> &'static str;
     fn full(&self) -> &'static str;
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
+pub struct FuzzyCharacteristic<C: CharacteristicIfce>(f64, std::marker::PhantomData<C>);
+
+impl<C: CharacteristicIfce + Into<f64>> std::str::FromStr for FuzzyCharacteristic<C> {
+    type Err = String;
+
+    fn from_str(string: &str) -> Result<Self, String> {
+        let characteristic = C::from_str(string)?;
+        Ok(Self(characteristic.into(), std::marker::PhantomData))
+    }
+}
+
+impl<C: CharacteristicIfce + From<f64>> FuzzyCharacteristic<C> {
+    pub fn characteristic(self) -> C {
+        C::from(self.0)
+    }
+}
+
+impl<C: CharacteristicIfce + Into<f64> + From<f64>> CharacteristicIfce for FuzzyCharacteristic<C> {
+    const NAME: &'static str = C::NAME;
+    const PROMPT: &'static str = C::PROMPT;
+    const LIST_HEADER_NAME: &'static str = C::LIST_HEADER_NAME;
+
+    fn str_values() -> Vec<&'static str> {
+        C::str_values()
+    }
+
+    fn abbrev(&self) -> &'static str {
+        C::from(self.0).abbrev()
+    }
+
+    fn full(&self) -> &'static str {
+        C::from(self.0).full()
+    }
 }
 
 #[derive(
@@ -232,9 +269,25 @@ impl<C: CharacteristicIfce + From<f64> + Into<f64>> CharacteristicMixer<C> {
         }
     }
 
+    pub fn characteristic_value(&self) -> Option<FuzzyCharacteristic<C>> {
+        if self.total_parts > 0 {
+            Some(FuzzyCharacteristic(
+                self.sum / self.total_parts as f64,
+                PhantomData,
+            ))
+        } else {
+            None
+        }
+    }
+
     pub fn add(&mut self, characteristic: C, parts: u64) {
         self.total_parts += parts;
         self.sum += characteristic.into() * parts as f64;
+    }
+
+    pub fn add_value(&mut self, characteristic_value: FuzzyCharacteristic<C>, parts: u64) {
+        self.total_parts += parts;
+        self.sum += characteristic_value.0 * parts as f64;
     }
 }
 

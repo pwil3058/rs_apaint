@@ -16,9 +16,12 @@ use colour_math::{
 
 use colour_math_derive::Colour;
 
+use crate::characteristics::CharacteristicMixer;
 use crate::colour_mix::ColourMixer;
 use crate::{
-    characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    characteristics::{
+        Finish, Fluorescence, FuzzyCharacteristic, Metallicness, Permanence, Transparency,
+    },
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
 };
@@ -32,11 +35,11 @@ pub struct Mixture {
     id: String,
     name: String,
     notes: String,
-    finish: f64,
-    transparency: f64,
-    permanence: f64,
-    fluorescence: f64,
-    metallicness: f64,
+    finish: FuzzyCharacteristic<Finish>,
+    transparency: FuzzyCharacteristic<Transparency>,
+    permanence: FuzzyCharacteristic<Permanence>,
+    fluorescence: FuzzyCharacteristic<Fluorescence>,
+    metallicness: FuzzyCharacteristic<Metallicness>,
     components: Vec<(Paint, u64)>,
 }
 
@@ -103,23 +106,23 @@ impl BasicPaintIfce for Mixture {
     }
 
     fn finish(&self) -> Finish {
-        self.finish.into()
+        self.finish.characteristic()
     }
 
     fn transparency(&self) -> Transparency {
-        self.transparency.into()
+        self.transparency.characteristic()
     }
 
     fn fluorescence(&self) -> Fluorescence {
-        self.fluorescence.into()
+        self.fluorescence.characteristic()
     }
 
     fn permanence(&self) -> Permanence {
-        self.permanence.into()
+        self.permanence.characteristic()
     }
 
     fn metallicness(&self) -> Metallicness {
-        self.metallicness.into()
+        self.metallicness.characteristic()
     }
 }
 
@@ -361,51 +364,52 @@ impl MixtureBuilder {
         }
         debug_assert!(gcd > 0);
         let mut components = vec![];
-        let mut total_adjusted_parts: u64 = 0;
-        let mut finish: f64 = 0.0;
-        let mut transparency: f64 = 0.0;
-        let mut permanence: f64 = 0.0;
-        let mut fluorescence: f64 = 0.0;
-        let mut metallicness: f64 = 0.0;
+        let mut finish_mix = CharacteristicMixer::<Finish>::new();
+        let mut transparency_mix = CharacteristicMixer::<Transparency>::new();
+        let mut permanence_mix = CharacteristicMixer::<Permanence>::new();
+        let mut fluorescence_mix = CharacteristicMixer::<Fluorescence>::new();
+        let mut metallicness_mix = CharacteristicMixer::<Metallicness>::new();
         let mut colour_mix = ColourMixer::new();
         for (paint, parts) in self.series_components.iter() {
             let adjusted_parts = *parts / gcd;
-            total_adjusted_parts += adjusted_parts;
             colour_mix.add(&paint.hcv(), adjusted_parts);
-            let fap = adjusted_parts as f64;
-            finish += fap * f64::from(paint.finish());
-            transparency += fap * f64::from(paint.transparency());
-            permanence += fap * f64::from(paint.permanence());
-            fluorescence += fap * f64::from(paint.fluorescence());
-            metallicness += fap * f64::from(paint.metallicness());
+            finish_mix.add(paint.finish(), adjusted_parts);
+            transparency_mix.add(paint.transparency(), adjusted_parts);
+            permanence_mix.add(paint.permanence(), adjusted_parts);
+            fluorescence_mix.add(paint.fluorescence(), adjusted_parts);
+            metallicness_mix.add(paint.metallicness(), adjusted_parts);
             components.push((Paint::Series(Rc::clone(paint)), adjusted_parts as u64));
         }
         for (paint, parts) in self.mixture_components.iter() {
             let adjusted_parts = *parts / gcd;
-            total_adjusted_parts += adjusted_parts;
             colour_mix.add(&paint.hcv(), adjusted_parts);
-            let fap = adjusted_parts as f64;
-            finish += fap * paint.finish;
-            transparency += fap * paint.transparency;
-            permanence += fap * paint.permanence;
-            fluorescence += fap * paint.fluorescence;
-            metallicness += fap * paint.metallicness;
+            finish_mix.add_value(paint.finish, adjusted_parts);
+            transparency_mix.add_value(paint.transparency, adjusted_parts);
+            permanence_mix.add_value(paint.permanence, adjusted_parts);
+            fluorescence_mix.add_value(paint.fluorescence, adjusted_parts);
+            metallicness_mix.add_value(paint.metallicness, adjusted_parts);
             components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts as u64));
         }
-        let hcv: HCV = colour_mix.mixture().unwrap().into();
-        let divisor = total_adjusted_parts as f64;
         let mp = Mixture {
-            colour: hcv,
+            colour: colour_mix.mixture().unwrap().into(),
             #[cfg(feature = "targeted_mixtures")]
             targeted_colour: self.targeted_colour,
             id: self.id.clone(),
             name: self.name.clone(),
             notes: self.notes.clone(),
-            finish: finish / divisor,
-            transparency: transparency / divisor,
-            permanence: permanence / divisor,
-            fluorescence: fluorescence / divisor,
-            metallicness: metallicness / divisor,
+            finish: finish_mix.characteristic_value().expect("programmer error"),
+            transparency: transparency_mix
+                .characteristic_value()
+                .expect("programmer error"),
+            permanence: permanence_mix
+                .characteristic_value()
+                .expect("programmer error"),
+            fluorescence: fluorescence_mix
+                .characteristic_value()
+                .expect("programmer error"),
+            metallicness: metallicness_mix
+                .characteristic_value()
+                .expect("programmer error"),
             components,
         };
         Rc::new(mp)
