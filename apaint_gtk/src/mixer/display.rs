@@ -306,11 +306,16 @@ impl ColouredItemListViewSpec for ComponentsListViewSpec {
         for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
             column_types.push(glib::Type::String);
         }
+        #[cfg(feature = "targeted_mixtures")]
+        column_types.push(glib::Type::String);
+
         column_types
     }
 
     fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
+        #[cfg(feature = "targeted_mixtures")]
+        let target_col = 8 + self.attributes.len() as i32 * 3 + self.characteristics.len() as i32;
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Parts")
@@ -363,6 +368,19 @@ impl ColouredItemListViewSpec for ComponentsListViewSpec {
         col.add_attribute(&cell, "background", 1);
         col.add_attribute(&cell, "foreground", 2);
         cols.push(col);
+
+        #[cfg(feature = "targeted_mixtures")]
+        {
+            let col = gtk::TreeViewColumnBuilder::new()
+                .title("Target")
+                .sort_column_id(target_col)
+                .sort_indicator(true)
+                .build();
+            let cell = gtk::CellRendererTextBuilder::new().editable(false).build();
+            col.pack_start(&cell, false);
+            col.add_attribute(&cell, "background", target_col);
+            cols.push(col);
+        }
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Hue")
