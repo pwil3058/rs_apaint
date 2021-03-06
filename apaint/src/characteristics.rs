@@ -206,6 +206,38 @@ impl std::fmt::Display for CharacteristicType {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct CharacteristicMixer<C: CharacteristicIfce> {
+    sum: f64,
+    total_parts: u64,
+    phantom: std::marker::PhantomData<C>,
+}
+
+impl<C: CharacteristicIfce + From<f64> + Into<f64>> CharacteristicMixer<C> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn reset(&mut self) {
+        self.sum = 0.0;
+        self.total_parts = 0;
+    }
+
+    pub fn characteristic(&self) -> Option<C> {
+        if self.total_parts > 0 {
+            let mixture = self.sum / self.total_parts as f64;
+            Some(C::from(mixture))
+        } else {
+            None
+        }
+    }
+
+    pub fn add(&mut self, characteristic: C, parts: u64) {
+        self.total_parts += parts;
+        self.sum += characteristic.into() * parts as f64;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -237,5 +269,16 @@ mod tests {
         assert_eq!(Permanence::default(), Permanence::Permanent);
         assert_eq!(Fluorescence::default(), Fluorescence::NonFluorescent);
         assert_eq!(Metallicness::default(), Metallicness::NonMetallic);
+    }
+
+    #[test]
+    fn mixture() {
+        let mut mixer = CharacteristicMixer::<Finish>::new();
+        assert_eq!(mixer.characteristic(), None);
+        mixer.add(Finish::Gloss, 1);
+        mixer.add(Finish::Flat, 10);
+        assert_eq!(mixer.characteristic(), Some(Finish::Flat));
+        mixer.add(Finish::Gloss, 6);
+        assert_eq!(mixer.characteristic(), Some(Finish::SemiFlat));
     }
 }
