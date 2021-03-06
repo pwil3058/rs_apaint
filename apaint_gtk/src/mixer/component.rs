@@ -14,7 +14,7 @@ use pw_gix::{
     wrapper::*,
 };
 
-use crate::colour::{Colourable, PartsColour, RGB};
+use crate::colour::{Colourable, LightLevel, PartsColour, HCV, RGB};
 
 type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
 
@@ -98,8 +98,12 @@ impl<P: PartsColour> PartsSpinButton<P> {
         self.set_parts(self.parts() / divisor);
     }
 
-    pub fn rgb_parts(&self) -> (RGB<f64>, u64) {
-        (self.paint.rgb(), self.parts())
+    pub fn colour_parts(&self) -> (HCV, u64) {
+        (self.paint.hcv(), self.parts())
+    }
+
+    pub fn rgb_parts<L: LightLevel>(&self) -> (RGB<L>, u64) {
+        (self.paint.rgb::<L>(), self.parts())
     }
 
     pub fn paint_parts(&self) -> (&Rc<P>, u64) {
@@ -156,11 +160,19 @@ impl<P: PartsColour> PartsSpinButtonBox<P> {
         })
     }
 
-    pub fn rgb_contributions(&self) -> Vec<(RGB<f64>, u64)> {
+    pub fn colour_contributions(&self) -> Vec<(HCV, u64)> {
         self.spinners
             .borrow()
             .iter()
-            .map(|s| s.rgb_parts())
+            .map(|s| s.colour_parts())
+            .collect()
+    }
+
+    pub fn rgb_contributions<L: LightLevel>(&self) -> Vec<(RGB<L>, u64)> {
+        self.spinners
+            .borrow()
+            .iter()
+            .map(|s| s.rgb_parts::<L>())
             .collect()
     }
 

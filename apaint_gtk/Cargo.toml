@@ -10,6 +10,7 @@ edition = "2018"
 default = []
 targeted_mixtures = []
 palette_samples = []
+mixtures_may_mix = []
 
 [dependencies]
 serde = "1.0"

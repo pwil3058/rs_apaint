@@ -103,9 +103,11 @@ pub mod colour {
     {
     }
 
+    use apaint::mixtures::Mixture;
     use apaint::series::*;
 
     impl PartsColour for SeriesPaint {}
+    impl PartsColour for Mixture {}
 }
 
 pub mod window {

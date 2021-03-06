@@ -66,6 +66,8 @@ use crate::{
     icon_image::paint_standard_image,
     series::{PaintStandardsManager, PaintStandardsManagerBuilder},
 };
+#[cfg(feature = "mixtures_may_mix")]
+use apaint::mixtures::Mixture;
 use apaint::series::SeriesPaintFinder;
 
 #[cfg(feature = "palette_samples")]
@@ -308,12 +310,14 @@ pub struct PalettePaintMixer {
     characteristics: Vec<CharacteristicType>,
     mix_entry: Rc<PalettePaintEntry>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
+    #[cfg(feature = "mixtures_may_mix")]
+    mixed_paint_spinner_box: Rc<PartsSpinButtonBox<Mixture>>,
     change_notifier: Rc<ChangedCondnsNotifier>,
     paint_series_manager: Rc<PaintSeriesManager>,
     #[cfg(feature = "targeted_mixtures")]
     paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
-    display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
+    mixture_display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
     paint_display_dialog_manager: RefCell<Rc<PaintDisplayDialogManager<gtk::Box>>>,
 }
 
@@ -338,15 +342,31 @@ impl PalettePaintMixer {
         self.hue_wheel.add_item(paint.coloured_shape());
     }
 
-    fn process_removal_request(&self, paint: &Rc<SeriesPaint>) {
+    fn remove_series_paint(&self, paint: &Rc<SeriesPaint>) {
         self.series_paint_spinner_box.remove_paint(paint);
         self.hue_wheel.remove_item(paint.id());
     }
 
+    #[cfg(feature = "mixtures_may_mix")]
+    fn add_mixed_paint(&self, paint: &Rc<Mixture>) {
+        self.mixed_paint_spinner_box.add_paint(paint);
+        self.hue_wheel.add_item(paint.coloured_shape());
+    }
+
+    #[cfg(feature = "mixtures_may_mix")]
+    fn remove_mixed_paint(&self, paint: &Rc<Mixture>) {
+        self.mixed_paint_spinner_box.remove_paint(paint);
+        // NB: we don't remove from the hue wheel as the mixture is still in the mixture list
+    }
+
     fn contributions_changed(&self) {
         let mut colour_mixer = ColourMixer::new();
-        for (rgb, parts) in self.series_paint_spinner_box.rgb_contributions() {
-            colour_mixer.add(&rgb, parts);
+        for (colour, parts) in self.series_paint_spinner_box.colour_contributions() {
+            colour_mixer.add(&colour, parts);
+        }
+        #[cfg(feature = "mixtures_may_mix")]
+        for (colour, parts) in self.mixed_paint_spinner_box.colour_contributions() {
+            colour_mixer.add(&colour, parts);
         }
         let mut condns = MaskedCondns {
             condns: 0,
@@ -480,6 +500,9 @@ impl PalettePaintMixer {
             .name(&self.mix_entry.name_entry.get_text())
             .notes(&self.mix_entry.notes_entry.get_text())
             .series_paint_components(self.series_paint_spinner_box.paint_contributions());
+        #[cfg(feature = "mixtures_may_mix")]
+        mixed_paint_builder
+            .mixed_paint_components(self.mixed_paint_spinner_box.paint_contributions());
         #[cfg(feature = "targeted_mixtures")]
         mixed_paint_builder.targeted_colour(
             &self
@@ -528,6 +551,8 @@ impl PalettePaintMixer {
 
     pub fn zero_all_parts(&self) {
         self.series_paint_spinner_box.zero_all_parts();
+        #[cfg(feature = "mixtures_may_mix")]
+        self.mixed_paint_spinner_box.zero_all_parts();
     }
 
     pub fn needs_saving(&self) -> bool {
@@ -589,21 +614,31 @@ impl PalettePaintMixerBuilder {
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ColouredItemListView::new(
             &list_spec,
-            &[(
-                "info",
+            &[
                 (
-                    "Paint Information",
-                    None,
-                    Some("Display information for the indicated paint"),
-                )
-                    .into(),
-                SAV_HOVER_OK,
-            )],
+                    "info",
+                    (
+                        "Paint Information",
+                        None,
+                        Some("Display information for the indicated paint."),
+                    )
+                        .into(),
+                    SAV_HOVER_OK,
+                ),
+                #[cfg(feature = "mixtures_may_mix")]
+                (
+                    "add",
+                    ("Add", None, Some("Add the indicated paint to the palette.")).into(),
+                    SAV_HOVER_OK,
+                ),
+            ],
         );
         let mix_entry = PalettePaintEntry::new(&self.attributes);
         let series_paint_spinner_box = PartsSpinButtonBox::<SeriesPaint>::new("Paints", 4, true);
+        #[cfg(feature = "mixtures_may_mix")]
+        let mixed_paint_spinner_box = PartsSpinButtonBox::<Mixture>::new("Mixed Paints", 4, true);
 
-        let display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
+        let mixture_display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
             .build();
@@ -741,6 +776,8 @@ impl PalettePaintMixerBuilder {
 
         vbox.pack_start(&button_box, false, false, 0);
         vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
+        #[cfg(feature = "mixtures_may_mix")]
+        vbox.pack_start(&mixed_paint_spinner_box.pwo(), false, false, 0);
         vbox.pack_start(&list_view.pwo(), true, true, 0);
         vbox.show_all();
 
@@ -755,12 +792,14 @@ impl PalettePaintMixerBuilder {
             characteristics: self.characteristics.clone(),
             mix_entry,
             series_paint_spinner_box,
+            #[cfg(feature = "mixtures_may_mix")]
+            mixed_paint_spinner_box,
             change_notifier,
             paint_series_manager,
             #[cfg(feature = "targeted_mixtures")]
             paint_standards_manager,
             next_mix_id: Cell::new(1),
-            display_dialog_manager: RefCell::new(display_dialog_manager),
+            mixture_display_dialog_manager: RefCell::new(mixture_display_dialog_manager),
             paint_display_dialog_manager: RefCell::new(paint_display_dialog_manager),
         });
 
@@ -807,7 +846,24 @@ impl PalettePaintMixerBuilder {
 
         let tpm_c = Rc::clone(&tpm);
         tpm.series_paint_spinner_box
-            .connect_removal_requested(move |p| tpm_c.process_removal_request(p));
+            .connect_removal_requested(move |p| tpm_c.remove_series_paint(p));
+
+        #[cfg(feature = "mixtures_may_mix")]
+        {
+            let tpm_c = Rc::clone(&tpm);
+            tpm.mixed_paint_spinner_box
+                .connect_contributions_changed(move || tpm_c.contributions_changed());
+
+            let tpm_c = Rc::clone(&tpm);
+            tpm.mixed_paint_spinner_box
+                .connect_removal_requested(move |p| tpm_c.remove_mixed_paint(p));
+        }
+
+        #[cfg(feature = "mixtures_may_mix")]
+        let tpm_c = Rc::clone(&tpm);
+        #[cfg(feature = "mixtures_may_mix")]
+        tpm.mixed_paint_spinner_box
+            .connect_removal_requested(move |p| tpm_c.remove_mixed_paint(p));
 
         let tpm_c = Rc::clone(&tpm);
         #[cfg(not(feature = "targeted_mixtures"))]
@@ -844,17 +900,27 @@ impl PalettePaintMixerBuilder {
             let mixing_session = tpm_c.mixing_session.borrow();
             let mixture = mixing_session.mixture(id).expect("programm error");
             tpm_c
-                .display_dialog_manager
+                .mixture_display_dialog_manager
                 .borrow_mut()
                 .display_mixture(mixture);
         });
+
+        #[cfg(feature = "mixtures_may_mix")]
+        {
+            let tpm_c = Rc::clone(&tpm);
+            tpm.list_view.connect_popup_menu_item("add", move |id| {
+                let mixing_session = tpm_c.mixing_session.borrow();
+                let mixture = mixing_session.mixture(id).expect("programm error");
+                tpm_c.add_mixed_paint(&mixture);
+            });
+        }
 
         let tpm_c = Rc::clone(&tpm);
         tpm.hue_wheel.connect_popup_menu_item("info", move |id| {
             let mixing_session = tpm_c.mixing_session.borrow();
             if let Some(mixture) = mixing_session.mixture(id) {
                 tpm_c
-                    .display_dialog_manager
+                    .mixture_display_dialog_manager
                     .borrow_mut()
                     .display_mixture(mixture);
             } else if let Ok(paint) = tpm_c.paint_series_manager.get_series_paint(id, None) {
