@@ -58,11 +58,15 @@ use crate::{
     window::PersistentWindowButtonBuilder,
 };
 
+use crate::series::display::{
+    DisplayPaint, PaintDisplayDialogManager, PaintDisplayDialogManagerBuilder,
+};
 #[cfg(feature = "targeted_mixtures")]
 use crate::{
     icon_image::paint_standard_image,
     series::{PaintStandardsManager, PaintStandardsManagerBuilder},
 };
+use apaint::series::SeriesPaintFinder;
 
 #[cfg(feature = "palette_samples")]
 struct Sample {
@@ -310,6 +314,7 @@ pub struct PalettePaintMixer {
     paint_standards_manager: Rc<PaintStandardsManager>,
     next_mix_id: Cell<u64>,
     display_dialog_manager: RefCell<MixtureDisplayDialogManager<gtk::Box>>,
+    paint_display_dialog_manager: RefCell<Rc<PaintDisplayDialogManager<gtk::Box>>>,
 }
 
 impl PalettePaintMixer {
@@ -570,6 +575,16 @@ impl PalettePaintMixerBuilder {
         let notes_entry = gtk::EntryBuilder::new().build();
         let hue_wheel = GtkHueWheelBuilder::new()
             .attributes(&self.attributes)
+            .menu_item_specs(&[(
+                "info",
+                (
+                    "Paint Information",
+                    None,
+                    Some("Display information for the indicated paint"),
+                )
+                    .into(),
+                SAV_HOVER_OK,
+            )])
             .build();
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ColouredItemListView::new(
@@ -589,6 +604,11 @@ impl PalettePaintMixerBuilder {
         let series_paint_spinner_box = PartsSpinButtonBox::<SeriesPaint>::new("Paints", 4, true);
 
         let display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
+            .attributes(&self.attributes)
+            .characteristics(&self.characteristics)
+            .build();
+
+        let paint_display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
             .characteristics(&self.characteristics)
             .build();
@@ -741,6 +761,7 @@ impl PalettePaintMixerBuilder {
             paint_standards_manager,
             next_mix_id: Cell::new(1),
             display_dialog_manager: RefCell::new(display_dialog_manager),
+            paint_display_dialog_manager: RefCell::new(paint_display_dialog_manager),
         });
 
         let change_notifier_c = Rc::clone(&tpm.change_notifier);
@@ -826,6 +847,34 @@ impl PalettePaintMixerBuilder {
                 .display_dialog_manager
                 .borrow_mut()
                 .display_mixture(mixture);
+        });
+
+        let tpm_c = Rc::clone(&tpm);
+        tpm.hue_wheel.connect_popup_menu_item("info", move |id| {
+            let mixing_session = tpm_c.mixing_session.borrow();
+            if let Some(mixture) = mixing_session.mixture(id) {
+                tpm_c
+                    .display_dialog_manager
+                    .borrow_mut()
+                    .display_mixture(mixture);
+            } else if let Ok(paint) = tpm_c.paint_series_manager.get_series_paint(id, None) {
+                tpm_c
+                    .paint_display_dialog_manager
+                    .borrow_mut()
+                    .display_paint(&paint);
+            } else {
+                #[cfg(feature = "targeted_mixtures")]
+                if let Ok(standard) = tpm_c.paint_standards_manager.get_series_paint(id, None) {
+                    tpm_c
+                        .paint_display_dialog_manager
+                        .borrow_mut()
+                        .display_paint(&standard);
+                } else {
+                    tpm_c.inform_user("Unknown paint", None);
+                }
+                #[cfg(not(feature = "targeted_mixtures"))]
+                tpm_c.inform_user("Unknown paint", None);
+            }
         });
 
         tpm

@@ -629,6 +629,16 @@ impl PaintStandardsManager {
     }
 }
 
+impl SeriesPaintFinder for PaintStandardsManager {
+    fn get_series_paint(
+        &self,
+        paint_id: &str,
+        series_id: Option<&SeriesId>,
+    ) -> apaint::Result<Rc<SeriesPaint>> {
+        self.binder.get_series_paint(paint_id, series_id)
+    }
+}
+
 #[derive(Default)]
 pub struct PaintStandardsManagerBuilder {
     attributes: Vec<ScalarAttribute>,
