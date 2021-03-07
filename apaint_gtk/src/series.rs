@@ -32,7 +32,7 @@ use apaint::{
 
 use crate::{
     colour::{GdkColour, ScalarAttribute, HCV},
-    icon_image::{paint_standard_load_image, series_paint_load_image},
+    icons,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
 };
 
@@ -535,7 +535,7 @@ impl PaintSeriesManagerBuilder {
             self.loaded_files_data_path.clone(),
         );
         let load_file_btn = gtk::ButtonBuilder::new()
-            .image(&series_paint_load_image(24).upcast::<gtk::Widget>())
+            .image(&icons::series_paint_load::sized_image_or(24).upcast::<gtk::Widget>())
             .tooltip_text("Load a paint series from a file.")
             .build();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
@@ -703,7 +703,7 @@ impl PaintStandardsManagerBuilder {
             self.loaded_files_data_path.clone(),
         );
         let load_file_btn = gtk::ButtonBuilder::new()
-            .image(&paint_standard_load_image(24).upcast::<gtk::Widget>())
+            .image(&icons::paint_standard_load::sized_image_or(24).upcast::<gtk::Widget>())
             .tooltip_text("Load a paint standards series from a file.")
             .build();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);

@@ -47,7 +47,7 @@ use apaint::{
 
 use crate::{
     colour::RGBConstants,
-    icon_image::series_paint_image,
+    icons,
     list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
     mixer::{
         component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
@@ -62,10 +62,7 @@ use crate::series::display::{
     DisplayPaint, PaintDisplayDialogManager, PaintDisplayDialogManagerBuilder,
 };
 #[cfg(feature = "targeted_mixtures")]
-use crate::{
-    icon_image::paint_standard_image,
-    series::{PaintStandardsManager, PaintStandardsManagerBuilder},
-};
+use crate::series::{PaintStandardsManager, PaintStandardsManagerBuilder};
 #[cfg(feature = "mixtures_may_mix")]
 use apaint::mixtures::Mixture;
 use apaint::series::SeriesPaintFinder;
@@ -658,7 +655,7 @@ impl PalettePaintMixerBuilder {
         }
         let paint_series_manager = builder.build();
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
-            .icon(&series_paint_image(24))
+            .icon(&icons::series_paint::sized_image_or(24))
             .window_child(&paint_series_manager.pwo())
             .window_title("Paint Series Manager")
             .window_geometry(Some("paint_series_manager"), (300, 200))
@@ -689,7 +686,7 @@ impl PalettePaintMixerBuilder {
         #[cfg(feature = "targeted_mixtures")]
         {
             let persistent_window_btn = PersistentWindowButtonBuilder::new()
-                .icon(&paint_standard_image(24))
+                .icon(&icons::paint_standard::sized_image_or(24))
                 .window_child(&paint_standards_manager.pwo())
                 .window_title("Paint Standards Manager")
                 .window_geometry(Some("paint_standards_manager"), (300, 200))

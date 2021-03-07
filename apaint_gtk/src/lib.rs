@@ -3,7 +3,7 @@
 use std::{error, fmt, io};
 
 pub mod factory;
-pub mod icon_image;
+pub mod icons;
 pub mod list;
 pub mod mixer;
 pub mod series;

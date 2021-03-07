@@ -15,7 +15,7 @@ use pw_gix::{
 
 use crate::{
     colour::{Colourable, RGBConstants},
-    icon_image,
+    icons,
 };
 use apaint::HCV;
 
@@ -98,16 +98,16 @@ impl StorageManager {
         let file_status_btn = self.buttons.get_widget("status").expect("should work");
         if current_condns & SAV_SESSION_NEEDS_SAVING != 0 {
             if current_condns & SAV_SESSION_IS_SAVEABLE != 0 {
-                file_status_btn.set_image(Some(&icon_image::needs_save_ready_image(24)));
+                file_status_btn.set_image(Some(&icons::needs_save_ready::sized_image_or(24)));
                 file_status_btn.set_tooltip_text(Some(
                     "File Status: Needs Save (Ready)\nClick to save data to file",
                 ));
             } else {
-                file_status_btn.set_image(Some(&icon_image::needs_save_not_ready_image(24)));
+                file_status_btn.set_image(Some(&icons::needs_save_not_ready::sized_image_or(24)));
                 file_status_btn.set_tooltip_text(Some("File Status: Needs Save (NOT Ready)"));
             }
         } else {
-            file_status_btn.set_image(Some(&icon_image::up_to_date_image(24)));
+            file_status_btn.set_image(Some(&icons::up_to_date::sized_image_or(24)));
             file_status_btn.set_tooltip_text(Some("File Status: Up To Date"));
         }
     }
@@ -312,7 +312,7 @@ impl StorageManagerBuilder {
         // Reset
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.reset_tooltip_text)
-            .image(&icon_image::colln_new_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
+            .image(&icons::colln_new::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
         storage_manager.buttons.add_widget("reset", &button, 0);
         storage_manager.hbox.pack_start(&button, false, false, 0);
@@ -322,7 +322,7 @@ impl StorageManagerBuilder {
         // Load
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.load_tooltip_text)
-            .image(&icon_image::colln_load_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
+            .image(&icons::colln_load::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
         storage_manager.buttons.add_widget("load", &button, 0);
         storage_manager.hbox.pack_start(&button, false, false, 0);
@@ -332,7 +332,7 @@ impl StorageManagerBuilder {
         // Save
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.save_tooltip_text)
-            .image(&icon_image::colln_save_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
+            .image(&icons::colln_save::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
         storage_manager
             .buttons
@@ -344,7 +344,7 @@ impl StorageManagerBuilder {
         // Save As
         let button = gtk::ButtonBuilder::new()
             .tooltip_text(&self.save_as_tooltip_text)
-            .image(&icon_image::colln_save_as_image(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
+            .image(&icons::colln_save_as::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
         storage_manager.buttons.add_widget(
             "save as",
@@ -366,7 +366,7 @@ impl StorageManagerBuilder {
             .pack_start(&storage_manager.file_name_label, true, true, 1);
 
         let button = gtk::ButtonBuilder::new().sensitive(false).build();
-        button.set_image(Some(&icon_image::up_to_date_image(BTN_IMAGE_SIZE)));
+        button.set_image(Some(&icons::up_to_date::sized_image_or(BTN_IMAGE_SIZE)));
         storage_manager.hbox.pack_start(&button, false, false, 1);
         storage_manager.buttons.add_widget(
             "status",
