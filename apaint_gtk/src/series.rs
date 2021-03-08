@@ -53,26 +53,33 @@ struct SeriesPage {
 }
 
 #[derive(Default, Clone)]
-struct SeriesPageFactory {
+struct SeriesPageBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
 }
 
-impl SeriesPageFactory {
-    fn new(
-        attributes: &[ScalarAttribute],
-        characteristics: &[CharacteristicType],
-        menu_items: &[(&'static str, MenuItemSpec, u64)],
-    ) -> Self {
-        Self {
-            attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
-            menu_items: menu_items.to_vec(),
-        }
+impl SeriesPageBuilder {
+    fn new() -> Self {
+        Self::default()
     }
 
-    fn series_page(&self, paint_series: SeriesPaintSeries) -> Rc<SeriesPage> {
+    fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
+        self.attributes = attributes.to_vec();
+        self
+    }
+
+    fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
+        self.characteristics = characteristics.to_vec();
+        self
+    }
+
+    fn menu_items(&mut self, menu_items: &[(&'static str, MenuItemSpec, u64)]) -> &mut Self {
+        self.menu_items = menu_items.to_vec();
+        self
+    }
+
+    fn build(&self, paint_series: SeriesPaintSeries) -> Rc<SeriesPage> {
         let paned = gtk::PanedBuilder::new().build();
         paned.set_position_from_recollections("SeriesPage:paned_position", 200);
         let hue_wheel = GtkHueWheelBuilder::new()
@@ -160,7 +167,7 @@ impl SeriesPage {
 struct SeriesBinder {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<(Rc<SeriesPage>, PathBuf)>>,
-    series_page_factory: SeriesPageFactory,
+    series_page_builder: SeriesPageBuilder,
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
     target_colour: RefCell<Option<HCV>>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
@@ -182,11 +189,15 @@ impl SeriesBinder {
             hash_map.insert(item_name.to_string(), vec![]);
         }
         let callbacks = RefCell::new(hash_map);
-        let series_page_factory = SeriesPageFactory::new(attributes, characteristics, menu_items);
+        let mut series_page_builder = SeriesPageBuilder::new();
+        series_page_builder
+            .attributes(attributes)
+            .characteristics(characteristics)
+            .menu_items(menu_items);
         let binder = Rc::new(Self {
             notebook,
             pages,
-            series_page_factory,
+            series_page_builder,
             menu_items: menu_items.to_vec(),
             target_colour: RefCell::new(None),
             callbacks,
@@ -333,7 +344,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     new_series.series_id().proprietor(),
                 );
                 let menu_label = gtk::Label::new(Some(l_text.as_str()));
-                let new_page = self.series_page_factory.series_page(new_series);
+                let new_page = self.series_page_builder.build(new_series);
                 if let Some(colour) = self.target_colour.borrow().as_ref() {
                     new_page.set_target_colour(Some(colour));
                 };
