@@ -5,7 +5,10 @@ use std::{collections::BTreeMap, rc::Rc};
 use pw_gix::{
     glib,
     gtk::{self, prelude::*},
-    gtkx::dialog::dialog_user::TopGtkWindow,
+    gtkx::{
+        dialog::dialog_user::TopGtkWindow,
+        list::{ListViewSpec, ListViewWithPopUpMenuBuilder},
+    },
     wrapper::*,
 };
 
@@ -19,7 +22,7 @@ use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintI
 
 use crate::{
     colour::{Colourable, HCV},
-    list::{ColouredItemListView, ColouredItemListViewSpec, PaintListRow},
+    list::PaintListRow,
 };
 
 #[derive(PWO)]
@@ -144,7 +147,7 @@ impl MixtureDisplayBuilder {
             vbox.pack_start(&label, false, false, 0);
         }
 
-        let list_view = ColouredItemListView::new(&self.list_spec, &[]);
+        let list_view = ListViewWithPopUpMenuBuilder::new().build(&self.list_spec);
         vbox.pack_start(&list_view.pwo(), false, false, 0);
         for (paint, parts) in mixture.components() {
             let mut row = paint.row(&self.attributes, &self.characteristics);
@@ -291,7 +294,7 @@ impl ComponentsListViewSpec {
     }
 }
 
-impl ColouredItemListViewSpec for ComponentsListViewSpec {
+impl ListViewSpec for ComponentsListViewSpec {
     fn column_types(&self) -> Vec<glib::Type> {
         let mut column_types = vec![
             glib::Type::String,

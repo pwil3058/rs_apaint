@@ -10,7 +10,10 @@ use std::{
 use pw_gix::{
     cairo,
     gtk::{self, prelude::*},
-    gtkx::paned::RememberPosition,
+    gtkx::{
+        list::{ListViewWithPopUpMenu, ListViewWithPopUpMenuBuilder},
+        paned::RememberPosition,
+    },
     sav_state::{
         ChangedCondnsNotifier, ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled,
         SAV_HOVER_OK, SAV_NEXT_CONDN,
@@ -48,7 +51,7 @@ use apaint::{
 use crate::{
     colour::RGBConstants,
     icons,
-    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
+    list::{BasicPaintListViewSpec, PaintListRow},
     mixer::{
         component::{PartsSpinButtonBox, RcPartsSpinButtonBox},
         display::{MixtureDisplayDialogManager, MixtureDisplayDialogManagerBuilder},
@@ -302,7 +305,7 @@ pub struct PalettePaintMixer {
     file_manager: Rc<StorageManager>,
     notes_entry: gtk::Entry,
     hue_wheel: Rc<GtkHueWheel>,
-    list_view: Rc<ColouredItemListView>,
+    list_view: Rc<ListViewWithPopUpMenu>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     mix_entry: Rc<PalettePaintEntry>,
@@ -609,9 +612,8 @@ impl PalettePaintMixerBuilder {
             )])
             .build();
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
-        let list_view = ColouredItemListView::new(
-            &list_spec,
-            &[
+        let list_view = ListViewWithPopUpMenuBuilder::new()
+            .menu_items(vec![
                 (
                     "info",
                     (
@@ -628,8 +630,8 @@ impl PalettePaintMixerBuilder {
                     ("Add", None, Some("Add the indicated paint to the palette.")).into(),
                     SAV_HOVER_OK,
                 ),
-            ],
-        );
+            ])
+            .build(&list_spec);
         let mix_entry = PalettePaintEntry::new(&self.attributes);
         let series_paint_spinner_box = PartsSpinButtonBox::<SeriesPaint>::new("Paints", 4, true);
         #[cfg(feature = "mixtures_may_mix")]
@@ -893,9 +895,11 @@ impl PalettePaintMixerBuilder {
         tpm.file_manager.connect_reset(move || tpm_c.full_reset());
 
         let tpm_c = Rc::clone(&tpm);
-        tpm.list_view.connect_popup_menu_item("info", move |id| {
+        tpm.list_view.connect_popup_menu_item("info", move |id, _| {
             let mixing_session = tpm_c.mixing_session.borrow();
-            let mixture = mixing_session.mixture(id).expect("programm error");
+            let mixture = mixing_session
+                .mixture(&id.unwrap())
+                .expect("programm error");
             tpm_c
                 .mixture_display_dialog_manager
                 .borrow_mut()

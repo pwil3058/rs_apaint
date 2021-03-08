@@ -7,7 +7,11 @@ use std::rc::Rc;
 
 use pw_gix::{
     gtk::{self, prelude::*},
-    gtkx::{menu_ng::MenuItemSpec, paned::RememberPosition},
+    gtkx::{
+        list::{ListViewWithPopUpMenu, ListViewWithPopUpMenuBuilder},
+        menu_ng::MenuItemSpec,
+        paned::RememberPosition,
+    },
     sav_state::SAV_HOVER_OK,
     wrapper::*,
 };
@@ -21,7 +25,7 @@ use apaint::{
 };
 
 use crate::{
-    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
+    list::{BasicPaintListViewSpec, PaintListRow},
     spec_edit::BasicPaintSpecEditor,
     storage::{StorageManager, StorageManagerBuilder},
 };
@@ -33,7 +37,7 @@ pub struct BasicPaintFactory {
     file_manager: Rc<StorageManager>,
     paint_editor: Rc<BasicPaintSpecEditor>,
     hue_wheel: Rc<GtkHueWheel>,
-    list_view: Rc<ColouredItemListView>,
+    list_view: Rc<ListViewWithPopUpMenu>,
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     paint_series: RefCell<SeriesPaintSeriesSpec>,
@@ -265,7 +269,9 @@ impl BasicPaintFactoryBuilder {
             .attributes(&self.attributes)
             .build();
         let paint_list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
-        let list_view = ColouredItemListView::new(&paint_list_spec, menu_items);
+        let list_view = ListViewWithPopUpMenuBuilder::new()
+            .menu_items(menu_items.to_vec())
+            .build(&paint_list_spec);
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
         scrolled_window.add(&list_view.pwo());
         let notebook = gtk::NotebookBuilder::new().build();
@@ -321,7 +327,7 @@ impl BasicPaintFactoryBuilder {
 
         let bpf_c = Rc::clone(&bpf);
         bpf.list_view
-            .connect_popup_menu_item("edit", move |id| bpf_c.edit_paint(id));
+            .connect_popup_menu_item("edit", move |id, _| bpf_c.edit_paint(&id.unwrap()));
 
         let bpf_c = Rc::clone(&bpf);
         bpf.hue_wheel
@@ -329,7 +335,7 @@ impl BasicPaintFactoryBuilder {
 
         let bpf_c = Rc::clone(&bpf);
         bpf.list_view
-            .connect_popup_menu_item("remove", move |id| bpf_c.remove_paint(id));
+            .connect_popup_menu_item("remove", move |id, _| bpf_c.remove_paint(&id.unwrap()));
 
         let bpf_c = Rc::clone(&bpf);
         bpf.proprietor_entry.connect_changed(move |entry| {

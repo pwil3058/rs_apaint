@@ -12,6 +12,7 @@ use pw_gix::{
     gtk::{self, prelude::*},
     gtkx::{
         dialog::dialog_user::TopGtkWindow,
+        list::{ListViewWithPopUpMenu, ListViewWithPopUpMenuBuilder},
         menu_ng::MenuItemSpec,
         notebook::{TabRemoveLabel, TabRemoveLabelInterface},
         paned::RememberPosition,
@@ -33,7 +34,7 @@ use apaint::{
 use crate::{
     colour::{GdkColour, ScalarAttribute, HCV},
     icons,
-    list::{BasicPaintListViewSpec, ColouredItemListView, PaintListRow},
+    list::{BasicPaintListViewSpec, PaintListRow},
 };
 
 pub mod display;
@@ -47,7 +48,7 @@ struct SeriesPage {
     paned: gtk::Paned,
     paint_series: SeriesPaintSeries,
     hue_wheel: Rc<GtkHueWheel>,
-    list_view: Rc<ColouredItemListView>,
+    list_view: Rc<ListViewWithPopUpMenu>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
 }
 
@@ -65,7 +66,9 @@ impl SeriesPage {
             .attributes(attributes)
             .build();
         let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
-        let list_view = ColouredItemListView::new(&list_spec, menu_items);
+        let list_view = ListViewWithPopUpMenuBuilder::new()
+            .menu_items(menu_items.to_vec())
+            .build(&list_spec);
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
             let row = paint.row(attributes, characteristics);
@@ -90,8 +93,8 @@ impl SeriesPage {
             });
             let sp_c = Rc::clone(&sp);
             let item_name_c = (*name).to_string();
-            sp.list_view.connect_popup_menu_item(name, move |id| {
-                sp_c.invoke_named_callback(&item_name_c, id)
+            sp.list_view.connect_popup_menu_item(name, move |id, _| {
+                sp_c.invoke_named_callback(&item_name_c, &id.unwrap())
             });
             sp.callbacks
                 .borrow_mut()
