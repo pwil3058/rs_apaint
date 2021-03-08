@@ -52,40 +52,54 @@ struct SeriesPage {
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
 }
 
-impl SeriesPage {
+#[derive(Default, Clone)]
+struct SeriesPageFactory {
+    attributes: Vec<ScalarAttribute>,
+    characteristics: Vec<CharacteristicType>,
+    menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
+}
+
+impl SeriesPageFactory {
     fn new(
-        paint_series: SeriesPaintSeries,
-        menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
-    ) -> Rc<Self> {
+        menu_items: &[(&'static str, MenuItemSpec, u64)],
+    ) -> Self {
+        Self {
+            attributes: attributes.to_vec(),
+            characteristics: characteristics.to_vec(),
+            menu_items: menu_items.to_vec(),
+        }
+    }
+
+    fn series_page(&self, paint_series: SeriesPaintSeries) -> Rc<SeriesPage> {
         let paned = gtk::PanedBuilder::new().build();
         paned.set_position_from_recollections("SeriesPage:paned_position", 200);
         let hue_wheel = GtkHueWheelBuilder::new()
-            .menu_item_specs(menu_items)
-            .attributes(attributes)
+            .menu_item_specs(&self.menu_items)
+            .attributes(&self.attributes)
             .build();
-        let list_spec = BasicPaintListViewSpec::new(attributes, characteristics);
+        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ListViewWithPopUpMenuBuilder::new()
-            .menu_items(menu_items.to_vec())
+            .menu_items(self.menu_items.to_vec())
             .build(&list_spec);
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
-            let row = paint.row(attributes, characteristics);
+            let row = paint.row(&self.attributes, &self.characteristics);
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
         scrolled_window.add(&list_view.pwo());
         paned.add1(&hue_wheel.pwo());
         paned.add2(&scrolled_window);
-        let sp = Rc::new(Self {
+        let sp = Rc::new(SeriesPage {
             paned,
             paint_series,
             hue_wheel,
             list_view,
             callbacks: RefCell::new(HashMap::new()),
         });
-        for (name, _, _) in menu_items.iter() {
+        for (name, _, _) in self.menu_items.iter() {
             let sp_c = Rc::clone(&sp);
             let item_name_c = (*name).to_string();
             sp.hue_wheel.connect_popup_menu_item(name, move |id| {
@@ -103,7 +117,9 @@ impl SeriesPage {
 
         sp
     }
+}
 
+impl SeriesPage {
     fn series_id(&self) -> &Rc<SeriesId> {
         self.paint_series.series_id()
     }
@@ -144,9 +160,8 @@ impl SeriesPage {
 struct SeriesBinder {
     notebook: gtk::Notebook,
     pages: RefCell<Vec<(Rc<SeriesPage>, PathBuf)>>,
+    series_page_factory: SeriesPageFactory,
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
-    attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
     target_colour: RefCell<Option<HCV>>,
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
     loaded_files_data_path: Option<PathBuf>,
@@ -167,12 +182,12 @@ impl SeriesBinder {
             hash_map.insert(item_name.to_string(), vec![]);
         }
         let callbacks = RefCell::new(hash_map);
+        let series_page_factory = SeriesPageFactory::new(attributes, characteristics, menu_items);
         let binder = Rc::new(Self {
             notebook,
             pages,
+            series_page_factory,
             menu_items: menu_items.to_vec(),
-            attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
             target_colour: RefCell::new(None),
             callbacks,
             loaded_files_data_path,
@@ -318,12 +333,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     new_series.series_id().proprietor(),
                 );
                 let menu_label = gtk::Label::new(Some(l_text.as_str()));
-                let new_page = SeriesPage::new(
-                    new_series,
-                    &self.menu_items,
-                    &self.attributes,
-                    &self.characteristics,
-                );
+                let new_page = self.series_page_factory.series_page(new_series);
                 if let Some(colour) = self.target_colour.borrow().as_ref() {
                     new_page.set_target_colour(Some(colour));
                 };
