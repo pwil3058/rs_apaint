@@ -52,11 +52,23 @@ struct SeriesPage {
     callbacks: RefCell<HashMap<String, Vec<PaintActionCallback>>>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 struct SeriesPageBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
+    selection_mode: gtk::SelectionMode,
+}
+
+impl Default for SeriesPageBuilder {
+    fn default() -> Self {
+        Self {
+            attributes: vec![],
+            characteristics: vec![],
+            menu_items: vec![],
+            selection_mode: gtk::SelectionMode::None,
+        }
+    }
 }
 
 impl SeriesPageBuilder {
@@ -79,6 +91,11 @@ impl SeriesPageBuilder {
         self
     }
 
+    fn selection_mode(&mut self, selection_mode: gtk::SelectionMode) -> &mut Self {
+        self.selection_mode = selection_mode;
+        self
+    }
+
     fn build(&self, paint_series: SeriesPaintSeries) -> Rc<SeriesPage> {
         let paned = gtk::PanedBuilder::new().build();
         paned.set_position_from_recollections("SeriesPage:paned_position", 200);
@@ -89,6 +106,7 @@ impl SeriesPageBuilder {
         let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
         let list_view = ListViewWithPopUpMenuBuilder::new()
             .menu_items(self.menu_items.to_vec())
+            .selection_mode(self.selection_mode)
             .build(&list_spec);
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
@@ -180,6 +198,7 @@ impl SeriesBinder {
         attributes: &[ScalarAttribute],
         characteristics: &[CharacteristicType],
         loaded_files_data_path: Option<PathBuf>,
+        selection_mode: gtk::SelectionMode,
     ) -> Rc<Self> {
         let notebook = gtk::NotebookBuilder::new().enable_popup(true).build();
         let pages = RefCell::new(vec![]);
@@ -193,7 +212,8 @@ impl SeriesBinder {
         series_page_builder
             .attributes(attributes)
             .characteristics(characteristics)
-            .menu_items(menu_items);
+            .menu_items(menu_items)
+            .selection_mode(selection_mode);
         let binder = Rc::new(Self {
             notebook,
             pages,
@@ -557,6 +577,7 @@ impl PaintSeriesManagerBuilder {
             &self.attributes,
             &self.characteristics,
             self.loaded_files_data_path.clone(),
+            gtk::SelectionMode::None,
         );
         let load_file_btn = gtk::ButtonBuilder::new()
             .image(&icons::series_paint_load::sized_image_or(24).upcast::<gtk::Widget>())
@@ -725,6 +746,7 @@ impl PaintStandardsManagerBuilder {
             &self.attributes,
             &self.characteristics,
             self.loaded_files_data_path.clone(),
+            gtk::SelectionMode::None,
         );
         let load_file_btn = gtk::ButtonBuilder::new()
             .image(&icons::paint_standard_load::sized_image_or(24).upcast::<gtk::Widget>())
