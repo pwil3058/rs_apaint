@@ -24,7 +24,10 @@ use pw_gix::{
 #[cfg(feature = "palette_samples")]
 use colour_math_cairo::Point;
 #[cfg(feature = "palette_samples")]
-use pw_gix::{gdk, gdk_pixbuf, gtkx::menu::WrappedMenu};
+use pw_gix::{
+    gdk, gdk_pixbuf,
+    gtkx::menu_ng::{MenuItemSpec, WrappedMenu, WrappedMenuBuilder},
+};
 
 use colour_math::{beigui::hue_wheel::MakeColouredShape, ScalarAttribute, HCV};
 use colour_math_cairo::CairoSetColour;
@@ -88,7 +91,7 @@ impl Default for Samples {
     fn default() -> Self {
         Self {
             samples: RefCell::new(Vec::new()),
-            popup_menu: WrappedMenu::new(&[]),
+            popup_menu: WrappedMenuBuilder::new().build(),
             popup_menu_posn: Cell::new((0.0, 0.0).into()),
         }
     }
@@ -153,14 +156,15 @@ impl PalettePaintEntry {
         // POPUP
         #[cfg(feature = "palette_samples")]
         {
+            let menu_item_spec = MenuItemSpec::from((
+                "Paste Sample",
+                None,
+                Some("Paste image sample from the clipboard at this position"),
+            ));
             let tpe_c = Rc::clone(&tpe);
             tpe.samples
                 .popup_menu
-                .append_item(
-                    "paste",
-                    "Paste Sample",
-                    "Paste image sample from the clipboard at this position",
-                )
+                .append_item("paste", &menu_item_spec)
                 .connect_activate(move |_| {
                     let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
                     if let Some(pixbuf) = cbd.wait_for_image() {
@@ -174,14 +178,15 @@ impl PalettePaintEntry {
                         tpe_c.inform_user("No image data on clipboard.", None);
                     }
                 });
+            let menu_item_spec = MenuItemSpec::from((
+                "Remove Sample(s)",
+                None,
+                Some("Remove all image samples from the sample area"),
+            ));
             let tpe_c = Rc::clone(&tpe);
             tpe.samples
                 .popup_menu
-                .append_item(
-                    "remove",
-                    "Remove Sample(s)",
-                    "Remove all image samples from the sample area",
-                )
+                .append_item("remove", &menu_item_spec)
                 .connect_activate(move |_| {
                     tpe_c.samples.samples.borrow_mut().clear();
                     tpe_c.drawing_area.queue_draw();
@@ -909,9 +914,11 @@ impl PalettePaintMixerBuilder {
         #[cfg(feature = "mixtures_may_mix")]
         {
             let tpm_c = Rc::clone(&tpm);
-            tpm.list_view.connect_popup_menu_item("add", move |id| {
+            tpm.list_view.connect_popup_menu_item("add", move |id, _| {
                 let mixing_session = tpm_c.mixing_session.borrow();
-                let mixture = mixing_session.mixture(id).expect("programm error");
+                let mixture = mixing_session
+                    .mixture(&id.unwrap())
+                    .expect("programm error");
                 tpm_c.add_mixed_paint(&mixture);
             });
         }

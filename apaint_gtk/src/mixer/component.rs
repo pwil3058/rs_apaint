@@ -10,7 +10,7 @@ use gcd::Gcd;
 use pw_gix::{
     gdk,
     gtk::{self, prelude::*, ContainerExt, WidgetExt},
-    gtkx::menu::WrappedMenu,
+    gtkx::menu_ng::{MenuItemSpec, WrappedMenu, WrappedMenuBuilder},
     wrapper::*,
 };
 
@@ -52,7 +52,7 @@ impl<P: PartsColour> PartsSpinButton<P> {
         let psb = Rc::new(Self {
             event_box,
             spin_button,
-            popup_menu: WrappedMenu::new(&[]),
+            popup_menu: WrappedMenuBuilder::new().build(),
             paint: Rc::clone(paint),
             changed_callbacks: RefCell::new(vec![]),
             remove_me_callbacks: RefCell::new(vec![]),
@@ -62,13 +62,14 @@ impl<P: PartsColour> PartsSpinButton<P> {
         psb.spin_button
             .connect_value_changed(move |_| psb_c.inform_changed());
 
+        let menu_item_spec = MenuItemSpec::from((
+            "Remove Me",
+            None,
+            Some("Remove this paint form the palette/mixer"),
+        ));
         let psb_c = Rc::clone(&psb);
         psb.popup_menu
-            .append_item(
-                "remove",
-                "Remove Me",
-                "Remove this paint form the palette/mixer",
-            )
+            .append_item("remove", &menu_item_spec)
             .connect_activate(move |_| psb_c.inform_remove_me());
 
         let psb_c = Rc::clone(&psb);
