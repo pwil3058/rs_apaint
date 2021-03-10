@@ -29,7 +29,9 @@ use pw_gix::{
     gtkx::menu_ng::{MenuItemSpec, WrappedMenu, WrappedMenuBuilder},
 };
 
-use colour_math::{beigui::hue_wheel::MakeColouredShape, ScalarAttribute, HCV};
+use colour_math::{
+    beigui::hue_wheel::MakeColouredShape, mixing::SubtractiveMixer, ScalarAttribute, HCV,
+};
 use colour_math_cairo::CairoSetColour;
 
 #[cfg(feature = "targeted_mixtures")]
@@ -45,7 +47,6 @@ use colour_math_gtk::{
 
 use apaint::{
     characteristics::CharacteristicType,
-    colour_mix::ColourMixer,
     mixtures::{MixingSession, MixtureBuilder, Paint},
     series::SeriesPaint,
     BasicPaintIfce,
@@ -365,7 +366,7 @@ impl PalettePaintMixer {
     }
 
     fn contributions_changed(&self) {
-        let mut colour_mixer = ColourMixer::new();
+        let mut colour_mixer = SubtractiveMixer::new();
         for (colour, parts) in self.series_paint_spinner_box.colour_contributions() {
             colour_mixer.add(&colour, parts);
         }
@@ -377,7 +378,7 @@ impl PalettePaintMixer {
             condns: 0,
             mask: Self::SAV_HAS_COLOUR,
         };
-        if let Some(colour) = colour_mixer.mixture() {
+        if let Some(colour) = colour_mixer.mixed_colour() {
             self.mix_entry.set_mix_colour(Some(&colour));
             condns.condns = Self::SAV_HAS_COLOUR;
         } else {

@@ -11,13 +11,13 @@ use gcd::Gcd;
 
 use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
+    mixing::SubtractiveMixer,
     Angle, Chroma, ColourBasics, Hue, LightLevel, HCV, RGB,
 };
 
 use colour_math_derive::Colour;
 
 use crate::characteristics::CharacteristicMixer;
-use crate::colour_mix::ColourMixer;
 use crate::{
     characteristics::{
         Finish, Fluorescence, FuzzyCharacteristic, Metallicness, Permanence, Transparency,
@@ -369,7 +369,7 @@ impl MixtureBuilder {
         let mut permanence_mix = CharacteristicMixer::<Permanence>::new();
         let mut fluorescence_mix = CharacteristicMixer::<Fluorescence>::new();
         let mut metallicness_mix = CharacteristicMixer::<Metallicness>::new();
-        let mut colour_mix = ColourMixer::new();
+        let mut colour_mix = SubtractiveMixer::new();
         for (paint, parts) in self.series_components.iter() {
             let adjusted_parts = *parts / gcd;
             colour_mix.add(&paint.hcv(), adjusted_parts);
@@ -391,7 +391,7 @@ impl MixtureBuilder {
             components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts as u64));
         }
         let mp = Mixture {
-            colour: colour_mix.mixture().unwrap().into(),
+            colour: colour_mix.mixed_colour().unwrap(),
             #[cfg(feature = "targeted_mixtures")]
             targeted_colour: self.targeted_colour,
             id: self.id.clone(),
