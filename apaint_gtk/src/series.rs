@@ -132,9 +132,16 @@ impl SeriesPageBuilder {
             });
             let sp_c = Rc::clone(&sp);
             let item_name_c = (*name).to_string();
-            sp.list_view.connect_popup_menu_item(name, move |id, _| {
-                sp_c.invoke_named_callback(&item_name_c, &id.unwrap())
-            });
+            sp.list_view
+                .connect_popup_menu_item(name, move |id, selected_ids| {
+                    if let Some(selected_ids) = selected_ids {
+                        for selected_id in &selected_ids {
+                            sp_c.invoke_named_callback(&item_name_c, selected_id)
+                        }
+                    } else if let Some(id) = &id {
+                        sp_c.invoke_named_callback(&item_name_c, id)
+                    }
+                });
             sp.callbacks
                 .borrow_mut()
                 .insert((*name).to_string(), vec![]);
@@ -577,7 +584,7 @@ impl PaintSeriesManagerBuilder {
             &self.attributes,
             &self.characteristics,
             self.loaded_files_data_path.clone(),
-            gtk::SelectionMode::None,
+            gtk::SelectionMode::Multiple,
         );
         let load_file_btn = gtk::ButtonBuilder::new()
             .image(&icons::series_paint_load::sized_image_or(24).upcast::<gtk::Widget>())
