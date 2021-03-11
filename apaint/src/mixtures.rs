@@ -23,7 +23,7 @@ use crate::{
         Finish, Fluorescence, FuzzyCharacteristic, Metallicness, Permanence, Transparency,
     },
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
-    BasicPaintIfce, ColourAttributes, Greyness, LabelText, Prop, TooltipText, Warmth,
+    BasicPaintIfce, ColourAttributes, Greyness, LabelText, TooltipText, Value, Warmth,
 };
 
 // TODO: make an untargeted version of TargetedMixture
@@ -474,7 +474,7 @@ impl ColourBasics for Paint {
         }
     }
 
-    fn value(&self) -> Prop {
+    fn value(&self) -> Value {
         match self {
             Paint::Series(paint) => paint.value(),
             Paint::Mixed(paint) => paint.value(),
