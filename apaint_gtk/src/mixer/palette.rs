@@ -390,11 +390,15 @@ impl PalettePaintMixer {
     #[cfg(feature = "targeted_mixtures")]
     fn ask_start_new_mixture(&self) {
         let tpe = TargetPaintEntry::new(&self.attributes);
-        let dialog = self.new_dialog_with_buttons(
-            Some("New Mixed Paint Target Colour"),
-            gtk::DialogFlags::DESTROY_WITH_PARENT,
-            CANCEL_OK_BUTTONS,
-        );
+        let dialog = self
+            .new_dialog_builder()
+            .title("New Mixed Paint Target Colour")
+            .destroy_with_parent(true)
+            .modal(true)
+            .build();
+        for button in Self::CANCEL_OK_BUTTONS.iter() {
+            dialog.add_button(button.0, button.1);
+        }
         dialog
             .get_content_area()
             .pack_start(&tpe.pwo(), true, true, 0);
