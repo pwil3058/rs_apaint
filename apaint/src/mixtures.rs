@@ -12,7 +12,7 @@ use gcd::Gcd;
 use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
     mixing::SubtractiveMixer,
-    Angle, Chroma, ColourBasics, Hue, LightLevel, HCV, RGB,
+    Angle, Chroma, ColourBasics, Hue, LightLevel, Prop, HCV, RGB,
 };
 
 use colour_math_derive::Colour;
@@ -471,6 +471,13 @@ impl ColourBasics for Paint {
         match self {
             Paint::Series(paint) => paint.chroma(),
             Paint::Mixed(paint) => paint.chroma(),
+        }
+    }
+
+    fn chroma_prop(&self) -> Prop {
+        match self {
+            Paint::Series(paint) => paint.chroma_prop(),
+            Paint::Mixed(paint) => paint.chroma_prop(),
         }
     }
 
