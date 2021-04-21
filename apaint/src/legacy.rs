@@ -123,24 +123,18 @@ PaintSpec(name="FS30059", rgb=RGB16(red=0x4700, green=0x3300, blue=0x2800), fini
     fn read_legacy_files() {
         let mut lines = TEST_TEXT.lines();
         let line = lines.next().unwrap();
-        println!("line: {:?}", line);
         let cap = HEADER_RE.captures(line);
-        println!("cap: {:?}", cap);
         let cap = cap.unwrap();
         assert_eq!(
             &cap[1],
             r###"Federal Standard 595C: Artificial Flat (<http://www.colorserver.net/>)"###
         );
         let line = lines.next().unwrap();
-        println!("line: {:?}", line);
         let cap = HEADER_RE.captures(line);
-        println!("cap: {:?}", cap);
         let cap = cap.unwrap();
         assert_eq!(&cap[1], r###"U.S. Government"###);
         for line in lines {
-            println!("line: {:?}", line);
             let cap = PAINT_RE.captures(line);
-            println!("cap: {:?}", cap);
             assert!(cap.is_some());
         }
     }
