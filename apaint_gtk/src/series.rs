@@ -114,8 +114,8 @@ impl SeriesPageBuilder {
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
-        scrolled_window.add(&list_view.pwo());
-        paned.add1(&hue_wheel.pwo());
+        scrolled_window.add(list_view.pwo());
+        paned.add1(hue_wheel.pwo());
         paned.add2(&scrolled_window);
         let sp = Rc::new(SeriesPage {
             paned,
@@ -299,7 +299,7 @@ impl SeriesBinder {
 
     fn remove_series_at_index(&self, index: usize) {
         let page = self.pages.borrow_mut().remove(index);
-        let page_num = self.notebook.page_num(&page.0.pwo());
+        let page_num = self.notebook.page_num(page.0.pwo());
         self.notebook.remove_page(page_num);
     }
 
@@ -383,8 +383,8 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     });
                 }
                 self.notebook.insert_page_menu(
-                    &new_page.pwo(),
-                    Some(&label.pwo()),
+                    new_page.pwo(),
+                    Some(label.pwo()),
                     Some(&menu_label),
                     Some(index as u32),
                 );
@@ -594,7 +594,7 @@ impl PaintSeriesManagerBuilder {
         hbox.pack_start(&load_file_btn, false, false, 0);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         vbox.pack_start(&hbox, false, false, 0);
-        vbox.pack_start(&binder.pwo(), true, true, 0);
+        vbox.pack_start(binder.pwo(), true, true, 0);
         vbox.show_all();
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
@@ -763,7 +763,7 @@ impl PaintStandardsManagerBuilder {
         hbox.pack_start(&load_file_btn, false, false, 0);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         vbox.pack_start(&hbox, false, false, 0);
-        vbox.pack_start(&binder.pwo(), true, true, 0);
+        vbox.pack_start(binder.pwo(), true, true, 0);
         vbox.show_all();
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)

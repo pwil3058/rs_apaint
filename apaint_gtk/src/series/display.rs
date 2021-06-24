@@ -137,7 +137,7 @@ impl PaintDisplayBuilder {
         };
         #[cfg(feature = "targeted_mixtures")]
         vbox.pack_start(&target_label, true, true, 0);
-        vbox.pack_start(&cads.pwo(), true, true, 0);
+        vbox.pack_start(cads.pwo(), true, true, 0);
 
         for characteristic_type in self.characteristics.iter() {
             let value = paint.characteristic(*characteristic_type).full();
@@ -238,7 +238,7 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
             }
             dialog
                 .get_content_area()
-                .pack_start(&display.pwo(), true, true, 0);
+                .pack_start(display.pwo(), true, true, 0);
             let paint_c = Rc::clone(paint);
             let self_c = Rc::clone(self);
             dialog.connect_response(move |_, response| {

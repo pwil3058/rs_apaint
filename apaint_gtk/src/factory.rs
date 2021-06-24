@@ -273,15 +273,15 @@ impl BasicPaintFactoryBuilder {
             .menu_items(menu_items.to_vec())
             .build(&paint_list_spec);
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
-        scrolled_window.add(&list_view.pwo());
+        scrolled_window.add(list_view.pwo());
         let notebook = gtk::NotebookBuilder::new().build();
         notebook.add(&scrolled_window);
         notebook.set_tab_label_text(&scrolled_window, "Paint List");
-        notebook.add(&hue_wheel.pwo());
-        notebook.set_tab_label_text(&hue_wheel.pwo(), "Hue/Attribute Wheel");
+        notebook.add(hue_wheel.pwo());
+        notebook.set_tab_label_text(hue_wheel.pwo(), "Hue/Attribute Wheel");
         vbox.pack_start(&notebook, true, true, 0);
         paned.add1(&vbox);
-        paned.add2(&paint_editor.pwo());
+        paned.add2(paint_editor.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let file_manager = StorageManagerBuilder::new()
@@ -294,7 +294,7 @@ impl BasicPaintFactoryBuilder {
             .tooltip_text("save", "Save the current editor content to the current file (or to a nominated file if there's no current file).")
             .tooltip_text("save as", "Save the current editor content to a nominated file which will become the current file.")
             .build();
-        vbox.pack_start(&file_manager.pwo(), false, false, 0);
+        vbox.pack_start(file_manager.pwo(), false, false, 0);
         vbox.pack_start(&paned, true, true, 0);
         let bpf = Rc::new(BasicPaintFactory {
             vbox,

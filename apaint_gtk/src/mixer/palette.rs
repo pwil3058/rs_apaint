@@ -137,7 +137,7 @@ impl PalettePaintEntry {
         hbox.pack_start(&gtk::Label::new(Some("Notes: ")), false, false, 0);
         hbox.pack_start(&notes_entry, true, true, 0);
         vbox.pack_start(&hbox, false, false, 0);
-        vbox.pack_start(&cads.pwo(), false, false, 0);
+        vbox.pack_start(cads.pwo(), false, false, 0);
         vbox.pack_start(&drawing_area, true, true, 0);
         vbox.show_all();
         let tpe = Rc::new(Self {
@@ -668,12 +668,12 @@ impl PalettePaintMixerBuilder {
         let paint_series_manager = builder.build();
         let persistent_window_btn = PersistentWindowButtonBuilder::new()
             .icon(&icons::series_paint::sized_image_or(24))
-            .window_child(&paint_series_manager.pwo())
+            .window_child(paint_series_manager.pwo())
             .window_title("Paint Series Manager")
             .window_geometry(Some("paint_series_manager"), (300, 200))
             .build();
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+        button_box.pack_start(persistent_window_btn.pwo(), false, false, 0);
 
         #[cfg(feature = "targeted_mixtures")]
         let mut builder = PaintStandardsManagerBuilder::new();
@@ -706,15 +706,15 @@ impl PalettePaintMixerBuilder {
             button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
         }
 
-        button_box.pack_start(&file_manager.pwo(), true, true, 0);
+        button_box.pack_start(file_manager.pwo(), true, true, 0);
         vbox.pack_start(&button_box, false, false, 0);
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
         hbox.pack_start(&notes_entry, true, true, 0);
         vbox.pack_start(&hbox, false, false, 0);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
-        paned.add1(&hue_wheel.pwo());
-        paned.add2(&mix_entry.pwo());
+        paned.add1(hue_wheel.pwo());
+        paned.add2(mix_entry.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
         vbox.pack_start(&paned, true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
@@ -784,10 +784,10 @@ impl PalettePaintMixerBuilder {
         button_box.pack_start(&zero_parts_btn, true, true, 0);
 
         vbox.pack_start(&button_box, false, false, 0);
-        vbox.pack_start(&series_paint_spinner_box.pwo(), false, false, 0);
+        vbox.pack_start(series_paint_spinner_box.pwo(), false, false, 0);
         #[cfg(feature = "mixtures_may_mix")]
-        vbox.pack_start(&mixed_paint_spinner_box.pwo(), false, false, 0);
-        vbox.pack_start(&list_view.pwo(), true, true, 0);
+        vbox.pack_start(mixed_paint_spinner_box.pwo(), false, false, 0);
+        vbox.pack_start(list_view.pwo(), true, true, 0);
         vbox.show_all();
 
         let tpm = Rc::new(PalettePaintMixer {

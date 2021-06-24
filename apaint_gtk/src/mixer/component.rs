@@ -214,7 +214,7 @@ impl<P: PartsColour> PartsSpinButtonBox<P> {
                     current_row = gtk::Box::new(gtk::Orientation::Horizontal, 1);
                     self.vbox.pack_start(&current_row, false, false, 0);
                 }
-                current_row.pack_start(&spinner.pwo(), true, true, 0);
+                current_row.pack_start(spinner.pwo(), true, true, 0);
             }
         };
         self.frame.show_all()

@@ -108,23 +108,23 @@ impl BasicPaintSpecEditor {
             match *characteristic {
                 CharacteristicType::Finish => {
                     grid.attach(&finish_entry.prompt(gtk::Align::End), 0, row, 1, 1);
-                    grid.attach(&finish_entry.pwo(), 1, row, 1, 1);
+                    grid.attach(finish_entry.pwo(), 1, row, 1, 1);
                 }
                 CharacteristicType::Transparency => {
                     grid.attach(&transparency_entry.prompt(gtk::Align::End), 0, row, 1, 1);
-                    grid.attach(&transparency_entry.pwo(), 1, row, 1, 1);
+                    grid.attach(transparency_entry.pwo(), 1, row, 1, 1);
                 }
                 CharacteristicType::Permanence => {
                     grid.attach(&permanence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
-                    grid.attach(&permanence_entry.pwo(), 1, row, 1, 1);
+                    grid.attach(permanence_entry.pwo(), 1, row, 1, 1);
                 }
                 CharacteristicType::Fluorescence => {
                     grid.attach(&fluorescence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
-                    grid.attach(&fluorescence_entry.pwo(), 1, row, 1, 1);
+                    grid.attach(fluorescence_entry.pwo(), 1, row, 1, 1);
                 }
                 CharacteristicType::Metallicness => {
                     grid.attach(&metallicness_entry.prompt(gtk::Align::End), 0, row, 1, 1);
-                    grid.attach(&metallicness_entry.pwo(), 1, row, 1, 1);
+                    grid.attach(metallicness_entry.pwo(), 1, row, 1, 1);
                 }
             };
             row += 1;
@@ -137,7 +137,7 @@ impl BasicPaintSpecEditor {
             .attributes(attributes)
             .extra_buttons(&[add_btn.clone(), accept_btn.clone(), reset_btn.clone()])
             .build();
-        vbox.pack_start(&colour_editor.pwo(), true, true, 0);
+        vbox.pack_start(colour_editor.pwo(), true, true, 0);
         let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
             WidgetStatesControlled::Sensitivity,
             None,

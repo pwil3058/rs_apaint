@@ -43,7 +43,7 @@ fn main() {
     let win = gtk::Window::new(gtk::WindowType::Toplevel);
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     vbox.pack_start(
-        &BasicPaintFactoryBuilder::new()
+        BasicPaintFactoryBuilder::new()
             .attributes(&[
                 ScalarAttribute::Value,
                 ScalarAttribute::Greyness,
@@ -74,7 +74,7 @@ fn main() {
             CharacteristicType::Metallicness,
         ])
         .build();
-    vbox.pack_start(&mixer.pwo(), false, false, 0);
+    vbox.pack_start(mixer.pwo(), false, false, 0);
     // TODO: why do paint and target have different values?
     let mut paint_spec = BasicPaintSpec::new(&RGB::<f64>::from([0.1, 0.3, 0.8]), "id");
     paint_spec.name = "name".to_string();
@@ -96,7 +96,7 @@ fn main() {
     #[cfg(feature = "targeted_mixtures")]
     builder.target_colour(Some(&RGB::<f64>::from([0.6, 0.1, 0.7])));
     let display = builder.build(&Rc::new(paint));
-    vbox.pack_start(&display.pwo(), true, true, 0);
+    vbox.pack_start(display.pwo(), true, true, 0);
     vbox.show_all();
     win.add(&vbox);
     win.connect_destroy(|_| gtk::main_quit());

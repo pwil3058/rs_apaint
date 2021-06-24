@@ -138,7 +138,7 @@ impl MixtureDisplayBuilder {
             vbox.pack_start(&label, true, true, 0);
         }
 
-        vbox.pack_start(&cads.pwo(), true, true, 0);
+        vbox.pack_start(cads.pwo(), true, true, 0);
 
         for characteristic_type in self.characteristics.iter() {
             let value = mixture.characteristic(*characteristic_type).full();
@@ -148,7 +148,7 @@ impl MixtureDisplayBuilder {
         }
 
         let list_view = ListViewWithPopUpMenuBuilder::new().build(&self.list_spec);
-        vbox.pack_start(&list_view.pwo(), false, false, 0);
+        vbox.pack_start(list_view.pwo(), false, false, 0);
         for (paint, parts) in mixture.components() {
             let mut row = paint.row(&self.attributes, &self.characteristics);
             let value: glib::Value = (*parts as u64).to_value();
@@ -206,7 +206,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
             let display = self.mixture_display_builder.build(mixture);
             dialog
                 .get_content_area()
-                .pack_start(&display.pwo(), true, true, 0);
+                .pack_start(display.pwo(), true, true, 0);
             let pdd = MixtureDisplayDialog { dialog, display };
             self.dialogs.insert(Rc::clone(mixture), pdd);
         };
