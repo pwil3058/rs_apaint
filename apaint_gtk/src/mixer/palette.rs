@@ -401,7 +401,7 @@ impl PalettePaintMixer {
         }
         dialog
             .get_content_area()
-            .pack_start(&tpe.pwo(), true, true, 0);
+            .pack_start(tpe.pwo(), true, true, 0);
         if dialog.run() == gtk::ResponseType::Ok {
             let rgb = tpe.rgb();
             let name = tpe.name();
@@ -699,11 +699,11 @@ impl PalettePaintMixerBuilder {
         {
             let persistent_window_btn = PersistentWindowButtonBuilder::new()
                 .icon(&icons::paint_standard::sized_image_or(24))
-                .window_child(&paint_standards_manager.pwo())
+                .window_child(paint_standards_manager.pwo())
                 .window_title("Paint Standards Manager")
                 .window_geometry(Some("paint_standards_manager"), (300, 200))
                 .build();
-            button_box.pack_start(&persistent_window_btn.pwo(), false, false, 0);
+            button_box.pack_start(persistent_window_btn.pwo(), false, false, 0);
         }
 
         button_box.pack_start(file_manager.pwo(), true, true, 0);
@@ -985,7 +985,7 @@ impl TargetPaintEntry {
         hbox.pack_start(&gtk::Label::new(Some("Notes:")), false, false, 0);
         hbox.pack_start(&notes_entry, true, true, 0);
         vbox.pack_start(&hbox, false, false, 0);
-        vbox.pack_start(&colour_editor.pwo(), true, true, 0);
+        vbox.pack_start(colour_editor.pwo(), true, true, 0);
         vbox.show_all();
         Self {
             vbox,
