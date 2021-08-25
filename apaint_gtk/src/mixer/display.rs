@@ -171,6 +171,7 @@ impl MixtureDisplayBuilder {
 
 struct MixtureDisplayDialog {
     pub dialog: gtk::Dialog,
+    #[cfg(feature = "targeted_mixtures")]
     pub display: MixtureDisplay,
 }
 
@@ -207,7 +208,11 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
             dialog
                 .get_content_area()
                 .pack_start(display.pwo(), true, true, 0);
-            let pdd = MixtureDisplayDialog { dialog, display };
+            let pdd = MixtureDisplayDialog {
+                dialog,
+                #[cfg(feature = "targeted_mixtures")]
+                display,
+            };
             self.dialogs.insert(Rc::clone(mixture), pdd);
         };
         let pdd = self.dialogs.get(mixture).expect("we just put it there");
