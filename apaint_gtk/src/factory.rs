@@ -88,7 +88,7 @@ impl BasicPaintFactory {
     }
 
     fn remove_paint(&self, id: &str) {
-        let question = format!("Confirm remove '{}'?", id);
+        let question = format!("Confirm remove '{id}'?");
         if self.ask_confirm_action(&question, None) {
             self.do_remove_paint_work(id).expect("should be successful");
             self.paint_editor.un_edit(id);
@@ -161,16 +161,16 @@ impl BasicPaintFactory {
 
     fn load<Q: AsRef<Path>>(&self, path: Q) -> apaint::Result<Vec<u8>> {
         let path: &Path = path.as_ref();
-        let mut file = File::open(&path)?;
+        let mut file = File::open(path)?;
         let new_series = match SeriesPaintSeriesSpec::read(&mut file) {
             Ok(series) => series,
             Err(_) => {
-                let mut file = File::open(&path)?;
+                let mut file = File::open(path)?;
                 match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
                     Ok(series) => series,
                     Err(err) => match &err {
                         apaint::Error::SerdeJsonError(_) => {
-                            let mut file = File::open(&path)?;
+                            let mut file = File::open(path)?;
                             if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
                                 series
                             } else {
