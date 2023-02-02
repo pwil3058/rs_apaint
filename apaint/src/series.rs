@@ -23,7 +23,7 @@ use crate::{
 };
 use std::cmp::Ordering;
 
-#[derive(Debug, Colour, BasicPaint, Eq, Ord)]
+#[derive(Debug, Colour, BasicPaint, Eq)]
 pub struct SeriesPaint {
     colour: HCV,
     id: String,
@@ -78,6 +78,12 @@ impl PartialOrd for SeriesPaint {
             Ordering::Greater => Some(Ordering::Greater),
             Ordering::Equal => Some(self.series_id.cmp(&other.series_id)),
         }
+    }
+}
+
+impl Ord for SeriesPaint {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).expect("shouldn't get None")
     }
 }
 
@@ -344,7 +350,7 @@ impl SeriesPaintSeriesSpec {
     }
 }
 
-impl<'de> SeriesPaintSeriesSpec {
+impl SeriesPaintSeriesSpec {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
         reader.read_to_string(&mut string)?;
@@ -353,7 +359,7 @@ impl<'de> SeriesPaintSeriesSpec {
     }
 }
 
-impl<'de> SeriesPaintSeriesSpec {
+impl SeriesPaintSeriesSpec {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<Vec<u8>, crate::Error> {
         let mut hasher = Hasher::new(Algorithm::SHA256);
         let json_text = serde_json::to_string_pretty(self)?;
