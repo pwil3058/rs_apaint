@@ -181,19 +181,10 @@ impl Ord for Mixture {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MixingSession {
     notes: String,
     mixtures: Vec<Rc<Mixture>>,
-}
-
-impl Default for MixingSession {
-    fn default() -> Self {
-        Self {
-            notes: String::new(),
-            mixtures: vec![],
-        }
-    }
 }
 
 impl MixingSession {
@@ -356,11 +347,11 @@ impl MixtureBuilder {
         let mut gcd: u64 = 0;
         for (_, parts) in self.series_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(*parts as u64);
+            gcd = gcd.gcd(*parts);
         }
         for (_, parts) in self.mixture_components.iter() {
             debug_assert!(*parts > 0);
-            gcd = gcd.gcd(*parts as u64);
+            gcd = gcd.gcd(*parts);
         }
         debug_assert!(gcd > 0);
         let mut components = vec![];
@@ -378,7 +369,7 @@ impl MixtureBuilder {
             permanence_mix.add(paint.permanence(), adjusted_parts);
             fluorescence_mix.add(paint.fluorescence(), adjusted_parts);
             metallicness_mix.add(paint.metallicness(), adjusted_parts);
-            components.push((Paint::Series(Rc::clone(paint)), adjusted_parts as u64));
+            components.push((Paint::Series(Rc::clone(paint)), adjusted_parts));
         }
         for (paint, parts) in self.mixture_components.iter() {
             let adjusted_parts = *parts / gcd;
@@ -388,7 +379,7 @@ impl MixtureBuilder {
             permanence_mix.add_value(paint.permanence, adjusted_parts);
             fluorescence_mix.add_value(paint.fluorescence, adjusted_parts);
             metallicness_mix.add_value(paint.metallicness, adjusted_parts);
-            components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts as u64));
+            components.push((Paint::Mixed(Rc::clone(paint)), adjusted_parts));
         }
         let mp = Mixture {
             colour: colour_mix.mixed_colour().unwrap(),
@@ -711,7 +702,7 @@ impl SaveableMixingSession {
     }
 }
 
-impl<'de> SaveableMixingSession {
+impl SaveableMixingSession {
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, crate::Error> {
         let mut string = String::new();
         reader.read_to_string(&mut string)?;
