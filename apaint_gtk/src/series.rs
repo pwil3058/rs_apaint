@@ -471,7 +471,7 @@ pub struct PaintSeriesManager {
 impl PaintSeriesManager {
     fn load_series_from_file(&self) -> Result<(), crate::Error> {
         let last_file = recall("PaintSeriesManager::last_loaded_file");
-        let last_file = last_file.as_ref().map(|text| text.as_str());
+        let last_file = last_file.as_deref();
         if let Some(path) = self.ask_file_path(Some("Collection File Name:"), last_file, true) {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
             self.binder.add_series_from_file(&abs_path)?;
@@ -640,7 +640,7 @@ pub struct PaintStandardsManager {
 impl PaintStandardsManager {
     fn load_series_from_file(&self) -> Result<(), crate::Error> {
         let last_file = recall("PaintStandardsManager::last_loaded_file");
-        let last_file = last_file.as_ref().map(|text| text.as_str());
+        let last_file = last_file.as_deref();
         if let Some(path) = self.ask_file_path(Some("Paint Standard's File Name:"), last_file, true)
         {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
