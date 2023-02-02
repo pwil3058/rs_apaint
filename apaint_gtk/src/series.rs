@@ -232,7 +232,7 @@ impl SeriesBinder {
         });
 
         for path_buf in &binder.read_loaded_file_paths() {
-            if let Err(err) = binder.add_series_from_file(&path_buf) {
+            if let Err(err) = binder.add_series_from_file(path_buf) {
                 binder.report_error("Error preloading:", &err);
             }
         }
@@ -304,9 +304,9 @@ impl SeriesBinder {
     }
 
     fn remove_series(&self, series_id: &Rc<SeriesId>) {
-        let question = format!("Confirm remove '{}'?", series_id);
+        let question = format!("Confirm remove '{series_id}'?");
         if self.ask_confirm_action(&question, None) {
-            if let Ok(index) = self.binary_search_series_id(&series_id) {
+            if let Ok(index) = self.binary_search_series_id(series_id) {
                 self.remove_series_at_index(index)
             } else {
                 panic!("attempt to remove non existent series")
@@ -317,7 +317,7 @@ impl SeriesBinder {
     fn read_loaded_file_paths(&self) -> Vec<PathBuf> {
         if let Some(loaded_files_data_path) = &self.loaded_files_data_path {
             if loaded_files_data_path.exists() {
-                let mut file = File::open(&loaded_files_data_path).expect("unrecoverable");
+                let mut file = File::open(loaded_files_data_path).expect("unrecoverable");
                 let mut string = String::new();
                 file.read_to_string(&mut string).expect("unrecoverable");
                 return string.lines().map(PathBuf::from).collect();
@@ -330,7 +330,7 @@ impl SeriesBinder {
         if let Some(loaded_files_data_path) = &self.loaded_files_data_path {
             let mut string = String::new();
             for (_, path_buf) in self.pages.borrow().iter() {
-                string += (pw_pathux::path_to_string(&path_buf) + "\n").as_str();
+                string += (pw_pathux::path_to_string(path_buf) + "\n").as_str();
             }
             let mut file = File::create(loaded_files_data_path).expect("unrecoverable");
             file.write_all(&string.into_bytes()).expect("unrecoverable");
@@ -345,7 +345,7 @@ trait RcSeriesBinder {
 
 impl RcSeriesBinder for Rc<SeriesBinder> {
     fn add_series(&self, new_series: SeriesPaintSeries, path: &Path) -> Result<(), crate::Error> {
-        match self.binary_search_series_id(&new_series.series_id()) {
+        match self.binary_search_series_id(new_series.series_id()) {
             Ok(_) => Err(crate::Error::GeneralError(format!(
                 "{}: Series already in binder",
                 &new_series.series_id()
@@ -361,7 +361,7 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     new_series.series_id().series_name(),
                     new_series.series_id().proprietor(),
                 );
-                let label = TabRemoveLabel::create(Some(l_text.as_str()), Some(&tt_text.as_str()));
+                let label = TabRemoveLabel::create(Some(l_text.as_str()), Some(tt_text.as_str()));
                 let self_c = Rc::clone(self);
                 let sid = new_series.series_id().clone();
                 label.connect_remove_page(move || self_c.remove_series(&sid));
@@ -406,12 +406,12 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
         let new_series_spec = match SeriesPaintSeriesSpec::read(&mut file) {
             Ok(spec) => spec,
             Err(_) => {
-                let mut file = File::open(&path)?;
+                let mut file = File::open(path)?;
                 match SeriesPaintSeriesSpec00::<f64>::read(&mut file) {
                     Ok(spec) => spec,
                     Err(err) => match &err {
                         apaint::Error::SerdeJsonError(_) => {
-                            let mut file = File::open(&path)?;
+                            let mut file = File::open(path)?;
                             if let Ok(series) = read_legacy_paint_series_spec(&mut file) {
                                 series
                             } else {
@@ -471,11 +471,7 @@ pub struct PaintSeriesManager {
 impl PaintSeriesManager {
     fn load_series_from_file(&self) -> Result<(), crate::Error> {
         let last_file = recall("PaintSeriesManager::last_loaded_file");
-        let last_file = if let Some(ref text) = last_file {
-            Some(text.as_str())
-        } else {
-            None
-        };
+        let last_file = last_file.as_ref().map(|text| text.as_str());
         if let Some(path) = self.ask_file_path(Some("Collection File Name:"), last_file, true) {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
             self.binder.add_series_from_file(&abs_path)?;
@@ -644,11 +640,7 @@ pub struct PaintStandardsManager {
 impl PaintStandardsManager {
     fn load_series_from_file(&self) -> Result<(), crate::Error> {
         let last_file = recall("PaintStandardsManager::last_loaded_file");
-        let last_file = if let Some(ref text) = last_file {
-            Some(text.as_str())
-        } else {
-            None
-        };
+        let last_file = last_file.as_ref().map(|text| text.as_str());
         if let Some(path) = self.ask_file_path(Some("Paint Standard's File Name:"), last_file, true)
         {
             let abs_path = pw_pathux::expand_home_dir_or_mine(&path).canonicalize()?;
