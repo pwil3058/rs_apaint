@@ -134,7 +134,7 @@ impl ListViewSpec for BasicPaintListViewSpec {
 
         for characteristic in self.characteristics.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
-                .title(&characteristic.list_header_name())
+                .title(characteristic.list_header_name())
                 .sort_column_id(index)
                 .sort_indicator(true)
                 .build();
@@ -172,8 +172,8 @@ pub trait PaintListRow: BasicPaintIfce {
             self.id().to_value(),
             self.hcv().pango_string().to_value(),
             self.best_foreground().pango_string().to_value(),
-            self.name().or(Some("")).unwrap().to_value(),
-            self.notes().or(Some("")).unwrap().to_value(),
+            self.name().unwrap_or("").to_value(),
+            self.notes().unwrap_or("").to_value(),
             hcv_bg.pango_string().to_value(),
             ha.to_value(),
         ];
@@ -222,8 +222,8 @@ impl PaintListRow for Mixture {
             self.id().to_value(),
             self.hcv().pango_string().to_value(),
             self.best_foreground().pango_string().to_value(),
-            self.name().or(Some("")).unwrap().to_value(),
-            self.notes().or(Some("")).unwrap().to_value(),
+            self.name().unwrap_or("").to_value(),
+            self.notes().unwrap_or("").to_value(),
             hcv_bg.pango_string().to_value(),
             ha.to_value(),
         ];
