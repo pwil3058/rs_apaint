@@ -4,8 +4,6 @@ extern crate serde_derive;
 
 use std::{error, fmt, io, result};
 
-use serde_json;
-
 pub mod characteristics;
 pub mod legacy;
 pub mod mixtures;
@@ -71,8 +69,8 @@ pub enum Error {
     IOError(io::Error),
     SerdeJsonError(serde_json::Error),
     NotFound(String),
-    UnknownSeries(crate::series::SeriesId),
-    UnknownSeriesPaint(crate::series::SeriesId, String),
+    UnknownSeries(series::SeriesId),
+    UnknownSeriesPaint(series::SeriesId, String),
     NotAValidLegacySpec,
     NotImplemented,
 }
@@ -80,12 +78,12 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::IOError(err) => write!(f, "IOError: {}", err),
-            Error::SerdeJsonError(err) => write!(f, "Serde Json Error: {}", err),
-            Error::NotFound(string) => write!(f, "{}: Not found.", string),
-            Error::UnknownSeries(series_id) => write!(f, "{}: unknown paint series", series_id),
+            Error::IOError(err) => write!(f, "IOError: {err}"),
+            Error::SerdeJsonError(err) => write!(f, "Serde Json Error: {err}"),
+            Error::NotFound(string) => write!(f, "{string}: Not found."),
+            Error::UnknownSeries(series_id) => write!(f, "{series_id}: unknown paint series"),
             Error::UnknownSeriesPaint(series_id, id) => {
-                write!(f, "{}:({}): unknown paint", id, series_id)
+                write!(f, "{id}:({series_id}): unknown paint")
             }
             Error::NotAValidLegacySpec => write!(f, "Not a valid specification."),
             Error::NotImplemented => write!(f, "Feature not yet implemented."),
