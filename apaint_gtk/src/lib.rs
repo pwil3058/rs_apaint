@@ -99,7 +99,7 @@ pub mod colour {
     pub use colour_math_gtk::{colour::*, coloured::*};
 
     pub trait PartsColour:
-        colour_math::ColourIfce + apaint::TooltipText + apaint::LabelText + std::cmp::Ord + 'static
+        colour_math::ColourIfce + apaint::TooltipText + apaint::LabelText + Ord + 'static
     {
     }
 
@@ -202,7 +202,7 @@ pub mod window {
 
             pwb.window.connect_delete_event(|w, _| {
                 w.hide_on_delete();
-                gtk::Inhibit(true)
+                Inhibit(true)
             });
 
             let pwb_c = Rc::clone(&pwb);
@@ -211,7 +211,7 @@ pub mod window {
                 pwb_c
                     .is_iconified
                     .set(state.contains(gdk::WindowState::ICONIFIED));
-                gtk::Inhibit(false)
+                Inhibit(false)
             });
 
             let pwb_c = Rc::clone(&pwb);
@@ -240,10 +240,10 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::APaintError(err) => write!(f, "Error: {}.", err),
-            Error::IOError(err) => write!(f, "Error: {}.", err),
-            Error::DuplicateFile(string) => write!(f, "Error: {}.", string),
-            Error::GeneralError(string) => write!(f, "Error: {}.", string),
+            Error::APaintError(err) => write!(f, "Error: {err}."),
+            Error::IOError(err) => write!(f, "Error: {err}."),
+            Error::DuplicateFile(string) => write!(f, "Error: {string}."),
+            Error::GeneralError(string) => write!(f, "Error: {string}."),
         }
     }
 }
