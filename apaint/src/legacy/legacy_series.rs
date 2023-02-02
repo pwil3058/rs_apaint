@@ -63,7 +63,7 @@ where
 
 impl<F: LightLevel> From<SeriesPaintSeriesSpec00<F>> for SeriesPaintSeriesSpec {
     fn from(spec: SeriesPaintSeriesSpec00<F>) -> Self {
-        let series_id: SeriesId = SeriesId::from(spec.series_id.clone());
+        let series_id: SeriesId = spec.series_id.clone();
         let mut paint_list: Vec<BasicPaintSpec> = vec![];
         for paint in &spec.paint_list {
             paint_list.push(paint.into());
@@ -75,7 +75,7 @@ impl<F: LightLevel> From<SeriesPaintSeriesSpec00<F>> for SeriesPaintSeriesSpec {
     }
 }
 
-impl<'de, F> SeriesPaintSeriesSpec00<F>
+impl<F> SeriesPaintSeriesSpec00<F>
 where
     F: LightLevel + DeserializeOwned,
 {
@@ -118,7 +118,7 @@ mod test {
         }
     }
 
-    impl<F> std::default::Default for SeriesPaintSeriesSpec00<F>
+    impl<F> Default for SeriesPaintSeriesSpec00<F>
     where
         F: LightLevel,
     {
