@@ -141,7 +141,7 @@ impl PaintDisplayBuilder {
 
         for characteristic_type in self.characteristics.iter() {
             let value = paint.characteristic(*characteristic_type).full();
-            let label = gtk::LabelBuilder::new().label(&value).build();
+            let label = gtk::LabelBuilder::new().label(value).build();
             label.set_widget_colour(&hcv);
             vbox.pack_start(&label, false, false, 0);
         }
@@ -182,7 +182,7 @@ impl<W: TopGtkWindow> PaintDisplayDialogManager<W> {
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
             d.hide_on_delete();
-            gtk::Inhibit(true)
+            Inhibit(true)
         });
         dialog
     }

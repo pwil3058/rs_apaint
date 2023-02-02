@@ -142,7 +142,7 @@ impl MixtureDisplayBuilder {
 
         for characteristic_type in self.characteristics.iter() {
             let value = mixture.characteristic(*characteristic_type).full();
-            let label = gtk::LabelBuilder::new().label(&value).build();
+            let label = gtk::LabelBuilder::new().label(value).build();
             label.set_widget_colour(&colour);
             vbox.pack_start(&label, false, false, 0);
         }
@@ -151,7 +151,7 @@ impl MixtureDisplayBuilder {
         vbox.pack_start(list_view.pwo(), false, false, 0);
         for (paint, parts) in mixture.components() {
             let mut row = paint.row(&self.attributes, &self.characteristics);
-            let value: glib::Value = (*parts as u64).to_value();
+            let value: glib::Value = (*parts).to_value();
             row.insert(7, value);
             list_view.add_row(&row);
         }
@@ -196,7 +196,7 @@ impl<W: TopGtkWindow> MixtureDisplayDialogManager<W> {
         // TODO: think about removal from map as an optional action to hiding
         dialog.connect_delete_event(|d, _| {
             d.hide_on_delete();
-            gtk::Inhibit(true)
+            Inhibit(true)
         });
         dialog
     }
@@ -418,7 +418,7 @@ impl ListViewSpec for ComponentsListViewSpec {
 
         for characteristic in self.characteristics.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
-                .title(&characteristic.list_header_name())
+                .title(characteristic.list_header_name())
                 .sort_column_id(index)
                 .sort_indicator(true)
                 .build();
