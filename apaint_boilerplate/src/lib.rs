@@ -45,7 +45,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
     let mut value_tokens = vec![];
     let mut first: Option<Ident> = None;
     let mut default: Option<Ident> = None;
-    let fmt_str = format!("\"{{}}\": Malformed '{}' value string", name);
+    let fmt_str = format!("\"{{}}\": Malformed '{name}' value string");
     match parsed_input.data {
         Data::Enum(e) => {
             let mut count: u64 = 1;
