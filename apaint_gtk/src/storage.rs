@@ -178,11 +178,7 @@ impl StorageManager {
     fn load(&self) {
         if self.ok_to_reset() {
             let last_file = recall(&self.last_file_key);
-            let last_file = if let Some(ref text) = last_file {
-                Some(text.as_str())
-            } else {
-                None
-            };
+            let last_file = last_file.as_deref();
             if let Some(path) = self.ask_file_path(Some("Load from: "), last_file, false) {
                 match (self.load_callback.borrow().as_ref())(&path) {
                     Ok(digest) => {
@@ -206,7 +202,7 @@ impl StorageManager {
         if self.buttons.current_condns() & SAV_HAS_CURRENT_FILE != 0 {
             let temp = self.current_file_path.borrow();
             let path = temp.as_ref().expect("guarder");
-            match (self.save_callback.borrow().as_ref())(&path) {
+            match (self.save_callback.borrow().as_ref())(path) {
                 Ok(digest) => {
                     *self.current_file_digest.borrow_mut() = digest;
                     self.buttons.update_condns(MaskedCondns {
@@ -224,11 +220,7 @@ impl StorageManager {
 
     fn save_as(&self) {
         let last_file = recall(&self.last_file_key);
-        let last_file = if let Some(ref text) = last_file {
-            Some(text.as_str())
-        } else {
-            None
-        };
+        let last_file = last_file.as_deref();
         if let Some(path) = self.ask_file_path(Some("Save as: "), last_file, false) {
             match (self.save_callback.borrow().as_ref())(&path) {
                 Ok(digest) => {
@@ -279,7 +271,7 @@ impl StorageManagerBuilder {
             "save" => self.save_tooltip_text = text.to_string(),
             "save as" => self.save_as_tooltip_text = text.to_string(),
             "load" => self.load_tooltip_text = text.to_string(),
-            _ => panic!("{}: unknown button name", name),
+            _ => panic!("{name}: unknown button name"),
         };
         self
     }
