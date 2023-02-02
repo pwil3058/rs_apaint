@@ -167,11 +167,9 @@ pub fn image() -> gtk::Image {
 
 #[allow(dead_code)]
 pub fn sized_image(size: i32) -> Option<gtk::Image> {
-    if let Some(pixbuf) = pixbuf().scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear) {
-        Some(gtk::Image::from_pixbuf(Some(&pixbuf)))
-    } else {
-        None
-    }
+    pixbuf()
+        .scale_simple(size, size, gdk_pixbuf::InterpType::Bilinear)
+        .map(|pixbuf| gtk::Image::from_pixbuf(Some(&pixbuf)))
 }
 
 #[allow(dead_code)]
