@@ -7,7 +7,7 @@ use std::{
     rc::Rc,
 };
 
-use pw_gix::{
+use pw_gtk_ext::{
     cairo,
     gtk::{self, prelude::*},
     gtkx::{
@@ -15,8 +15,7 @@ use pw_gix::{
         paned::RememberPosition,
     },
     sav_state::{
-        ChangedCondnsNotifier, ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled,
-        SAV_HOVER_OK, SAV_NEXT_CONDN,
+        ChangedCondnsNotifier, MaskedCondns, WidgetStatesControlled, SAV_HOVER_OK, SAV_NEXT_CONDN,
     },
     wrapper::*,
 };
@@ -24,13 +23,13 @@ use pw_gix::{
 #[cfg(feature = "palette_samples")]
 use colour_math_cairo::Point;
 #[cfg(feature = "palette_samples")]
-use pw_gix::{
+use pw_gtk_ext::{
     gdk, gdk_pixbuf,
-    gtkx::menu_ng::{MenuItemSpec, WrappedMenu, WrappedMenuBuilder},
+    gtkx::menu::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},
 };
 
 use colour_math::{
-    beigui::hue_wheel::MakeColouredShape, mixing::SubtractiveMixer, ScalarAttribute, HCV,
+    hue_wheel::MakeColouredShape, mixing::SubtractiveMixer, RGBConstants, ScalarAttribute, HCV,
 };
 use colour_math_cairo::CairoSetColour;
 
@@ -44,6 +43,7 @@ use colour_math_gtk::{
     colour::GdkColour,
     hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
 };
+use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
 
 use apaint::{
     characteristics::CharacteristicType,
@@ -53,7 +53,6 @@ use apaint::{
 };
 
 use crate::{
-    colour::RGBConstants,
     icons,
     list::{BasicPaintListViewSpec, PaintListRow},
     mixer::{
@@ -74,6 +73,10 @@ use crate::series::{PaintStandardsManager, PaintStandardsManagerBuilder};
 use apaint::mixtures::Mixture;
 use apaint::series::SeriesPaintFinder;
 
+pub const IMAGE_AVAILABLE: u64 = SAV_NEXT_CONDN;
+pub const HAS_SAMPLES: u64 = SAV_NEXT_CONDN << 1;
+pub const MASK: u64 = IMAGE_AVAILABLE | HAS_SAMPLES;
+
 #[cfg(feature = "palette_samples")]
 struct Sample {
     pixbuf: gdk_pixbuf::Pixbuf,
@@ -83,7 +86,7 @@ struct Sample {
 #[cfg(feature = "palette_samples")]
 struct Samples {
     samples: RefCell<Vec<Sample>>,
-    popup_menu: WrappedMenu,
+    popup_menu: ManagedMenu,
     popup_menu_posn: Cell<Point>,
 }
 
@@ -92,7 +95,7 @@ impl Default for Samples {
     fn default() -> Self {
         Self {
             samples: RefCell::new(Vec::new()),
-            popup_menu: WrappedMenuBuilder::new().build(),
+            popup_menu: ManagedMenuBuilder::new().build(),
             popup_menu_posn: Cell::new((0.0, 0.0).into()),
         }
     }
@@ -165,7 +168,8 @@ impl PalettePaintEntry {
             let tpe_c = Rc::clone(&tpe);
             tpe.samples
                 .popup_menu
-                .append_item("paste", &menu_item_spec)
+                .append_item("paste", &menu_item_spec, IMAGE_AVAILABLE)
+                .expect("Duplicate menu item : paste")
                 .connect_activate(move |_| {
                     let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
                     if let Some(pixbuf) = cbd.wait_for_image() {
@@ -187,7 +191,8 @@ impl PalettePaintEntry {
             let tpe_c = Rc::clone(&tpe);
             tpe.samples
                 .popup_menu
-                .append_item("remove", &menu_item_spec)
+                .append_item("remove", &menu_item_spec, HAS_SAMPLES)
+                .expect("Duplicate menu item: remove")
                 .connect_activate(move |_| {
                     tpe_c.samples.samples.borrow_mut().clear();
                     tpe_c.drawing_area.queue_draw();
@@ -201,14 +206,18 @@ impl PalettePaintEntry {
                         let position = Point::from(event.get_position());
                         let n_samples = tpe_c.samples.samples.borrow().len();
                         let cbd = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+                        let mut condns = if cbd.wait_is_image_available() {
+                            IMAGE_AVAILABLE
+                        } else {
+                            0
+                        };
+                        if n_samples > 0 {
+                            condns += HAS_SAMPLES
+                        };
                         tpe_c
                             .samples
                             .popup_menu
-                            .set_sensitivities(cbd.wait_is_image_available(), &["paste"]);
-                        tpe_c
-                            .samples
-                            .popup_menu
-                            .set_sensitivities(n_samples > 0, &["remove"]);
+                            .update_condns(MaskedCondns { condns, mask: MASK });
                         tpe_c.samples.popup_menu_posn.set(position);
                         tpe_c.samples.popup_menu.popup_at_event(event);
                         return Inhibit(true);
@@ -318,7 +327,7 @@ pub struct PalettePaintMixer {
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
     #[cfg(feature = "mixtures_may_mix")]
     mixed_paint_spinner_box: Rc<PartsSpinButtonBox<Mixture>>,
-    change_notifier: Rc<ChangedCondnsNotifier>,
+    change_notifier: ChangedCondnsNotifier,
     paint_series_manager: Rc<PaintSeriesManager>,
     #[cfg(feature = "targeted_mixtures")]
     paint_standards_manager: Rc<PaintStandardsManager>,
@@ -717,22 +726,23 @@ impl PalettePaintMixerBuilder {
         paned.add2(mix_entry.pwo());
         paned.set_position_from_recollections("basic paint factory h paned position", 200);
         vbox.pack_start(&paned, true, true, 0);
-        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
-            WidgetStatesControlled::Sensitivity,
-            None,
-            Some(&change_notifier),
-        );
+        let buttons = ConditionalWidgetGroupsBuilder::new()
+            .widget_states_controlled(WidgetStatesControlled::Sensitivity)
+            .change_notifier(&change_notifier)
+            .build::<gtk::Button>();
         let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
 
         let new_mix_btn = gtk::ButtonBuilder::new()
             .label("New")
             .tooltip_text("Start mixing a new colour.")
             .build();
-        buttons.add_widget(
-            "new_mix",
-            &new_mix_btn,
-            PalettePaintMixer::SAV_NOT_HAS_TARGET,
-        );
+        buttons
+            .add_widget(
+                "new_mix",
+                &new_mix_btn,
+                PalettePaintMixer::SAV_NOT_HAS_TARGET,
+            )
+            .expect("Duplicate key or button: new_mis");
         button_box.pack_start(&new_mix_btn, true, true, 0);
 
         let accept_btn = gtk::ButtonBuilder::new()
@@ -740,19 +750,14 @@ impl PalettePaintMixerBuilder {
             .tooltip_text("Accept the current mixtures and add it to the list of mixtures.")
             .build();
         #[cfg(feature = "targeted_mixtures")]
-        buttons.add_widget(
-            "accept",
-            &accept_btn,
-            PalettePaintMixer::SAV_HAS_COLOUR
-                + PalettePaintMixer::SAV_HAS_TARGET
-                + PalettePaintMixer::SAV_HAS_NAME,
-        );
+        let condns = PalettePaintMixer::SAV_HAS_COLOUR
+            + PalettePaintMixer::SAV_HAS_TARGET
+            + PalettePaintMixer::SAV_HAS_NAME;
         #[cfg(not(feature = "targeted_mixtures"))]
-        buttons.add_widget(
-            "accept",
-            &accept_btn,
-            PalettePaintMixer::SAV_HAS_COLOUR + PalettePaintMixer::SAV_HAS_NAME,
-        );
+        let condns = PalettePaintMixer::SAV_HAS_COLOUR + PalettePaintMixer::SAV_HAS_NAME;
+        buttons
+            .add_widget("accept", &accept_btn, condns)
+            .expect("Duplicate key or button: accept");
         button_box.pack_start(&accept_btn, true, true, 0);
 
         let cancel_btn = gtk::ButtonBuilder::new()
@@ -760,27 +765,34 @@ impl PalettePaintMixerBuilder {
             .tooltip_text("Cancel the current mixtures.")
             .build();
         #[cfg(feature = "targeted_mixtures")]
-        buttons.add_widget("cancel", &cancel_btn, PalettePaintMixer::SAV_HAS_TARGET);
+        let condns = PalettePaintMixer::SAV_HAS_TARGET;
         #[cfg(not(feature = "targeted_mixtures"))]
-        buttons.add_widget("cancel", &cancel_btn, PalettePaintMixer::SAV_HAS_NAME);
+        let condns = PalettePaintMixer::SAV_HAS_NAME;
+        buttons
+            .add_widget("cancel", &cancel_btn, condns)
+            .expect("Duplicate key or button: Cancel");
         button_box.pack_start(&cancel_btn, true, true, 0);
 
         let simplify_btn = gtk::ButtonBuilder::new()
             .label("Simplify Parts")
             .tooltip_text("Simplify the parts currently allocated to paints.")
             .build();
-        buttons.add_widget("simplify", &simplify_btn, PalettePaintMixer::SAV_HAS_COLOUR);
+        buttons
+            .add_widget("simplify", &simplify_btn, PalettePaintMixer::SAV_HAS_COLOUR)
+            .expect("Duplicate key or button: simplify parts");
         button_box.pack_start(&simplify_btn, true, true, 0);
 
         let zero_parts_btn = gtk::ButtonBuilder::new()
             .label("Zero All Parts")
             .tooltip_text("Set the parts for all paints to zero.")
             .build();
-        buttons.add_widget(
-            "zero_parts",
-            &zero_parts_btn,
-            PalettePaintMixer::SAV_HAS_COLOUR,
-        );
+        buttons
+            .add_widget(
+                "zero_parts",
+                &zero_parts_btn,
+                PalettePaintMixer::SAV_HAS_COLOUR,
+            )
+            .expect("Duplicate key or button: zero_parts");
         button_box.pack_start(&zero_parts_btn, true, true, 0);
 
         vbox.pack_start(&button_box, false, false, 0);
@@ -812,7 +824,7 @@ impl PalettePaintMixerBuilder {
             paint_display_dialog_manager: RefCell::new(paint_display_dialog_manager),
         });
 
-        let change_notifier_c = Rc::clone(&tpm.change_notifier);
+        let change_notifier_c = tpm.change_notifier.clone();
         tpm.mix_entry.name_entry.connect_changed(move |entry| {
             let mut condns = MaskedCondns {
                 condns: 0,

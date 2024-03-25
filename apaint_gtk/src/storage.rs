@@ -6,18 +6,18 @@ use std::{
     rc::Rc,
 };
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, prelude::*},
     recollections::{recall, remember},
     sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
 };
 
-use crate::{
-    colour::{Colourable, RGBConstants},
-    icons,
-};
-use apaint::HCV;
+use colour_math::{RGBConstants, HCV};
+use colour_math_gtk::coloured::Colourable;
+use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
+
+use crate::icons;
 
 const SAV_HAS_CURRENT_FILE: u64 = SAV_NEXT_CONDN;
 const SAV_TOOL_NEEDS_SAVING: u64 = SAV_NEXT_CONDN << 1;
@@ -32,7 +32,7 @@ type ResetCallback = Box<dyn Fn() -> apaint::Result<Vec<u8>>>;
 #[derive(PWO, Wrapper)]
 pub struct StorageManager {
     hbox: gtk::Box,
-    buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
+    buttons: ConditionalWidgetGroups<gtk::Button>,
     file_name_label: gtk::Label,
     current_file_path: RefCell<Option<PathBuf>>,
     current_file_digest: RefCell<Vec<u8>>,
@@ -284,11 +284,9 @@ impl StorageManagerBuilder {
     pub fn build(self) -> Rc<StorageManager> {
         let storage_manager = Rc::new(StorageManager {
             hbox: gtk::Box::new(gtk::Orientation::Horizontal, 0),
-            buttons: ConditionalWidgetGroups::<gtk::Button>::new(
-                WidgetStatesControlled::Sensitivity,
-                None,
-                None,
-            ),
+            buttons: ConditionalWidgetGroupsBuilder::new()
+                .widget_states_controlled(WidgetStatesControlled::Sensitivity)
+                .build::<gtk::Button>(),
             file_name_label: gtk::LabelBuilder::new()
                 .justify(gtk::Justification::Left)
                 .xalign(0.01)
@@ -306,7 +304,10 @@ impl StorageManagerBuilder {
             .tooltip_text(&self.reset_tooltip_text)
             .image(&icons::colln_new::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
-        storage_manager.buttons.add_widget("reset", &button, 0);
+        storage_manager
+            .buttons
+            .add_widget("reset", &button, 0)
+            .expect("Duplicate key or button: reset");
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
         button.connect_clicked(move |_| sm_c.reset());
@@ -316,7 +317,10 @@ impl StorageManagerBuilder {
             .tooltip_text(&self.load_tooltip_text)
             .image(&icons::colln_load::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
-        storage_manager.buttons.add_widget("load", &button, 0);
+        storage_manager
+            .buttons
+            .add_widget("load", &button, 0)
+            .expect("Duplicate key or button: load");
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
         button.connect_clicked(move |_| sm_c.load());
@@ -328,7 +332,8 @@ impl StorageManagerBuilder {
             .build();
         storage_manager
             .buttons
-            .add_widget("save", &button, SAV_SESSION_IS_SAVEABLE);
+            .add_widget("save", &button, SAV_SESSION_IS_SAVEABLE)
+            .expect("Duplicate key or button: save");
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
         button.connect_clicked(move |_| sm_c.save());
@@ -338,11 +343,14 @@ impl StorageManagerBuilder {
             .tooltip_text(&self.save_as_tooltip_text)
             .image(&icons::colln_save_as::sized_image_or(BTN_IMAGE_SIZE).upcast::<gtk::Widget>())
             .build();
-        storage_manager.buttons.add_widget(
-            "save as",
-            &button,
-            SAV_SESSION_IS_SAVEABLE + SAV_HAS_CURRENT_FILE,
-        );
+        storage_manager
+            .buttons
+            .add_widget(
+                "save as",
+                &button,
+                SAV_SESSION_IS_SAVEABLE + SAV_HAS_CURRENT_FILE,
+            )
+            .expect("Duplicate key or button: save as");
         storage_manager.hbox.pack_start(&button, false, false, 0);
         let sm_c = Rc::clone(&storage_manager);
         button.connect_clicked(move |_| sm_c.save_as());
@@ -360,11 +368,14 @@ impl StorageManagerBuilder {
         let button = gtk::ButtonBuilder::new().sensitive(false).build();
         button.set_image(Some(&icons::up_to_date::sized_image_or(BTN_IMAGE_SIZE)));
         storage_manager.hbox.pack_start(&button, false, false, 1);
-        storage_manager.buttons.add_widget(
-            "status",
-            &button,
-            SAV_SESSION_IS_SAVEABLE + SAV_SESSION_NEEDS_SAVING,
-        );
+        storage_manager
+            .buttons
+            .add_widget(
+                "status",
+                &button,
+                SAV_SESSION_IS_SAVEABLE + SAV_SESSION_NEEDS_SAVING,
+            )
+            .expect("Duplicate key or button: status");
         let sm_c = Rc::clone(&storage_manager);
         button.connect_clicked(move |_| sm_c.save());
 

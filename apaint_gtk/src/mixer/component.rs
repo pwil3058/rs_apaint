@@ -7,22 +7,27 @@ use std::{
 
 use gcd::Gcd;
 
-use pw_gix::{
+use pw_gtk_ext::{
     gdk,
     gtk::{self, prelude::*, ContainerExt, WidgetExt},
-    gtkx::menu_ng::{MenuItemSpec, WrappedMenu, WrappedMenuBuilder},
+    gtkx::menu::{ManagedMenu, ManagedMenuBuilder, MenuItemSpec},
+    sav_state::{MaskedCondns, SAV_NEXT_CONDN},
     wrapper::*,
 };
 
-use crate::colour::{Colourable, LightLevel, PartsColour, HCV, RGB};
+use crate::colour::PartsColour;
+use colour_math::{LightLevel, HCV, RGB};
+use colour_math_gtk::coloured::Colourable;
 
 type RemoveCallback<P> = Box<dyn Fn(&Rc<P>)>;
+
+const HAS_NO_PARTS: u64 = SAV_NEXT_CONDN;
 
 #[derive(PWO)]
 pub struct PartsSpinButton<P: PartsColour> {
     event_box: gtk::EventBox,
     spin_button: gtk::SpinButton,
-    popup_menu: WrappedMenu,
+    popup_menu: ManagedMenu,
     paint: Rc<P>,
     changed_callbacks: RefCell<Vec<Box<dyn Fn() + 'static>>>,
     remove_me_callbacks: RefCell<Vec<RemoveCallback<P>>>,
@@ -52,7 +57,7 @@ impl<P: PartsColour> PartsSpinButton<P> {
         let psb = Rc::new(Self {
             event_box,
             spin_button,
-            popup_menu: WrappedMenuBuilder::new().build(),
+            popup_menu: ManagedMenuBuilder::new().build(),
             paint: Rc::clone(paint),
             changed_callbacks: RefCell::new(vec![]),
             remove_me_callbacks: RefCell::new(vec![]),
@@ -69,15 +74,24 @@ impl<P: PartsColour> PartsSpinButton<P> {
         ));
         let psb_c = Rc::clone(&psb);
         psb.popup_menu
-            .append_item("remove", &menu_item_spec)
+            .append_item("remove", &menu_item_spec, HAS_NO_PARTS)
+            .expect("Duplicate menu item: remove")
             .connect_activate(move |_| psb_c.inform_remove_me());
 
         let psb_c = Rc::clone(&psb);
         psb.event_box.connect_button_press_event(move |_, event| {
             if event.get_event_type() == gdk::EventType::ButtonPress && event.get_button() == 3 {
-                psb_c
-                    .popup_menu
-                    .set_sensitivities(psb_c.parts() == 0, &["remove"]);
+                if psb_c.parts() == 0 {
+                    psb_c.popup_menu.update_condns(MaskedCondns {
+                        condns: HAS_NO_PARTS,
+                        mask: HAS_NO_PARTS,
+                    });
+                } else {
+                    psb_c.popup_menu.update_condns(MaskedCondns {
+                        condns: 0,
+                        mask: HAS_NO_PARTS,
+                    });
+                }
                 psb_c.popup_menu.popup_at_event(event);
                 return Inhibit(true);
             };

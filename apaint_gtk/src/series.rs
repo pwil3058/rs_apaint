@@ -8,13 +8,12 @@ use std::{
     rc::Rc,
 };
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, prelude::*},
     gtkx::{
-        dialog::dialog_user::TopGtkWindow,
+        dialog_user::TopGtkWindow,
         list::{ListViewWithPopUpMenu, ListViewWithPopUpMenuBuilder},
-        menu_ng::MenuItemSpec,
-        notebook::{TabRemoveLabel, TabRemoveLabelInterface},
+        menu::MenuItemSpec,
         paned::RememberPosition,
     },
     recollections::{recall, remember},
@@ -22,8 +21,12 @@ use pw_gix::{
     wrapper::*,
 };
 
-use colour_math::beigui::hue_wheel::MakeColouredShape;
-use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
+use colour_math::{hue_wheel::MakeColouredShape, ScalarAttribute, HCV};
+use colour_math_gtk::{
+    colour::GdkColour,
+    hue_wheel::{GtkHueWheel, GtkHueWheelBuilder},
+};
+use pw_gtk_ext::gtkx::notebook::TabRemoveLabelBuilder;
 
 use apaint::{
     characteristics::CharacteristicType,
@@ -32,7 +35,6 @@ use apaint::{
 };
 
 use crate::{
-    colour::{GdkColour, ScalarAttribute, HCV},
     icons,
     list::{BasicPaintListViewSpec, PaintListRow},
 };
@@ -361,7 +363,10 @@ impl RcSeriesBinder for Rc<SeriesBinder> {
                     new_series.series_id().series_name(),
                     new_series.series_id().proprietor(),
                 );
-                let label = TabRemoveLabel::create(Some(l_text.as_str()), Some(tt_text.as_str()));
+                let label = TabRemoveLabelBuilder::new()
+                    .label_text(l_text.as_str())
+                    .tooltip_text(tt_text.as_str())
+                    .build();
                 let self_c = Rc::clone(self);
                 let sid = new_series.series_id().clone();
                 label.connect_remove_page(move || self_c.remove_series(&sid));
@@ -524,7 +529,7 @@ pub struct PaintSeriesManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     loaded_files_data_path: Option<PathBuf>,
-    change_notifier: Rc<ChangedCondnsNotifier>,
+    change_notifier: ChangedCondnsNotifier,
 }
 
 impl PaintSeriesManagerBuilder {
@@ -542,8 +547,8 @@ impl PaintSeriesManagerBuilder {
         self
     }
 
-    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
-        self.change_notifier = Rc::clone(change_notifier);
+    pub fn change_notifier(&mut self, change_notifier: &ChangedCondnsNotifier) -> &mut Self {
+        self.change_notifier = change_notifier.clone();
         self
     }
 
@@ -688,7 +693,7 @@ pub struct PaintStandardsManagerBuilder {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     loaded_files_data_path: Option<PathBuf>,
-    change_notifier: Rc<ChangedCondnsNotifier>,
+    change_notifier: ChangedCondnsNotifier,
 }
 
 impl PaintStandardsManagerBuilder {
@@ -707,8 +712,8 @@ impl PaintStandardsManagerBuilder {
         self
     }
 
-    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
-        self.change_notifier = Rc::clone(change_notifier);
+    pub fn change_notifier(&mut self, change_notifier: &ChangedCondnsNotifier) -> &mut Self {
+        self.change_notifier = change_notifier.clone();
         self
     }
 

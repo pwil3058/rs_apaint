@@ -77,7 +77,7 @@ pub static XPM: &[&str] = &[
     " ..........................................................     ",
 ];
 
-use pw_gix::{gdk_pixbuf, gtk};
+use pw_gtk_ext::{gdk_pixbuf, gtk};
 
 #[allow(dead_code)]
 pub fn pixbuf() -> gdk_pixbuf::Pixbuf {

@@ -12,7 +12,8 @@ use gcd::Gcd;
 use colour_math::{
     beigui::hue_wheel::{ColouredShape, MakeColouredShape, Shape},
     mixing::SubtractiveMixer,
-    Angle, Chroma, ColourBasics, Hue, LightLevel, Prop, HCV, RGB,
+    Angle, Chroma, ColourAttributes, ColourBasics, Greyness, Hue, LightLevel, Prop, Value, Warmth,
+    HCV, RGB,
 };
 
 use colour_math_derive::Colour;
@@ -23,7 +24,7 @@ use crate::{
         Finish, Fluorescence, FuzzyCharacteristic, Metallicness, Permanence, Transparency,
     },
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
-    BasicPaintIfce, ColourAttributes, Greyness, LabelText, TooltipText, Value, Warmth,
+    BasicPaintIfce, LabelText, TooltipText,
 };
 
 // TODO: make an untargeted version of TargetedMixture

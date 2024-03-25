@@ -7,11 +7,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+#pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+#pw_gtk_ext = { path = "../../rs_pw_gix/pw_gtk_ext" }
+pw_gtk_ext = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
 
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math = { path = "../../rs_colour_math/colour_math" }
 colour_math_derive = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math_derive = { path = "../../rs_colour_math/colour_math_derive" }
 
-apaint = { path = "../apaint" }
+[dependencies.apaint]
+path = "../apaint"
+#features = ["targeted_mixtures"]
+
 apaint_boilerplate = { path = "../apaint_boilerplate" }
-apaint_gtk = { path = "../apaint_gtk" }
+
+[dependencies.apaint_gtk]
+path = "../apaint_gtk"
+#features = ["targeted_mixtures", "palette_samples"]
+features = ["palette_samples"]

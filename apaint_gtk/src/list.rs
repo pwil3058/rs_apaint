@@ -1,6 +1,6 @@
 // Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
 
-use pw_gix::{
+use pw_gtk_ext::{
     glib,
     gtk::{self, prelude::*},
     gtkx::list::ListViewSpec,
@@ -13,7 +13,7 @@ use apaint::{
     BasicPaintIfce,
 };
 
-use crate::colour::{ScalarAttribute, HCV};
+use colour_math::{ScalarAttribute, HCV};
 
 pub struct BasicPaintListViewSpec {
     attributes: Vec<ScalarAttribute>,

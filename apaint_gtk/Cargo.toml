@@ -18,12 +18,17 @@ serde_derive = "1.0"
 
 gcd = "2.0.1"
 
-pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+#pw_gix = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+pw_gtk_ext = { git = "https://github.com/pwil3058/rs_pw_gix.git" }
+#pw_gtk_ext = { path = "../../rs_pw_gix/pw_gtk_ext" }
 num_traits_plus = { git = "https://github.com/pwil3058/rs_num_traits_plus.git" }
 pw_pathux = { git = "https://github.com/pwil3058/rs_pw_pathux.git" }
 
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math = { path = "../../rs_colour_math/colour_math" }
 colour_math_cairo = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math_cairo = { path = "../../rs_colour_math/colour_math_cairo" }
 colour_math_gtk = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math_gtk = { path = "../../rs_colour_math/colour_math_gtk" }
 
 apaint = { path = "../apaint" }

@@ -5,11 +5,11 @@ use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, prelude::*},
     gtkx::{
         list::{ListViewWithPopUpMenu, ListViewWithPopUpMenuBuilder},
-        menu_ng::MenuItemSpec,
+        menu::MenuItemSpec,
         paned::RememberPosition,
     },
     sav_state::SAV_HOVER_OK,

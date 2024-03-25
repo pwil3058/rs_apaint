@@ -13,7 +13,7 @@ pub mod storage;
 pub mod characteristics {
     use std::{cell::RefCell, rc::Rc};
 
-    use pw_gix::{
+    use pw_gtk_ext::{
         gtk,
         gtk::{ComboBoxExt, ComboBoxTextExt},
         wrapper::*,
@@ -113,7 +113,7 @@ pub mod colour {
 pub mod window {
     use std::{cell::Cell, rc::Rc};
 
-    use pw_gix::{
+    use pw_gtk_ext::{
         gdk, gdk_pixbuf,
         gtk::{self, prelude::*},
         gtkx::window::RememberGeometry,
