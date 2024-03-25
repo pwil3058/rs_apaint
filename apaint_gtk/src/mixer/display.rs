@@ -2,28 +2,26 @@
 
 use std::{collections::BTreeMap, rc::Rc};
 
-use pw_gix::{
+use pw_gtk_ext::{
     glib,
     gtk::{self, prelude::*},
     gtkx::{
-        dialog::dialog_user::TopGtkWindow,
+        dialog_user::TopGtkWindow,
         list::{ListViewSpec, ListViewWithPopUpMenuBuilder},
     },
     wrapper::*,
 };
 
-use colour_math::{ColourBasics, ScalarAttribute};
+use colour_math::{ColourBasics, ScalarAttribute, HCV};
 use colour_math_gtk::attributes::ColourAttributeDisplayStackBuilder;
+use colour_math_gtk::coloured::Colourable;
 
 #[cfg(feature = "targeted_mixtures")]
 use colour_math_gtk::{attributes::ColourAttributeDisplayStack, colour::*};
 
 use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
 
-use crate::{
-    colour::{Colourable, HCV},
-    list::PaintListRow,
-};
+use crate::list::PaintListRow;
 
 #[derive(PWO)]
 pub struct MixtureDisplay {

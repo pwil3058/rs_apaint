@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, BoxExt, ContainerExt, WidgetExt},
     recollections,
     wrapper::*,
@@ -10,12 +10,13 @@ use pw_gix::{
 
 use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
 
+use colour_math::{LightLevel, ScalarAttribute, HCV, RGB};
 use colour_math_derive::Colour;
 
 use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
+use apaint_gtk::factory::BasicPaintFactoryBuilder;
 use apaint_gtk::mixer::palette::PalettePaintMixerBuilder;
 use apaint_gtk::series::display::PaintDisplayBuilder;
-use apaint_gtk::{colour::*, factory::BasicPaintFactoryBuilder};
 
 #[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 struct Dummy {

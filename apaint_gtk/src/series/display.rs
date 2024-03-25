@@ -2,21 +2,22 @@
 
 use std::{collections::BTreeMap, rc::Rc};
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, prelude::*},
-    gtkx::dialog::dialog_user::TopGtkWindow,
+    gtkx::dialog_user::TopGtkWindow,
     sav_state::{ChangedCondnsNotifier, ConditionalWidgetsBuilder},
     wrapper::*,
 };
 
-use colour_math::{ColourBasics, ScalarAttribute};
+use colour_math::{ColourBasics, ScalarAttribute, HCV};
 #[cfg(feature = "targeted_mixtures")]
 use colour_math_gtk::attributes::ColourAttributeDisplayStack;
 use colour_math_gtk::attributes::ColourAttributeDisplayStackBuilder;
+use colour_math_gtk::colour::GdkColour;
+use colour_math_gtk::coloured::Colourable;
 
 use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
 
-use crate::colour::{Colourable, GdkColour, HCV};
 use crate::series::PaintActionCallback;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -234,7 +235,9 @@ impl<W: TopGtkWindow + 'static> DisplayPaint for Rc<PaintDisplayDialogManager<W>
             for (response, label, tooltip_text, condns) in self.buttons.iter() {
                 let button = dialog.add_button(label, gtk::ResponseType::Other(*response));
                 button.set_tooltip_text(*tooltip_text);
-                managed_buttons.add_widget(*response, &button, *condns);
+                managed_buttons
+                    .add_widget(*response, &button, *condns)
+                    .expect(&std::format!("Duplicate key or button: {label:?}"));
             }
             dialog
                 .get_content_area()
@@ -264,12 +267,12 @@ pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     attributes: Vec<ScalarAttribute>,
     characteristics: Vec<CharacteristicType>,
     target_colour: Option<HCV>,
-    change_notifier: Rc<ChangedCondnsNotifier>,
+    change_notifier: ChangedCondnsNotifier,
 }
 
 impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
     pub fn new(caller: &W) -> Self {
-        let change_notifier = Rc::new(ChangedCondnsNotifier::default());
+        let change_notifier = ChangedCondnsNotifier::default();
         Self {
             caller: caller.clone(),
             buttons: vec![],
@@ -298,8 +301,8 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn change_notifier(&mut self, change_notifier: &Rc<ChangedCondnsNotifier>) -> &mut Self {
-        self.change_notifier = Rc::clone(change_notifier);
+    pub fn change_notifier(&mut self, change_notifier: &ChangedCondnsNotifier) -> &mut Self {
+        self.change_notifier = change_notifier.clone();
         self
     }
 

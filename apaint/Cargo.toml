@@ -21,8 +21,9 @@ lazy_static = "1.4.*"
 num-traits = "0.2.*"
 regex = "1.9.*"
 
-apaint_boilerplate = { path = "../apaint_boilerplate"}
+apaint_boilerplate = { path = "../apaint_boilerplate" }
 
 colour_math_derive = { git = "https://github.com/pwil3058/rs_colour_math.git" }
 colour_math = { git = "https://github.com/pwil3058/rs_colour_math.git" }
+#colour_math = { path = "../../rs_colour_math/colour_math" }
 num_traits_plus = { git = "https://github.com/pwil3058/rs_num_traits_plus.git" }

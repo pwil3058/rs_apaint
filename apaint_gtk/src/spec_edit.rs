@@ -3,7 +3,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use pw_gix::{
+use pw_gtk_ext::{
     gtk::{self, prelude::*},
     sav_state::{ConditionalWidgetGroups, MaskedCondns, WidgetStatesControlled, SAV_NEXT_CONDN},
     wrapper::*,
@@ -12,6 +12,7 @@ use pw_gix::{
 use colour_math::ScalarAttribute;
 
 use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
+use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
 
 use apaint::series::BasicPaintSpec;
 
@@ -36,7 +37,7 @@ pub struct BasicPaintSpecEditor {
     permanence_entry: Rc<PermanenceEntry>,
     fluorescence_entry: Rc<FluorescenceEntry>,
     metallicness_entry: Rc<MetallicnessEntry>,
-    buttons: Rc<ConditionalWidgetGroups<gtk::Button>>,
+    buttons: ConditionalWidgetGroups<gtk::Button>,
     current_spec: RefCell<Option<BasicPaintSpec>>,
     add_callbacks: RefCell<Vec<AddCallback>>,
     accept_callbacks: RefCell<Vec<AcceptCallback>>,
@@ -138,18 +139,22 @@ impl BasicPaintSpecEditor {
             .extra_buttons(&[add_btn.clone(), accept_btn.clone(), reset_btn.clone()])
             .build();
         vbox.pack_start(colour_editor.pwo(), true, true, 0);
-        let buttons = ConditionalWidgetGroups::<gtk::Button>::new(
-            WidgetStatesControlled::Sensitivity,
-            None,
-            None,
-        );
-        buttons.add_widget("add", &add_btn, Self::SAV_ID_READY + Self::SAV_NOT_EDITING);
-        buttons.add_widget(
-            "accept",
-            &accept_btn,
-            Self::SAV_ID_READY + Self::SAV_HAS_CHANGES + Self::SAV_EDITING,
-        );
-        buttons.add_widget("reset", &reset_btn, 0);
+        let buttons = ConditionalWidgetGroupsBuilder::new()
+            .widget_states_controlled(WidgetStatesControlled::Sensitivity)
+            .build::<gtk::Button>();
+        buttons
+            .add_widget("add", &add_btn, Self::SAV_ID_READY + Self::SAV_NOT_EDITING)
+            .expect("Duplicate key or button: add");
+        buttons
+            .add_widget(
+                "accept",
+                &accept_btn,
+                Self::SAV_ID_READY + Self::SAV_HAS_CHANGES + Self::SAV_EDITING,
+            )
+            .expect("Duplicate key or button: accept");
+        buttons
+            .add_widget("reset", &reset_btn, 0)
+            .expect("Duplicate key or button: reset");
         let bpe = Rc::new(Self {
             vbox,
             id_entry,

@@ -4,13 +4,12 @@ extern crate serde_derive;
 
 use std::{error, fmt, io, result};
 
+use colour_math::{ColourAttributes, ColourBasics};
+
 pub mod characteristics;
 pub mod legacy;
 pub mod mixtures;
 pub mod series;
-
-pub use colour_math::*;
-pub use num_traits_plus::float_plus::*;
 
 use crate::characteristics::*;
 
