@@ -19,7 +19,7 @@ use colour_math_gtk::coloured::Colourable;
 #[cfg(feature = "targeted_mixtures")]
 use colour_math_gtk::{attributes::ColourAttributeDisplayStack, colour::*};
 
-use apaint::{characteristics::CharacteristicType, mixtures::Mixture, BasicPaintIfce};
+use apaint::{mixtures::Mixture, properties::PropertyType, BasicPaintIfce};
 
 use crate::list::PaintListRow;
 
@@ -55,7 +55,7 @@ impl MixtureDisplay {
 #[derive(Default)]
 pub struct MixtureDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     #[cfg(feature = "targeted_mixtures")]
     target_colour: Option<HCV>,
     list_spec: ComponentsListViewSpec,
@@ -68,13 +68,13 @@ impl MixtureDisplayBuilder {
 
     pub fn attributes(&mut self, attributes: &[ScalarAttribute]) -> &mut Self {
         self.attributes = attributes.to_vec();
-        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.characteristics);
+        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.properties);
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
-        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.characteristics);
+    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
+        self.properties = characteristics.to_vec();
+        self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.properties);
         self
     }
 
@@ -138,8 +138,8 @@ impl MixtureDisplayBuilder {
 
         vbox.pack_start(cads.pwo(), true, true, 0);
 
-        for characteristic_type in self.characteristics.iter() {
-            let value = mixture.characteristic(*characteristic_type).full();
+        for characteristic_type in self.properties.iter() {
+            let value = mixture.property(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(value).build();
             label.set_widget_colour(&colour);
             vbox.pack_start(&label, false, false, 0);
@@ -148,7 +148,7 @@ impl MixtureDisplayBuilder {
         let list_view = ListViewWithPopUpMenuBuilder::new().build(&self.list_spec);
         vbox.pack_start(list_view.pwo(), false, false, 0);
         for (paint, parts) in mixture.components() {
-            let mut row = paint.row(&self.attributes, &self.characteristics);
+            let mut row = paint.row(&self.attributes, &self.properties);
             let value: glib::Value = (*parts).to_value();
             row.insert(7, value);
             list_view.add_row(&row);
@@ -230,7 +230,7 @@ pub struct MixtureDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(&'static str, Option<&'static str>, u16)>,
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties_: Vec<PropertyType>,
     target_colour: Option<HCV>,
 }
 
@@ -240,7 +240,7 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
             caller: caller.clone(),
             buttons: vec![],
             attributes: vec![],
-            characteristics: vec![],
+            properties_: vec![],
             target_colour: None,
         }
     }
@@ -250,8 +250,8 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties_ = properties.to_vec();
         self
     }
 
@@ -268,7 +268,7 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
         let mut mixture_display_builder = MixtureDisplayBuilder::new();
         mixture_display_builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics);
+            .properties(&self.properties_);
         #[cfg(feature = "targeted_mixtures")]
         if let Some(target_colour) = self.target_colour {
             mixture_display_builder.target_colour(Some(&target_colour));
@@ -285,14 +285,14 @@ impl<W: TopGtkWindow + Clone> MixtureDisplayDialogManagerBuilder<W> {
 #[derive(Default)]
 pub struct ComponentsListViewSpec {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
 }
 
 impl ComponentsListViewSpec {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
+    pub fn new(attributes: &[ScalarAttribute], properties: &[PropertyType]) -> Self {
         Self {
             attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
+            properties: properties.to_vec(),
         }
     }
 }
@@ -309,7 +309,7 @@ impl ListViewSpec for ComponentsListViewSpec {
             f64::static_type(),
             u64::static_type(),
         ];
-        for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
+        for _ in 0..self.attributes.len() * 3 + self.properties.len() {
             column_types.push(glib::Type::String);
         }
         #[cfg(feature = "targeted_mixtures")]
@@ -321,7 +321,7 @@ impl ListViewSpec for ComponentsListViewSpec {
     fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
         #[cfg(feature = "targeted_mixtures")]
-        let target_col = 8 + self.attributes.len() as i32 * 3 + self.characteristics.len() as i32;
+        let target_col = 8 + self.attributes.len() as i32 * 3 + self.properties.len() as i32;
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Parts")
@@ -414,7 +414,7 @@ impl ListViewSpec for ComponentsListViewSpec {
             index += 3;
         }
 
-        for characteristic in self.characteristics.iter() {
+        for characteristic in self.properties.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
                 .title(characteristic.list_header_name())
                 .sort_column_id(index)

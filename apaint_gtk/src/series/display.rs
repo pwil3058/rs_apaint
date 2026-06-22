@@ -16,7 +16,7 @@ use colour_math_gtk::attributes::ColourAttributeDisplayStackBuilder;
 use colour_math_gtk::colour::GdkColour;
 use colour_math_gtk::coloured::Colourable;
 
-use apaint::{characteristics::CharacteristicType, series::SeriesPaint, BasicPaintIfce};
+use apaint::{properties::PropertyType, series::SeriesPaint, BasicPaintIfce};
 
 use crate::series::PaintActionCallback;
 use std::cell::RefCell;
@@ -54,7 +54,7 @@ impl PaintDisplay {
 #[derive(Default)]
 pub struct PaintDisplayBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     #[cfg(feature = "targeted_mixtures")]
     target_colour: Option<HCV>,
 }
@@ -69,8 +69,8 @@ impl PaintDisplayBuilder {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 
@@ -140,8 +140,8 @@ impl PaintDisplayBuilder {
         vbox.pack_start(&target_label, true, true, 0);
         vbox.pack_start(cads.pwo(), true, true, 0);
 
-        for characteristic_type in self.characteristics.iter() {
-            let value = paint.characteristic(*characteristic_type).full();
+        for characteristic_type in self.properties.iter() {
+            let value = paint.property(*characteristic_type).full();
             let label = gtk::LabelBuilder::new().label(value).build();
             label.set_widget_colour(&hcv);
             vbox.pack_start(&label, false, false, 0);
@@ -265,7 +265,7 @@ pub struct PaintDisplayDialogManagerBuilder<W: TopGtkWindow> {
     caller: W,
     buttons: Vec<(u16, &'static str, Option<&'static str>, u64)>,
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     target_colour: Option<HCV>,
     change_notifier: ChangedCondnsNotifier,
 }
@@ -277,7 +277,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
             caller: caller.clone(),
             buttons: vec![],
             attributes: vec![],
-            characteristics: vec![],
+            properties: vec![],
             target_colour: None,
             change_notifier,
         }
@@ -288,8 +288,8 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 
@@ -315,7 +315,7 @@ impl<W: TopGtkWindow + Clone> PaintDisplayDialogManagerBuilder<W> {
         let mut paint_display_builder = PaintDisplayBuilder::new();
         paint_display_builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics);
+            .properties(&self.properties);
         #[cfg(feature = "targeted_mixtures")]
         if let Some(target_colour) = self.target_colour {
             paint_display_builder.target_colour(Some(&target_colour));

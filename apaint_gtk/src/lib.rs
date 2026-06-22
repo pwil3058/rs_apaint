@@ -10,7 +10,7 @@ pub mod series;
 pub mod spec_edit;
 pub mod storage;
 
-pub mod characteristics {
+pub mod properties {
     use std::{cell::RefCell, rc::Rc};
 
     use pw_gtk_ext::{
@@ -19,21 +19,21 @@ pub mod characteristics {
         wrapper::*,
     };
 
-    pub use apaint::characteristics::{
-        CharacteristicIfce, CharacteristicType, Finish, Fluorescence, Metallicness, Permanence,
+    pub use apaint::properties::{
+        PropertyIfce, PropertyType, Finish, Fluorescence, Metallicness, Permanence,
         Transparency,
     };
 
     type ChangeCallback<T> = Box<dyn Fn(&T)>;
 
     #[derive(PWO)]
-    pub struct CharacteristicEntry<C: 'static + CharacteristicIfce> {
+    pub struct PropertyEntry<C: 'static + PropertyIfce> {
         combo_box_text: gtk::ComboBoxText,
         callbacks: RefCell<Vec<ChangeCallback<Self>>>,
         marker: std::marker::PhantomData<C>,
     }
 
-    impl<C: CharacteristicIfce> CharacteristicEntry<C> {
+    impl<C: PropertyIfce> PropertyEntry<C> {
         pub fn new() -> Rc<Self> {
             let combo_box_text = gtk::ComboBoxText::new();
             for str_value in C::str_values().iter() {
@@ -88,11 +88,11 @@ pub mod characteristics {
         }
     }
 
-    pub type FinishEntry = CharacteristicEntry<Finish>;
-    pub type TransparencyEntry = CharacteristicEntry<Transparency>;
-    pub type PermanenceEntry = CharacteristicEntry<Permanence>;
-    pub type FluorescenceEntry = CharacteristicEntry<Fluorescence>;
-    pub type MetallicnessEntry = CharacteristicEntry<Metallicness>;
+    pub type FinishEntry = PropertyEntry<Finish>;
+    pub type TransparencyEntry = PropertyEntry<Transparency>;
+    pub type PermanenceEntry = PropertyEntry<Permanence>;
+    pub type FluorescenceEntry = PropertyEntry<Fluorescence>;
+    pub type MetallicnessEntry = PropertyEntry<Metallicness>;
 }
 
 pub mod colour {

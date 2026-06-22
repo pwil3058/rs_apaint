@@ -46,8 +46,8 @@ use colour_math_gtk::{
 use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
 
 use apaint::{
-    characteristics::CharacteristicType,
     mixtures::{MixingSession, MixtureBuilder, Paint},
+    properties::PropertyType,
     series::SeriesPaint,
     BasicPaintIfce,
 };
@@ -322,7 +322,7 @@ pub struct PalettePaintMixer {
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ListViewWithPopUpMenu>,
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     mix_entry: Rc<PalettePaintEntry>,
     series_paint_spinner_box: Rc<PartsSpinButtonBox<SeriesPaint>>,
     #[cfg(feature = "mixtures_may_mix")]
@@ -462,7 +462,7 @@ impl PalettePaintMixer {
             }
             self.hue_wheel.add_item(mixture.coloured_shape());
             self.list_view
-                .add_row(&mixture.row(&self.attributes, &self.characteristics));
+                .add_row(&mixture.row(&self.attributes, &self.properties));
         }
         let digest = session.digest().expect("should work");
         *self.mixing_session.borrow_mut() = session;
@@ -534,7 +534,7 @@ impl PalettePaintMixer {
         #[cfg(feature = "targeted_mixtures")]
         self.hue_wheel.add_item(mixed_paint.targeted_rgb_shape());
         self.list_view
-            .add_row(&mixed_paint.row(&self.attributes, &self.characteristics));
+            .add_row(&mixed_paint.row(&self.attributes, &self.properties));
         self.mix_entry.id_label.set_label("MIX#???");
         self.mix_entry.name_entry.set_text("");
         self.mix_entry.notes_entry.set_text("");
@@ -582,7 +582,7 @@ impl PalettePaintMixer {
 #[derive(Default)]
 pub struct PalettePaintMixerBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     config_dir_path: Option<PathBuf>,
 }
 
@@ -596,8 +596,8 @@ impl PalettePaintMixerBuilder {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 
@@ -630,7 +630,7 @@ impl PalettePaintMixerBuilder {
                 SAV_HOVER_OK,
             )])
             .build();
-        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
+        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.properties);
         let list_view = ListViewWithPopUpMenuBuilder::new()
             .menu_items(vec![
                 (
@@ -658,18 +658,18 @@ impl PalettePaintMixerBuilder {
 
         let mixture_display_dialog_manager = MixtureDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
+            .properties(&self.properties)
             .build();
 
         let paint_display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
+            .properties(&self.properties)
             .build();
 
         let mut builder = PaintSeriesManagerBuilder::new();
         builder
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
+            .properties(&self.properties)
             .change_notifier(&change_notifier);
         if let Some(ref config_dir_path) = self.config_dir_path {
             builder.loaded_files_data_path(&config_dir_path.join("paint_series_files"));
@@ -690,7 +690,7 @@ impl PalettePaintMixerBuilder {
         {
             builder
                 .attributes(&self.attributes)
-                .characteristics(&self.characteristics)
+                .properties(&self.properties)
                 .change_notifier(&change_notifier);
             if let Some(ref config_dir_path) = self.config_dir_path {
                 builder.loaded_files_data_path(&config_dir_path.join("paint_standards_files"));
@@ -810,7 +810,7 @@ impl PalettePaintMixerBuilder {
             hue_wheel,
             list_view,
             attributes: self.attributes.clone(),
-            characteristics: self.characteristics.clone(),
+            properties: self.properties.clone(),
             mix_entry,
             series_paint_spinner_box,
             #[cfg(feature = "mixtures_may_mix")]

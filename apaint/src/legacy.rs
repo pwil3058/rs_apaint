@@ -7,7 +7,7 @@ use regex::Regex;
 use lazy_static::lazy_static;
 
 use crate::{
-    characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    properties::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     series::{BasicPaintSpec, SeriesPaintSeriesSpec},
 };
 
@@ -16,9 +16,9 @@ pub mod legacy_series;
 lazy_static! {
     static ref HEADER_RE: Regex = Regex::new(r"^\w+:\s*(.*)$").expect("programmer error");
     static ref PAINT_RE: Regex = Regex::new(
-        r#"^(?P<ptype>\w+)\((name=)?"(?P<name>.+)", rgb=(?P<rgb>RGB(16)?\([^)]+\))(?P<characteristics>(?:, [^n]\w+="\w+")*)(, notes="(?P<notes>.*)")?\)$"#
+        r#"^(?P<ptype>\w+)\((name=)?"(?P<name>.+)", rgb=(?P<rgb>RGB(16)?\([^)]+\))(?P<properties>(?:, [^n]\w+="\w+")*)(, notes="(?P<notes>.*)")?\)$"#
     ).expect("programmer error");
-    static ref CHARACTERISTIC_RE: Regex = Regex::new(r###"(\w+)="(\w+)""###).expect("programmer error");
+    static ref PROPERTY_RE: Regex = Regex::new(r###"(\w+)="(\w+)""###).expect("programmer error");
 }
 
 fn extract_header_value(line: Option<&str>) -> Result<String, crate::Error> {
@@ -44,11 +44,11 @@ fn extract_paint_spec(line: &str) -> Result<BasicPaintSpec, crate::Error> {
             .as_str()
             .to_string();
         let characteristics_str = cap
-            .name("characteristics")
+            .name("properties")
             .ok_or(NotAValidLegacySpec)?
             .as_str();
-        for m in CHARACTERISTIC_RE.find_iter(characteristics_str) {
-            let c = CHARACTERISTIC_RE
+        for m in PROPERTY_RE.find_iter(characteristics_str) {
+            let c = PROPERTY_RE
                 .captures(m.as_str())
                 .ok_or(NotAValidLegacySpec)?;
             match &c[1] {

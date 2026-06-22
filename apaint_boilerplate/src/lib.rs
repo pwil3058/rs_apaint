@@ -30,8 +30,8 @@ fn abbreviate(input: &str, n: usize) -> String {
     output
 }
 
-#[proc_macro_derive(Characteristic, attributes(default))]
-pub fn characteristic_derive(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(Property, attributes(default))]
+pub fn property_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
     let enum_name = parsed_input.ident;
     let name = enum_name.to_string();
@@ -96,7 +96,7 @@ pub fn characteristic_derive(input: TokenStream) -> TokenStream {
         first.unwrap()
     };
     let tokens = quote! {
-        impl CharacteristicIfce for #enum_name {
+        impl PropertyIfce for #enum_name {
             const NAME: &'static str = #name;
             const PROMPT: &'static str = #prompt;
             const LIST_HEADER_NAME: &'static str = #list_header_name;
@@ -199,6 +199,58 @@ pub fn basic_paint_interface_derive(input: TokenStream) -> TokenStream {
 
             fn metallicness(&self) -> Metallicness {
                 self.metallicness
+            }
+        }
+    };
+
+    proc_macro::TokenStream::from(tokens)
+}
+// whateever
+#[proc_macro_derive(Watercolour, attributes(colour))]
+pub fn watercolour_interface_derive(input: TokenStream) -> TokenStream {
+    let parsed_input: DeriveInput = parse_macro_input!(input);
+    let struct_name = parsed_input.ident;
+    let (impl_generics, ty_generics, where_clause) = parsed_input.generics.split_for_impl();
+    let tokens = quote! {
+        impl #impl_generics crate::WatercolourIfce for #struct_name #ty_generics #where_clause {
+            fn id(&self) -> &str {
+                &self.id
+            }
+
+            fn name(&self) -> Option<&str> {
+                if self.name.len() == 0 {
+                    None
+                } else {
+                    Some(&self.name)
+                }
+            }
+
+            fn notes(&self) -> Option<&str> {
+                if self.notes.len() == 0 {
+                    None
+                } else {
+                    Some(&self.notes)
+                }
+            }
+
+            fn light_fastness(&self) -> LightFastness {
+                self.light_fastness
+            }
+
+            fn transparency(&self) -> Transparency {
+                self.transparency
+            }
+
+            fn staining(&self) -> Staining {
+                    self.staining
+            }
+
+            fn granulation(&self) -> Granulation {
+                self.granulation
+            }
+
+            fn fluorescence(&self) -> Fluorescence {
+                self.fluorescence
             }
         }
     };

@@ -20,7 +20,7 @@ use colour_math::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttr
 use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 
 use apaint::{
-    characteristics::CharacteristicType, legacy::legacy_series::SeriesPaintSeriesSpec00,
+    properties::PropertyType, legacy::legacy_series::SeriesPaintSeriesSpec00,
     series::BasicPaintSpec, series::SeriesPaintSeriesSpec, BasicPaintIfce,
 };
 
@@ -39,7 +39,7 @@ pub struct BasicPaintFactory {
     hue_wheel: Rc<GtkHueWheel>,
     list_view: Rc<ListViewWithPopUpMenu>,
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     paint_series: RefCell<SeriesPaintSeriesSpec>,
     proprietor_entry: gtk::Entry,
     series_name_entry: gtk::Entry,
@@ -70,7 +70,7 @@ impl BasicPaintFactory {
             self.list_view.remove_row(old_paint.id());
         }
         self.hue_wheel.add_item(paint_spec.coloured_shape());
-        let row = paint_spec.row(&self.attributes, &self.characteristics);
+        let row = paint_spec.row(&self.attributes, &self.properties);
         self.list_view.add_row(&row);
     }
 
@@ -191,7 +191,7 @@ impl BasicPaintFactory {
             for paint in new_series.paints() {
                 series.add(paint);
                 self.hue_wheel.add_item(paint.coloured_shape());
-                let row = paint.row(&self.attributes, &self.characteristics);
+                let row = paint.row(&self.attributes, &self.properties);
                 self.list_view.add_row(&row);
             }
         }
@@ -209,7 +209,7 @@ impl BasicPaintFactory {
 #[derive(Default)]
 pub struct BasicPaintFactoryBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
 }
 
 impl BasicPaintFactoryBuilder {
@@ -222,8 +222,8 @@ impl BasicPaintFactoryBuilder {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
+        self.properties = characteristics.to_vec();
         self
     }
 
@@ -263,12 +263,12 @@ impl BasicPaintFactoryBuilder {
         let proprietor_entry = gtk::EntryBuilder::new().hexpand(true).build();
         grid.attach(&proprietor_entry, 1, 1, 1, 1);
         let paned = gtk::Paned::new(gtk::Orientation::Horizontal);
-        let paint_editor = BasicPaintSpecEditor::new(&self.attributes, &self.characteristics);
+        let paint_editor = BasicPaintSpecEditor::new(&self.attributes, &self.properties);
         let hue_wheel = GtkHueWheelBuilder::new()
             .menu_item_specs(menu_items)
             .attributes(&self.attributes)
             .build();
-        let paint_list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
+        let paint_list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.properties);
         let list_view = ListViewWithPopUpMenuBuilder::new()
             .menu_items(menu_items.to_vec())
             .build(&paint_list_spec);
@@ -303,7 +303,7 @@ impl BasicPaintFactoryBuilder {
             hue_wheel,
             list_view,
             attributes: self.attributes.to_vec(),
-            characteristics: self.characteristics.to_vec(),
+            properties: self.properties.to_vec(),
             paint_series: RefCell::new(SeriesPaintSeriesSpec::default()),
             proprietor_entry,
             series_name_entry,

@@ -18,7 +18,7 @@ use colour_math::{
 };
 
 use crate::{
-    characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    properties::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     BasicPaintIfce, LabelText, TooltipText,
 };
 use std::cmp::Ordering;

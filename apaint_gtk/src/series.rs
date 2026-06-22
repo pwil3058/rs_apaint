@@ -29,7 +29,7 @@ use colour_math_gtk::{
 use pw_gtk_ext::gtkx::notebook::TabRemoveLabelBuilder;
 
 use apaint::{
-    characteristics::CharacteristicType,
+    properties::PropertyType,
     legacy::{legacy_series::SeriesPaintSeriesSpec00, read_legacy_paint_series_spec},
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
@@ -57,7 +57,7 @@ struct SeriesPage {
 #[derive(Clone)]
 struct SeriesPageBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     menu_items: Vec<(&'static str, MenuItemSpec, u64)>,
     selection_mode: gtk::SelectionMode,
 }
@@ -66,7 +66,7 @@ impl Default for SeriesPageBuilder {
     fn default() -> Self {
         Self {
             attributes: vec![],
-            characteristics: vec![],
+            properties: vec![],
             menu_items: vec![],
             selection_mode: gtk::SelectionMode::None,
         }
@@ -83,8 +83,8 @@ impl SeriesPageBuilder {
         self
     }
 
-    fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    fn characteristics(&mut self, characteristics: &[PropertyType]) -> &mut Self {
+        self.properties = characteristics.to_vec();
         self
     }
 
@@ -105,14 +105,14 @@ impl SeriesPageBuilder {
             .menu_item_specs(&self.menu_items)
             .attributes(&self.attributes)
             .build();
-        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.characteristics);
+        let list_spec = BasicPaintListViewSpec::new(&self.attributes, &self.properties);
         let list_view = ListViewWithPopUpMenuBuilder::new()
             .menu_items(self.menu_items.to_vec())
             .selection_mode(self.selection_mode)
             .build(&list_spec);
         for paint in paint_series.paints() {
             hue_wheel.add_item(paint.coloured_shape());
-            let row = paint.row(&self.attributes, &self.characteristics);
+            let row = paint.row(&self.attributes, &self.properties);
             list_view.add_row(&row);
         }
         let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
@@ -205,7 +205,7 @@ impl SeriesBinder {
     fn new(
         menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
-        characteristics: &[CharacteristicType],
+        characteristics: &[PropertyType],
         loaded_files_data_path: Option<PathBuf>,
         selection_mode: gtk::SelectionMode,
     ) -> Rc<Self> {
@@ -527,7 +527,7 @@ impl SeriesPaintFinder for PaintSeriesManager {
 #[derive(Default)]
 pub struct PaintSeriesManagerBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     loaded_files_data_path: Option<PathBuf>,
     change_notifier: ChangedCondnsNotifier,
 }
@@ -542,8 +542,8 @@ impl PaintSeriesManagerBuilder {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
+        self.properties = characteristics.to_vec();
         self
     }
 
@@ -583,7 +583,7 @@ impl PaintSeriesManagerBuilder {
         let binder = SeriesBinder::new(
             menu_items,
             &self.attributes,
-            &self.characteristics,
+            &self.properties,
             self.loaded_files_data_path.clone(),
             gtk::SelectionMode::Multiple,
         );
@@ -599,7 +599,7 @@ impl PaintSeriesManagerBuilder {
         vbox.show_all();
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
+            .properties(&self.properties)
             .change_notifier(&self.change_notifier)
             .buttons(&[(0, "Add", Some("Add this paint to the mixer/palette"), 0)])
             .build();
@@ -691,7 +691,7 @@ impl SeriesPaintFinder for PaintStandardsManager {
 #[derive(Default)]
 pub struct PaintStandardsManagerBuilder {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
     loaded_files_data_path: Option<PathBuf>,
     change_notifier: ChangedCondnsNotifier,
 }
@@ -707,8 +707,8 @@ impl PaintStandardsManagerBuilder {
         self
     }
 
-    pub fn characteristics(&mut self, characteristics: &[CharacteristicType]) -> &mut Self {
-        self.characteristics = characteristics.to_vec();
+    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
+        self.properties = characteristics.to_vec();
         self
     }
 
@@ -748,7 +748,7 @@ impl PaintStandardsManagerBuilder {
         let binder = SeriesBinder::new(
             menu_items,
             &self.attributes,
-            &self.characteristics,
+            &self.properties,
             self.loaded_files_data_path.clone(),
             gtk::SelectionMode::None,
         );
@@ -764,7 +764,7 @@ impl PaintStandardsManagerBuilder {
         vbox.show_all();
         let display_dialog_manager = PaintDisplayDialogManagerBuilder::new(&vbox)
             .attributes(&self.attributes)
-            .characteristics(&self.characteristics)
+            .properties(&self.properties)
             .change_notifier(&self.change_notifier)
             .buttons(&[(
                 0,

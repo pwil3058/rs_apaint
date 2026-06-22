@@ -6,12 +6,12 @@ use std::{error, fmt, io, result};
 
 use colour_math::{ColourAttributes, ColourBasics};
 
-pub mod characteristics;
+pub mod properties;
 pub mod legacy;
 pub mod mixtures;
 pub mod series;
 
-use crate::characteristics::*;
+use crate::properties::*;
 
 pub trait TooltipText {
     fn tooltip_text(&self) -> String;
@@ -52,13 +52,63 @@ pub trait BasicPaintIfce: ColourBasics + ColourAttributes {
         Metallicness::default()
     }
 
-    fn characteristic(&self, characteristic_type: CharacteristicType) -> Characteristic {
+    fn property(&self, characteristic_type: PropertyType) -> Property {
         match characteristic_type {
-            CharacteristicType::Finish => Characteristic::Finish(self.finish()),
-            CharacteristicType::Transparency => Characteristic::Transparency(self.transparency()),
-            CharacteristicType::Permanence => Characteristic::Permanence(self.permanence()),
-            CharacteristicType::Fluorescence => Characteristic::Fluorescence(self.fluorescence()),
-            CharacteristicType::Metallicness => Characteristic::Metallicness(self.metallicness()),
+            PropertyType::Finish => Property::Finish(self.finish()),
+            PropertyType::Transparency => Property::Transparency(self.transparency()),
+            PropertyType::Permanence => Property::Permanence(self.permanence()),
+            PropertyType::Fluorescence => Property::Fluorescence(self.fluorescence()),
+            PropertyType::Metallicness => Property::Metallicness(self.metallicness()),
+        }
+    }
+}
+
+pub trait WatercolourIfce: ColourBasics + ColourAttributes {
+    fn id(&self) -> &str;
+
+    fn name(&self) -> Option<&str> {
+        None
+    }
+
+    fn notes(&self) -> Option<&str> {
+        None
+    }
+
+    fn transparency(&self) -> Transparency {
+        Transparency::default()
+    }
+
+    fn light_fastness(&self) -> LightFastness {
+        LightFastness::default()
+    }
+
+    fn staining(&self) -> Staining {
+        Staining::default()
+    }
+
+    fn granulation(&self) -> Granulation {
+        Granulation::default()
+    }
+
+    fn fluorescence(&self) -> Fluorescence {
+        Fluorescence::default()
+    }
+
+    fn property(&self, property_type: WatercolourPropertyType) -> WatercolourProperty {
+        match property_type {
+            WatercolourPropertyType::Staining => WatercolourProperty::Staining(self.staining()),
+            WatercolourPropertyType::Fluorescence => {
+                WatercolourProperty::Fluorescence(self.fluorescence())
+            }
+            WatercolourPropertyType::LightFastness => {
+                WatercolourProperty::LightFastness(self.light_fastness())
+            }
+            WatercolourPropertyType::Granulation => {
+                WatercolourProperty::Granulation(self.granulation())
+            }
+            WatercolourPropertyType::Transparency => {
+                WatercolourProperty::Transparency(self.transparency())
+            }
         }
     }
 }

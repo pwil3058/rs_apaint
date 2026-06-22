@@ -10,7 +10,7 @@ use colour_math_derive::Colour;
 use colour_math::{ColourBasics, LightLevel, RGB};
 
 use crate::{
-    characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
+    properties::{Finish, Fluorescence, Metallicness, Permanence, Transparency},
     series::{BasicPaintSpec, SeriesId, SeriesPaintSeriesSpec},
     BasicPaintIfce,
 };
@@ -100,7 +100,7 @@ mod test {
     use crate::series::{BasicPaintSpec, SeriesId};
     use crate::BasicPaintIfce;
 
-    use crate::characteristics::{Finish, Fluorescence, Metallicness, Permanence, Transparency};
+    use crate::properties::{Finish, Fluorescence, Metallicness, Permanence, Transparency};
 
     impl<F: LightLevel> BasicPaintSpec00<F> {
         pub fn new(rgb: RGB<F>, id: &str) -> Self {

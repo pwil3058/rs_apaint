@@ -7,7 +7,7 @@ use pw_gtk_ext::{
 };
 
 use apaint::{
-    characteristics::CharacteristicType,
+    properties::PropertyType,
     mixtures::{Mixture, Paint},
     series::{BasicPaintSpec, SeriesPaint},
     BasicPaintIfce,
@@ -17,14 +17,14 @@ use colour_math::{ScalarAttribute, HCV};
 
 pub struct BasicPaintListViewSpec {
     attributes: Vec<ScalarAttribute>,
-    characteristics: Vec<CharacteristicType>,
+    properties: Vec<PropertyType>,
 }
 
 impl BasicPaintListViewSpec {
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Self {
+    pub fn new(attributes: &[ScalarAttribute], properties: &[PropertyType]) -> Self {
         Self {
             attributes: attributes.to_vec(),
-            characteristics: characteristics.to_vec(),
+            properties: properties.to_vec(),
         }
     }
 }
@@ -40,7 +40,7 @@ impl ListViewSpec for BasicPaintListViewSpec {
             glib::Type::String,
             f64::static_type(),
         ];
-        for _ in 0..self.attributes.len() * 3 + self.characteristics.len() {
+        for _ in 0..self.attributes.len() * 3 + self.properties.len() {
             column_types.push(glib::Type::String);
         }
         #[cfg(feature = "targeted_mixtures")]
@@ -52,7 +52,7 @@ impl ListViewSpec for BasicPaintListViewSpec {
     fn columns(&self) -> Vec<gtk::TreeViewColumn> {
         let mut cols = vec![];
         #[cfg(feature = "targeted_mixtures")]
-        let target_col = 7 + self.attributes.len() as i32 * 3 + self.characteristics.len() as i32;
+        let target_col = 7 + self.attributes.len() as i32 * 3 + self.properties.len() as i32;
 
         let col = gtk::TreeViewColumnBuilder::new()
             .title("Id")
@@ -132,7 +132,7 @@ impl ListViewSpec for BasicPaintListViewSpec {
             index += 3;
         }
 
-        for characteristic in self.characteristics.iter() {
+        for characteristic in self.properties.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
                 .title(characteristic.list_header_name())
                 .sort_column_id(index)
@@ -155,7 +155,7 @@ pub trait PaintListRow: BasicPaintIfce {
     fn row(
         &self,
         attributes: &[ScalarAttribute],
-        characteristics: &[CharacteristicType],
+        properties: &[PropertyType],
     ) -> Vec<glib::Value> {
         use colour_math::ColourBasics;
         let ha: f64 = if let Some(angle) = self.hue_angle() {
@@ -184,8 +184,8 @@ pub trait PaintListRow: BasicPaintIfce {
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground().pango_string().to_value());
         }
-        for characteristic in characteristics.iter() {
-            let string = self.characteristic(*characteristic).abbrev();
+        for characteristic in properties.iter() {
+            let string = self.property(*characteristic).abbrev();
             row.push(string.to_value());
         }
         #[cfg(feature = "targeted_mixtures")]
@@ -204,7 +204,7 @@ impl PaintListRow for Mixture {
     fn row(
         &self,
         attributes: &[ScalarAttribute],
-        characteristics: &[CharacteristicType],
+        properties: &[PropertyType],
     ) -> Vec<glib::Value> {
         use colour_math::ColourAttributes;
         use colour_math::ColourBasics;
@@ -234,8 +234,8 @@ impl PaintListRow for Mixture {
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground().pango_string().to_value());
         }
-        for characteristic in characteristics.iter() {
-            let string = self.characteristic(*characteristic).abbrev();
+        for characteristic in properties.iter() {
+            let string = self.property(*characteristic).abbrev();
             row.push(string.to_value());
         }
         #[cfg(feature = "targeted_mixtures")]

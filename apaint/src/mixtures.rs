@@ -18,10 +18,10 @@ use colour_math::{
 
 use colour_math_derive::Colour;
 
-use crate::characteristics::CharacteristicMixer;
+use crate::properties::{PropertyMixer};
 use crate::{
-    characteristics::{
-        Finish, Fluorescence, FuzzyCharacteristic, Metallicness, Permanence, Transparency,
+    properties::{
+        Finish, Fluorescence, FuzzyProperty, Metallicness, Permanence, Transparency,
     },
     series::{SeriesId, SeriesPaint, SeriesPaintFinder},
     BasicPaintIfce, LabelText, TooltipText,
@@ -36,11 +36,11 @@ pub struct Mixture {
     id: String,
     name: String,
     notes: String,
-    finish: FuzzyCharacteristic<Finish>,
-    transparency: FuzzyCharacteristic<Transparency>,
-    permanence: FuzzyCharacteristic<Permanence>,
-    fluorescence: FuzzyCharacteristic<Fluorescence>,
-    metallicness: FuzzyCharacteristic<Metallicness>,
+    finish: FuzzyProperty<Finish>,
+    transparency: FuzzyProperty<Transparency>,
+    permanence: FuzzyProperty<Permanence>,
+    fluorescence: FuzzyProperty<Fluorescence>,
+    metallicness: FuzzyProperty<Metallicness>,
     components: Vec<(Paint, u64)>,
 }
 
@@ -106,24 +106,22 @@ impl BasicPaintIfce for Mixture {
         }
     }
 
-    fn finish(&self) -> Finish {
-        self.finish.characteristic()
-    }
+    fn finish(&self) -> Finish { self.finish.property() }
 
     fn transparency(&self) -> Transparency {
-        self.transparency.characteristic()
+        self.transparency.property()
     }
 
     fn fluorescence(&self) -> Fluorescence {
-        self.fluorescence.characteristic()
+        self.fluorescence.property()
     }
 
     fn permanence(&self) -> Permanence {
-        self.permanence.characteristic()
+        self.permanence.property()
     }
 
     fn metallicness(&self) -> Metallicness {
-        self.metallicness.characteristic()
+        self.metallicness.property()
     }
 }
 
@@ -356,11 +354,11 @@ impl MixtureBuilder {
         }
         debug_assert!(gcd > 0);
         let mut components = vec![];
-        let mut finish_mix = CharacteristicMixer::<Finish>::new();
-        let mut transparency_mix = CharacteristicMixer::<Transparency>::new();
-        let mut permanence_mix = CharacteristicMixer::<Permanence>::new();
-        let mut fluorescence_mix = CharacteristicMixer::<Fluorescence>::new();
-        let mut metallicness_mix = CharacteristicMixer::<Metallicness>::new();
+        let mut finish_mix = PropertyMixer::<Finish>::new();
+        let mut transparency_mix = PropertyMixer::<Transparency>::new();
+        let mut permanence_mix = PropertyMixer::<Permanence>::new();
+        let mut fluorescence_mix = PropertyMixer::<Fluorescence>::new();
+        let mut metallicness_mix = PropertyMixer::<Metallicness>::new();
         let mut colour_mix = SubtractiveMixer::new();
         for (paint, parts) in self.series_components.iter() {
             let adjusted_parts = *parts / gcd;
@@ -389,18 +387,18 @@ impl MixtureBuilder {
             id: self.id.clone(),
             name: self.name.clone(),
             notes: self.notes.clone(),
-            finish: finish_mix.characteristic_value().expect("programmer error"),
+            finish: finish_mix.property_value().expect("programmer error"),
             transparency: transparency_mix
-                .characteristic_value()
+                .property_value()
                 .expect("programmer error"),
             permanence: permanence_mix
-                .characteristic_value()
+                .property_value()
                 .expect("programmer error"),
             fluorescence: fluorescence_mix
-                .characteristic_value()
+                .property_value()
                 .expect("programmer error"),
             metallicness: metallicness_mix
-                .characteristic_value()
+                .property_value()
                 .expect("programmer error"),
             components,
         };

@@ -8,32 +8,14 @@ use pw_gtk_ext::{
     wrapper::*,
 };
 
-use apaint::{characteristics::CharacteristicType, LabelText, TooltipText};
+use apaint::properties::PropertyType;
 
-use colour_math::{LightLevel, ScalarAttribute, HCV, RGB};
-use colour_math_derive::Colour;
+use colour_math::{ScalarAttribute, RGB};
 
 use apaint::series::{BasicPaintSpec, SeriesId, SeriesPaint};
 use apaint_gtk::factory::BasicPaintFactoryBuilder;
 use apaint_gtk::mixer::palette::PalettePaintMixerBuilder;
 use apaint_gtk::series::display::PaintDisplayBuilder;
-
-#[derive(Colour, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-struct Dummy {
-    colour: HCV,
-}
-
-impl TooltipText for Dummy {
-    fn tooltip_text(&self) -> String {
-        "tooltip text".to_string()
-    }
-}
-
-impl LabelText for Dummy {
-    fn label_text(&self) -> String {
-        "dummy paint".to_string()
-    }
-}
 
 fn main() {
     recollections::init("./.recollections");
@@ -50,11 +32,11 @@ fn main() {
                 ScalarAttribute::Greyness,
                 //ScalarAttribute::Chroma,
             ])
-            .characteristics(&[
-                CharacteristicType::Finish,
-                CharacteristicType::Transparency,
-                CharacteristicType::Fluorescence,
-                CharacteristicType::Metallicness,
+            .properties(&[
+                PropertyType::Finish,
+                PropertyType::Transparency,
+                PropertyType::Fluorescence,
+                PropertyType::Metallicness,
             ])
             .build()
             .pwo(),
@@ -68,11 +50,11 @@ fn main() {
             ScalarAttribute::Greyness,
             ScalarAttribute::Chroma,
         ])
-        .characteristics(&[
-            CharacteristicType::Finish,
-            CharacteristicType::Transparency,
-            CharacteristicType::Fluorescence,
-            CharacteristicType::Metallicness,
+        .properties(&[
+            PropertyType::Finish,
+            PropertyType::Transparency,
+            PropertyType::Fluorescence,
+            PropertyType::Metallicness,
         ])
         .build();
     vbox.pack_start(mixer.pwo(), false, false, 0);
@@ -88,14 +70,12 @@ fn main() {
             ScalarAttribute::Greyness,
             ScalarAttribute::Chroma,
         ])
-        .characteristics(&[
-            CharacteristicType::Finish,
-            CharacteristicType::Transparency,
-            CharacteristicType::Fluorescence,
-            CharacteristicType::Metallicness,
+        .properties(&[
+            PropertyType::Finish,
+            PropertyType::Transparency,
+            PropertyType::Fluorescence,
+            PropertyType::Metallicness,
         ]);
-    #[cfg(feature = "targeted_mixtures")]
-    builder.target_colour(Some(&RGB::<f64>::from([0.6, 0.1, 0.7])));
     let display = builder.build(&Rc::new(paint));
     vbox.pack_start(display.pwo(), true, true, 0);
     vbox.show_all();

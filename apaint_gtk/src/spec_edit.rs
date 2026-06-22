@@ -16,9 +16,9 @@ use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
 
 use apaint::series::BasicPaintSpec;
 
-use crate::characteristics::{
-    CharacteristicType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
-    TransparencyEntry,
+use crate::properties::{
+    PropertyType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
+    TransparencyEntry
 };
 
 type AddCallback = Box<dyn Fn(&BasicPaintSpec)>;
@@ -72,7 +72,7 @@ impl BasicPaintSpecEditor {
         + Self::SAV_FLUORESCENCE_CHANGED
         + Self::SAV_METALLICNESS_CHANGED;
 
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[CharacteristicType]) -> Rc<Self> {
+    pub fn new(attributes: &[ScalarAttribute], characteristics: &[PropertyType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
         vbox.pack_start(&grid, false, false, 0);
@@ -107,23 +107,23 @@ impl BasicPaintSpecEditor {
         let mut row: i32 = 3;
         for characteristic in characteristics.iter() {
             match *characteristic {
-                CharacteristicType::Finish => {
+                PropertyType::Finish => {
                     grid.attach(&finish_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(finish_entry.pwo(), 1, row, 1, 1);
                 }
-                CharacteristicType::Transparency => {
+                PropertyType::Transparency => {
                     grid.attach(&transparency_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(transparency_entry.pwo(), 1, row, 1, 1);
                 }
-                CharacteristicType::Permanence => {
+                PropertyType::Permanence => {
                     grid.attach(&permanence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(permanence_entry.pwo(), 1, row, 1, 1);
                 }
-                CharacteristicType::Fluorescence => {
+                PropertyType::Fluorescence => {
                     grid.attach(&fluorescence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(fluorescence_entry.pwo(), 1, row, 1, 1);
                 }
-                CharacteristicType::Metallicness => {
+                PropertyType::Metallicness => {
                     grid.attach(&metallicness_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(metallicness_entry.pwo(), 1, row, 1, 1);
                 }
