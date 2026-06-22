@@ -11,14 +11,14 @@ use pw_gtk_ext::{
 
 use colour_math::ScalarAttribute;
 
+use apaint::series::BasicPaintSpec;
+use apaint::BasicPaintIfce;
 use colour_math_gtk::colour_edit::{ColourEditor, ColourEditorBuilder};
 use pw_gtk_ext::sav_state::ConditionalWidgetGroupsBuilder;
 
-use apaint::series::BasicPaintSpec;
-
 use crate::properties::{
-    PropertyType, FinishEntry, FluorescenceEntry, MetallicnessEntry, PermanenceEntry,
-    TransparencyEntry
+    FinishEntry, FluorescenceEntry, GranulationEntry, LightFastnessEntry, MetallicnessEntry,
+    OpacityEntry, PermanenceEntry, PropertyType, StainingEntry, TransparencyEntry,
 };
 
 type AddCallback = Box<dyn Fn(&BasicPaintSpec)>;
@@ -37,6 +37,10 @@ pub struct BasicPaintSpecEditor {
     permanence_entry: Rc<PermanenceEntry>,
     fluorescence_entry: Rc<FluorescenceEntry>,
     metallicness_entry: Rc<MetallicnessEntry>,
+    opacity_entry: Rc<OpacityEntry>,
+    lightfastness_entry: Rc<LightFastnessEntry>,
+    granulation_entry: Rc<GranulationEntry>,
+    staining_entry: Rc<StainingEntry>,
     buttons: ConditionalWidgetGroups<gtk::Button>,
     current_spec: RefCell<Option<BasicPaintSpec>>,
     add_callbacks: RefCell<Vec<AddCallback>>,
@@ -61,6 +65,10 @@ impl BasicPaintSpecEditor {
     const SAV_TRANSPARENCY_CHANGED: u64 = SAV_NEXT_CONDN << 12;
     const SAV_FLUORESCENCE_CHANGED: u64 = SAV_NEXT_CONDN << 13;
     const SAV_METALLICNESS_CHANGED: u64 = SAV_NEXT_CONDN << 14;
+    const SAV_OPACITY_CHANGED: u64 = SAV_NEXT_CONDN << 15;
+    const SAV_LIGHTFASTNESS_CHANGED: u64 = SAV_NEXT_CONDN << 16;
+    const SAV_GRANULATION_CHANGED: u64 = SAV_NEXT_CONDN << 17;
+    const SAV_STAINING_CHANGED: u64 = SAV_NEXT_CONDN << 18;
 
     const CHANGED_MASK: u64 = Self::SAV_ID_CHANGED
         + Self::SAV_NAME_CHANGED
@@ -72,7 +80,7 @@ impl BasicPaintSpecEditor {
         + Self::SAV_FLUORESCENCE_CHANGED
         + Self::SAV_METALLICNESS_CHANGED;
 
-    pub fn new(attributes: &[ScalarAttribute], characteristics: &[PropertyType]) -> Rc<Self> {
+    pub fn new(attributes: &[ScalarAttribute], properties: &[PropertyType]) -> Rc<Self> {
         let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
         let grid = gtk::GridBuilder::new().hexpand(true).build();
         vbox.pack_start(&grid, false, false, 0);
@@ -103,10 +111,14 @@ impl BasicPaintSpecEditor {
         let permanence_entry = PermanenceEntry::new();
         let fluorescence_entry = FluorescenceEntry::new();
         let metallicness_entry = MetallicnessEntry::new();
+        let granulation_entry = GranulationEntry::new();
+        let lightfastness_entry = LightFastnessEntry::new();
+        let opacity_entry = OpacityEntry::new();
+        let staining_entry = StainingEntry::new();
 
         let mut row: i32 = 3;
-        for characteristic in characteristics.iter() {
-            match *characteristic {
+        for property in properties.iter() {
+            match *property {
                 PropertyType::Finish => {
                     grid.attach(&finish_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(finish_entry.pwo(), 1, row, 1, 1);
@@ -114,6 +126,10 @@ impl BasicPaintSpecEditor {
                 PropertyType::Transparency => {
                     grid.attach(&transparency_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(transparency_entry.pwo(), 1, row, 1, 1);
+                }
+                PropertyType::Opacity => {
+                    grid.attach(&opacity_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(opacity_entry.pwo(), 1, row, 1, 1);
                 }
                 PropertyType::Permanence => {
                     grid.attach(&permanence_entry.prompt(gtk::Align::End), 0, row, 1, 1);
@@ -126,6 +142,18 @@ impl BasicPaintSpecEditor {
                 PropertyType::Metallicness => {
                     grid.attach(&metallicness_entry.prompt(gtk::Align::End), 0, row, 1, 1);
                     grid.attach(metallicness_entry.pwo(), 1, row, 1, 1);
+                }
+                PropertyType::Granulation => {
+                    grid.attach(&granulation_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(granulation_entry.pwo(), 1, row, 1, 1);
+                }
+                PropertyType::LightFastness => {
+                    grid.attach(&lightfastness_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(lightfastness_entry.pwo(), 1, row, 1, 1);
+                }
+                PropertyType::Staining => {
+                    grid.attach(&staining_entry.prompt(gtk::Align::End), 0, row, 1, 1);
+                    grid.attach(staining_entry.pwo(), 1, row, 1, 1);
                 }
             };
             row += 1;
@@ -166,6 +194,10 @@ impl BasicPaintSpecEditor {
             permanence_entry,
             fluorescence_entry,
             metallicness_entry,
+            opacity_entry,
+            lightfastness_entry,
+            granulation_entry,
+            staining_entry,
             buttons,
             current_spec: RefCell::new(None),
             add_callbacks: RefCell::new(Vec::new()),
@@ -328,6 +360,70 @@ impl BasicPaintSpecEditor {
             if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
                 if spec.metallicness != entry.value() {
                     masked_condns.condns += Self::SAV_METALLICNESS_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.opacity_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_OPACITY_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.opacity() != entry.value() {
+                    masked_condns.condns += Self::SAV_OPACITY_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.lightfastness_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_LIGHTFASTNESS_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.light_fastness() != entry.value() {
+                    masked_condns.condns += Self::SAV_LIGHTFASTNESS_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.granulation_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_GRANULATION_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.granulation() != entry.value() {
+                    masked_condns.condns += Self::SAV_GRANULATION_CHANGED;
+                }
+            }
+            bpe_c.buttons.update_condns(masked_condns);
+            bpe_c.update_has_changes();
+            bpe_c.inform_changed();
+        });
+
+        let bpe_c = Rc::clone(&bpe);
+        bpe.staining_entry.connect_changed(move |entry| {
+            let mut masked_condns = MaskedCondns {
+                condns: 0,
+                mask: Self::SAV_STAINING_CHANGED,
+            };
+            if let Some(spec) = bpe_c.current_spec.borrow().as_ref() {
+                if spec.staining() != entry.value() {
+                    masked_condns.condns += Self::SAV_STAINING_CHANGED;
                 }
             }
             bpe_c.buttons.update_condns(masked_condns);

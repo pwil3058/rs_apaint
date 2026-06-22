@@ -20,9 +20,9 @@ pub mod properties {
     };
 
     pub use apaint::properties::{
-        PropertyIfce, PropertyType, Finish, Fluorescence, Metallicness, Permanence,
-        Transparency,
+        Finish, Fluorescence, Metallicness, Permanence, PropertyIfce, PropertyType, Transparency,
     };
+    use apaint::properties::{Granulation, LightFastness, Opacity, Staining};
 
     type ChangeCallback<T> = Box<dyn Fn(&T)>;
 
@@ -93,6 +93,10 @@ pub mod properties {
     pub type PermanenceEntry = PropertyEntry<Permanence>;
     pub type FluorescenceEntry = PropertyEntry<Fluorescence>;
     pub type MetallicnessEntry = PropertyEntry<Metallicness>;
+    pub type GranulationEntry = PropertyEntry<Granulation>;
+    pub type LightFastnessEntry = PropertyEntry<LightFastness>;
+    pub type StainingEntry = PropertyEntry<Staining>;
+    pub type OpacityEntry = PropertyEntry<Opacity>;
 }
 
 pub mod colour {

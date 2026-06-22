@@ -143,16 +143,25 @@ pub enum Property {
     Permanence(Permanence),
     Fluorescence(Fluorescence),
     Metallicness(Metallicness),
+    LightFastness(LightFastness),
+    Opacity(Opacity),
+    Staining(Staining),
+    Granulation(Granulation),
 }
 
 impl Property {
     pub fn name(self) -> &'static str {
+        use PropertyIfce;
         match self {
             Self::Finish(_) => Finish::NAME,
             Self::Transparency(_) => Transparency::NAME,
             Self::Permanence(_) => Permanence::NAME,
             Self::Fluorescence(_) => Fluorescence::NAME,
             Self::Metallicness(_) => Metallicness::NAME,
+            Self::LightFastness(_) => LightFastness::NAME,
+            Self::Opacity(_) => Opacity::NAME,
+            Self::Staining(_) => Staining::NAME,
+            Self::Granulation(_) => Granulation::NAME,
         }
     }
 
@@ -163,6 +172,10 @@ impl Property {
             Self::Permanence(_) => Permanence::PROMPT,
             Self::Fluorescence(_) => Fluorescence::PROMPT,
             Self::Metallicness(_) => Metallicness::PROMPT,
+            Self::LightFastness(_) => LightFastness::PROMPT,
+            Self::Opacity(_) => Opacity::PROMPT,
+            Self::Staining(_) => Staining::PROMPT,
+            Self::Granulation(_) => Granulation::PROMPT,
         }
     }
 
@@ -173,6 +186,10 @@ impl Property {
             Self::Permanence(_) => Permanence::LIST_HEADER_NAME,
             Self::Fluorescence(_) => Fluorescence::LIST_HEADER_NAME,
             Self::Metallicness(_) => Metallicness::LIST_HEADER_NAME,
+            Self::LightFastness(_) => LightFastness::LIST_HEADER_NAME,
+            Self::Opacity(_) => Opacity::LIST_HEADER_NAME,
+            Self::Staining(_) => Staining::LIST_HEADER_NAME,
+            Self::Granulation(_) => Granulation::LIST_HEADER_NAME,
         }
     }
 
@@ -183,6 +200,10 @@ impl Property {
             Self::Permanence(_) => Permanence::str_values(),
             Self::Fluorescence(_) => Fluorescence::str_values(),
             Self::Metallicness(_) => Metallicness::str_values(),
+            Self::LightFastness(_) => LightFastness::str_values(),
+            Self::Opacity(_) => Opacity::str_values(),
+            Self::Staining(_) => Staining::str_values(),
+            Self::Granulation(_) => Granulation::str_values(),
         }
     }
 
@@ -193,6 +214,10 @@ impl Property {
             Self::Permanence(value) => value.abbrev(),
             Self::Fluorescence(value) => value.abbrev(),
             Self::Metallicness(value) => value.abbrev(),
+            Self::LightFastness(value) => value.abbrev(),
+            Self::Opacity(value) => value.abbrev(),
+            Self::Staining(value) => value.abbrev(),
+            Self::Granulation(value) => value.abbrev(),
         }
     }
     pub fn full(self) -> &'static str {
@@ -202,6 +227,10 @@ impl Property {
             Self::Permanence(value) => value.full(),
             Self::Fluorescence(value) => value.full(),
             Self::Metallicness(value) => value.full(),
+            Self::LightFastness(value) => value.full(),
+            Self::Opacity(value) => value.full(),
+            Self::Staining(value) => value.full(),
+            Self::Granulation(value) => value.full(),
         }
     }
 }
@@ -213,6 +242,10 @@ pub enum PropertyType {
     Permanence,
     Fluorescence,
     Metallicness,
+    LightFastness,
+    Opacity,
+    Staining,
+    Granulation,
 }
 
 impl PropertyType {
@@ -223,6 +256,10 @@ impl PropertyType {
             Self::Permanence => Permanence::NAME,
             Self::Fluorescence => Fluorescence::NAME,
             Self::Metallicness => Metallicness::NAME,
+            Self::LightFastness => LightFastness::NAME,
+            Self::Opacity => Opacity::NAME,
+            Self::Staining => Staining::NAME,
+            Self::Granulation => Granulation::NAME,
         }
     }
 
@@ -233,6 +270,10 @@ impl PropertyType {
             Self::Permanence => Permanence::PROMPT,
             Self::Fluorescence => Fluorescence::PROMPT,
             Self::Metallicness => Metallicness::PROMPT,
+            Self::LightFastness => LightFastness::PROMPT,
+            Self::Opacity => Opacity::PROMPT,
+            Self::Staining => Staining::PROMPT,
+            Self::Granulation => Granulation::PROMPT,
         }
     }
 
@@ -243,6 +284,10 @@ impl PropertyType {
             Self::Permanence => Permanence::LIST_HEADER_NAME,
             Self::Fluorescence => Fluorescence::LIST_HEADER_NAME,
             Self::Metallicness => Metallicness::LIST_HEADER_NAME,
+            Self::LightFastness => LightFastness::LIST_HEADER_NAME,
+            Self::Opacity => Opacity::LIST_HEADER_NAME,
+            Self::Staining => Staining::LIST_HEADER_NAME,
+            Self::Granulation => Granulation::LIST_HEADER_NAME,
         }
     }
 
@@ -253,6 +298,10 @@ impl PropertyType {
             Self::Permanence => Permanence::str_values(),
             Self::Fluorescence => Fluorescence::str_values(),
             Self::Metallicness => Metallicness::str_values(),
+            Self::LightFastness => LightFastness::str_values(),
+            Self::Opacity => Opacity::str_values(),
+            Self::Staining => Staining::str_values(),
+            Self::Granulation => Granulation::str_values(),
         }
     }
 }
@@ -265,6 +314,10 @@ impl std::fmt::Display for PropertyType {
             Self::Permanence => write!(f, "Permanence"),
             Self::Fluorescence => write!(f, "Fluorescence"),
             Self::Metallicness => write!(f, " Metallicness"),
+            Self::Granulation => write!(f, " Granulation"),
+            Self::Opacity => write!(f, " Opacity"),
+            Self::Staining => write!(f, " Staining"),
+            Self::LightFastness => write!(f, " LightFastness"),
         }
     }
 }

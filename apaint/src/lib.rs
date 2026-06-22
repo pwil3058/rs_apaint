@@ -6,9 +6,9 @@ use std::{error, fmt, io, result};
 
 use colour_math::{ColourAttributes, ColourBasics};
 
-pub mod properties;
 pub mod legacy;
 pub mod mixtures;
+pub mod properties;
 pub mod series;
 
 use crate::properties::*;
@@ -40,6 +40,10 @@ pub trait BasicPaintIfce: ColourBasics + ColourAttributes {
         Transparency::default()
     }
 
+    fn opacity(&self) -> Opacity {
+        Opacity::default()
+    }
+
     fn fluorescence(&self) -> Fluorescence {
         Fluorescence::default()
     }
@@ -50,32 +54,6 @@ pub trait BasicPaintIfce: ColourBasics + ColourAttributes {
 
     fn metallicness(&self) -> Metallicness {
         Metallicness::default()
-    }
-
-    fn property(&self, characteristic_type: PropertyType) -> Property {
-        match characteristic_type {
-            PropertyType::Finish => Property::Finish(self.finish()),
-            PropertyType::Transparency => Property::Transparency(self.transparency()),
-            PropertyType::Permanence => Property::Permanence(self.permanence()),
-            PropertyType::Fluorescence => Property::Fluorescence(self.fluorescence()),
-            PropertyType::Metallicness => Property::Metallicness(self.metallicness()),
-        }
-    }
-}
-
-pub trait WatercolourIfce: ColourBasics + ColourAttributes {
-    fn id(&self) -> &str;
-
-    fn name(&self) -> Option<&str> {
-        None
-    }
-
-    fn notes(&self) -> Option<&str> {
-        None
-    }
-
-    fn transparency(&self) -> Transparency {
-        Transparency::default()
     }
 
     fn light_fastness(&self) -> LightFastness {
@@ -90,25 +68,17 @@ pub trait WatercolourIfce: ColourBasics + ColourAttributes {
         Granulation::default()
     }
 
-    fn fluorescence(&self) -> Fluorescence {
-        Fluorescence::default()
-    }
-
-    fn property(&self, property_type: WatercolourPropertyType) -> WatercolourProperty {
+    fn property(&self, property_type: PropertyType) -> Property {
         match property_type {
-            WatercolourPropertyType::Staining => WatercolourProperty::Staining(self.staining()),
-            WatercolourPropertyType::Fluorescence => {
-                WatercolourProperty::Fluorescence(self.fluorescence())
-            }
-            WatercolourPropertyType::LightFastness => {
-                WatercolourProperty::LightFastness(self.light_fastness())
-            }
-            WatercolourPropertyType::Granulation => {
-                WatercolourProperty::Granulation(self.granulation())
-            }
-            WatercolourPropertyType::Transparency => {
-                WatercolourProperty::Transparency(self.transparency())
-            }
+            PropertyType::Finish => Property::Finish(self.finish()),
+            PropertyType::Transparency => Property::Transparency(self.transparency()),
+            PropertyType::Permanence => Property::Permanence(self.permanence()),
+            PropertyType::Fluorescence => Property::Fluorescence(self.fluorescence()),
+            PropertyType::Metallicness => Property::Metallicness(self.metallicness()),
+            PropertyType::Staining => Property::Staining(self.staining()),
+            PropertyType::LightFastness => Property::LightFastness(self.light_fastness()),
+            PropertyType::Granulation => Property::Granulation(self.granulation()),
+            PropertyType::Opacity => Property::Granulation(self.granulation()),
         }
     }
 }
