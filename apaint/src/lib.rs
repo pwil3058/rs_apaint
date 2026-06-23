@@ -1,4 +1,10 @@
-// Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
+/*
+ * Copyright (c) 2026. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
+ */
 #[macro_use]
 extern crate serde_derive;
 
@@ -10,6 +16,7 @@ pub mod legacy;
 pub mod mixtures;
 pub mod properties;
 pub mod series;
+pub mod watercolour;
 
 use crate::properties::*;
 
@@ -79,6 +86,50 @@ pub trait BasicPaintIfce: ColourBasics + ColourAttributes {
             PropertyType::LightFastness => Property::LightFastness(self.light_fastness()),
             PropertyType::Granulation => Property::Granulation(self.granulation()),
             PropertyType::Opacity => Property::Granulation(self.granulation()),
+        }
+    }
+}
+
+pub trait WatercolourIfce: ColourBasics + ColourAttributes {
+    fn id(&self) -> &str;
+
+    fn name(&self) -> Option<&str> {
+        None
+    }
+
+    fn notes(&self) -> Option<&str> {
+        None
+    }
+
+    fn transparency(&self) -> Transparency {
+        Transparency::default()
+    }
+
+    fn fluorescence(&self) -> Fluorescence {
+        Fluorescence::default()
+    }
+
+    fn light_fastness(&self) -> LightFastness {
+        LightFastness::default()
+    }
+
+    fn staining(&self) -> Staining {
+        Staining::default()
+    }
+
+    fn granulation(&self) -> Granulation {
+        Granulation::default()
+    }
+
+    fn property(&self, property_type: WatercolourPropertyType) -> Property {
+        match property_type {
+            WatercolourPropertyType::Transparency => Property::Transparency(self.transparency()),
+            WatercolourPropertyType::Fluorescence => Property::Fluorescence(self.fluorescence()),
+            WatercolourPropertyType::Staining => Property::Staining(self.staining()),
+            WatercolourPropertyType::LightFastness => {
+                Property::LightFastness(self.light_fastness())
+            }
+            WatercolourPropertyType::Granulation => Property::Granulation(self.granulation()),
         }
     }
 }

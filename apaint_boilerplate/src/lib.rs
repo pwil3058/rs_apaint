@@ -1,4 +1,10 @@
-// Copyright 2019 Peter Williams <pwil3058@gmail.com> <pwil3058@bigpond.net.au>
+/*
+ * Copyright (c) 2026. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
+ */
 
 extern crate proc_macro;
 
@@ -205,7 +211,7 @@ pub fn basic_paint_interface_derive(input: TokenStream) -> TokenStream {
 
     proc_macro::TokenStream::from(tokens)
 }
-// whateever
+
 #[proc_macro_derive(Watercolour, attributes(colour))]
 pub fn watercolour_interface_derive(input: TokenStream) -> TokenStream {
     let parsed_input: DeriveInput = parse_macro_input!(input);
