@@ -29,8 +29,8 @@ use colour_math_gtk::{
 use pw_gtk_ext::gtkx::notebook::TabRemoveLabelBuilder;
 
 use apaint::{
-    properties::PropertyType,
     legacy::{legacy_series::SeriesPaintSeriesSpec00, read_legacy_paint_series_spec},
+    properties::PropertyType,
     series::{SeriesId, SeriesPaint, SeriesPaintFinder, SeriesPaintSeries, SeriesPaintSeriesSpec},
 };
 
@@ -83,8 +83,8 @@ impl SeriesPageBuilder {
         self
     }
 
-    fn characteristics(&mut self, characteristics: &[PropertyType]) -> &mut Self {
-        self.properties = characteristics.to_vec();
+    fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 
@@ -205,7 +205,7 @@ impl SeriesBinder {
     fn new(
         menu_items: &[(&'static str, MenuItemSpec, u64)],
         attributes: &[ScalarAttribute],
-        characteristics: &[PropertyType],
+        properties: &[PropertyType],
         loaded_files_data_path: Option<PathBuf>,
         selection_mode: gtk::SelectionMode,
     ) -> Rc<Self> {
@@ -220,7 +220,7 @@ impl SeriesBinder {
         let mut series_page_builder = SeriesPageBuilder::new();
         series_page_builder
             .attributes(attributes)
-            .characteristics(characteristics)
+            .properties(properties)
             .menu_items(menu_items)
             .selection_mode(selection_mode);
         let binder = Rc::new(Self {
@@ -542,8 +542,8 @@ impl PaintSeriesManagerBuilder {
         self
     }
 
-    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
-        self.properties = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 
@@ -707,8 +707,8 @@ impl PaintStandardsManagerBuilder {
         self
     }
 
-    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
-        self.properties = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 

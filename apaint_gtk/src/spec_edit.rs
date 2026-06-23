@@ -525,7 +525,7 @@ impl BasicPaintSpecEditor {
         self.id_entry.set_text("");
         self.name_entry.set_text("");
         self.notes_entry.set_text("");
-        // NB: do not reset characteristics
+        // NB: do not reset properties
         self.colour_editor.reset();
         self.update_has_changes();
     }

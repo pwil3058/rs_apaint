@@ -7,8 +7,8 @@ use pw_gtk_ext::{
 };
 
 use apaint::{
-    properties::PropertyType,
     mixtures::{Mixture, Paint},
+    properties::PropertyType,
     series::{BasicPaintSpec, SeriesPaint},
     BasicPaintIfce,
 };
@@ -132,9 +132,9 @@ impl ListViewSpec for BasicPaintListViewSpec {
             index += 3;
         }
 
-        for characteristic in self.properties.iter() {
+        for property in self.properties.iter() {
             let col = gtk::TreeViewColumnBuilder::new()
-                .title(characteristic.list_header_name())
+                .title(property.list_header_name())
                 .sort_column_id(index)
                 .sort_indicator(true)
                 .build();
@@ -152,11 +152,7 @@ impl ListViewSpec for BasicPaintListViewSpec {
 }
 
 pub trait PaintListRow: BasicPaintIfce {
-    fn row(
-        &self,
-        attributes: &[ScalarAttribute],
-        properties: &[PropertyType],
-    ) -> Vec<glib::Value> {
+    fn row(&self, attributes: &[ScalarAttribute], properties: &[PropertyType]) -> Vec<glib::Value> {
         use colour_math::ColourBasics;
         let ha: f64 = if let Some(angle) = self.hue_angle() {
             angle.into()
@@ -184,8 +180,8 @@ pub trait PaintListRow: BasicPaintIfce {
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground().pango_string().to_value());
         }
-        for characteristic in properties.iter() {
-            let string = self.property(*characteristic).abbrev();
+        for property in properties.iter() {
+            let string = self.property(*property).abbrev();
             row.push(string.to_value());
         }
         #[cfg(feature = "targeted_mixtures")]
@@ -201,11 +197,7 @@ impl PaintListRow for SeriesPaint {}
 impl PaintListRow for BasicPaintSpec {}
 
 impl PaintListRow for Mixture {
-    fn row(
-        &self,
-        attributes: &[ScalarAttribute],
-        properties: &[PropertyType],
-    ) -> Vec<glib::Value> {
+    fn row(&self, attributes: &[ScalarAttribute], properties: &[PropertyType]) -> Vec<glib::Value> {
         use colour_math::ColourAttributes;
         use colour_math::ColourBasics;
         let ha: f64 = if let Some(angle) = self.hue_angle() {
@@ -234,8 +226,8 @@ impl PaintListRow for Mixture {
             row.push(attr_rgb.pango_string().to_value());
             row.push(attr_rgb.best_foreground().pango_string().to_value());
         }
-        for characteristic in properties.iter() {
-            let string = self.property(*characteristic).abbrev();
+        for property in properties.iter() {
+            let string = self.property(*property).abbrev();
             row.push(string.to_value());
         }
         #[cfg(feature = "targeted_mixtures")]

@@ -20,7 +20,7 @@ use colour_math::{beigui::hue_wheel::MakeColouredShape, ColourBasics, ScalarAttr
 use colour_math_gtk::hue_wheel::{GtkHueWheel, GtkHueWheelBuilder};
 
 use apaint::{
-    properties::PropertyType, legacy::legacy_series::SeriesPaintSeriesSpec00,
+    legacy::legacy_series::SeriesPaintSeriesSpec00, properties::PropertyType,
     series::BasicPaintSpec, series::SeriesPaintSeriesSpec, BasicPaintIfce,
 };
 
@@ -222,8 +222,8 @@ impl BasicPaintFactoryBuilder {
         self
     }
 
-    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
-        self.properties = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self
     }
 

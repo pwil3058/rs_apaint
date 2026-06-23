@@ -72,8 +72,8 @@ impl MixtureDisplayBuilder {
         self
     }
 
-    pub fn properties(&mut self, characteristics: &[PropertyType]) -> &mut Self {
-        self.properties = characteristics.to_vec();
+    pub fn properties(&mut self, properties: &[PropertyType]) -> &mut Self {
+        self.properties = properties.to_vec();
         self.list_spec = ComponentsListViewSpec::new(&self.attributes, &self.properties);
         self
     }
@@ -138,8 +138,8 @@ impl MixtureDisplayBuilder {
 
         vbox.pack_start(cads.pwo(), true, true, 0);
 
-        for characteristic_type in self.properties.iter() {
-            let value = mixture.property(*characteristic_type).full();
+        for property_type in self.properties.iter() {
+            let value = mixture.property(*property_type).full();
             let label = gtk::LabelBuilder::new().label(value).build();
             label.set_widget_colour(&colour);
             vbox.pack_start(&label, false, false, 0);

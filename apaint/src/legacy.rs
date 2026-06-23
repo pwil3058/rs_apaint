@@ -43,11 +43,8 @@ fn extract_paint_spec(line: &str) -> Result<BasicPaintSpec, crate::Error> {
             .ok_or(NotAValidLegacySpec)?
             .as_str()
             .to_string();
-        let characteristics_str = cap
-            .name("properties")
-            .ok_or(NotAValidLegacySpec)?
-            .as_str();
-        for m in PROPERTY_RE.find_iter(characteristics_str) {
+        let propertiess_str = cap.name("properties").ok_or(NotAValidLegacySpec)?.as_str();
+        for m in PROPERTY_RE.find_iter(propertiess_str) {
             let c = PROPERTY_RE
                 .captures(m.as_str())
                 .ok_or(NotAValidLegacySpec)?;

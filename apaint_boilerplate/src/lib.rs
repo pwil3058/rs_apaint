@@ -88,7 +88,7 @@ pub fn property_derive(input: TokenStream) -> TokenStream {
                 count += 1;
             }
         }
-        _ => panic!("'Characteristic' can only be derived for enums."),
+        _ => panic!("'Property' can only be derived for enums."),
     }
     let default_value = if let Some(default) = default {
         default
